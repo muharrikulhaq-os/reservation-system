@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500;600&display=swap');
+@import "tailwindcss/preflight";
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ── Background Layers ─────────────────── */
+    --bg-page:   #F5F6FA;
+    --bg-card:   #FFFFFF;
+    --bg-subtle: #F8F9FB;
+
+    /* ── Brand ────────────────────────────── */
+    --primary:       #2D2CE8;
+    --primary-dark:  #1A19B5;
+    --primary-light: #E8E8FC;
+
+    /* ── Semantic ─────────────────────────── */
+    --success: #16A34A;
+    --warning: #D97706;
+    --danger:  #DC2626;
+    --info:    #0284C7;
+
+    /* ── Text ─────────────────────────────── */
+    --text-primary:   #111827;
+    --text-secondary: #6B7280;
+    --text-disabled:  #9CA3AF;
+
+    /* ── Border ───────────────────────────── */
+    --border-card:    #E8EAED;
+    --border-input:   #DDE1E7;
+    --border-divider: #F0F2F5;
+
+    /* ── Shadow ───────────────────────────── */
+    --shadow-card:     0 1px 4px rgba(0, 0, 0, 0.06);
+    --shadow-dropdown: 0 4px 16px rgba(0, 0, 0, 0.10);
+    --shadow-modal:    0 8px 32px rgba(0, 0, 0, 0.12);
+
+    /* ── Radius ───────────────────────────── */
+    --radius-card:  12px;
+    --radius-input: 8px;
+    --radius-badge: 20px;
+
+    /* ── Spacing ──────────────────────────── */
+    --card-padding: 24px;
+    --section-gap:  24px;
+  }
+
+  body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .font-body {
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Card base pattern */
+  .card-base {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Input focus ring — konsisten di seluruh app */
+  .input-focus {
+    @apply outline-none ring-0;
+    border-color: var(--primary) !important;
+    border-width: 1.5px !important;
+  }
+}

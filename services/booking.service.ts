@@ -1,0 +1,118 @@
+// ─────────────────────────────────────────
+// BOOKING SERVICE
+// ─────────────────────────────────────────
+
+import { apiClient } from '@/lib'
+import { API_ENDPOINTS } from '@/constants'
+import type {
+  ApiResponse,
+  PaginatedResponse,
+  Booking,
+  ApprovalLog,
+  Attachment,
+  BookingStatusResponse,
+  DriverRatingResponse,
+  DriverRatingSummary,
+  BookingQueryParams,
+  CreateBookingPayload,
+  ApproveBookingPayload,
+  RejectBookingPayload,
+  AssignVehiclePayload,
+  RateDriverPayload,
+  CreateAttachmentPayload,
+} from '@/types'
+
+export const bookingService = {
+  // ── Core CRUD ────────────────────────
+
+  getAll: (params?: BookingQueryParams) =>
+    apiClient
+      .get<PaginatedResponse<Booking>>(API_ENDPOINTS.BOOKINGS.BASE, { params })
+      .then((r) => r.data),
+
+  getById: (id: number) =>
+    apiClient
+      .get<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.BY_ID(id))
+      .then((r) => r.data),
+
+  create: (payload: CreateBookingPayload) =>
+    apiClient
+      .post<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.BASE, payload)
+      .then((r) => r.data),
+
+  // ── Status Transitions ────────────────
+
+  cancel: (id: number) =>
+    apiClient
+      .patch<ApiResponse<BookingStatusResponse>>(API_ENDPOINTS.BOOKINGS.CANCEL(id))
+      .then((r) => r.data),
+
+  approve: (id: number, payload?: ApproveBookingPayload) =>
+    apiClient
+      .post<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.APPROVE(id), payload)
+      .then((r) => r.data),
+
+  reject: (id: number, payload: RejectBookingPayload) =>
+    apiClient
+      .post<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.REJECT(id), payload)
+      .then((r) => r.data),
+
+  assignVehicle: (id: number, payload: AssignVehiclePayload) =>
+    apiClient
+      .post<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.ASSIGN_VEHICLE(id), payload)
+      .then((r) => r.data),
+
+  start: (id: number) =>
+    apiClient
+      .patch<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.START(id))
+      .then((r) => r.data),
+
+  complete: (id: number) =>
+    apiClient
+      .patch<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.COMPLETE(id))
+      .then((r) => r.data),
+
+  // ── Driver Rating ─────────────────────
+
+  rateDriver: (bookingId: number, payload: RateDriverPayload) =>
+    apiClient
+      .post<ApiResponse<DriverRatingResponse>>(
+        API_ENDPOINTS.BOOKINGS.RATE_DRIVER(bookingId),
+        payload,
+      )
+      .then((r) => r.data),
+
+  getDriverRatings: (driverId: number) =>
+    apiClient
+      .get<ApiResponse<DriverRatingSummary[]>>(
+        API_ENDPOINTS.BOOKINGS.DRIVER_RATINGS(driverId),
+      )
+      .then((r) => r.data),
+
+  // ── Approval Log ──────────────────────
+
+  getApprovalLog: (id: number) =>
+    apiClient
+      .get<ApiResponse<ApprovalLog[]>>(API_ENDPOINTS.BOOKINGS.APPROVAL_LOG(id))
+      .then((r) => r.data),
+
+  // ── Attachments ───────────────────────
+
+  getAttachments: (bookingId: number) =>
+    apiClient
+      .get<ApiResponse<Attachment[]>>(API_ENDPOINTS.BOOKINGS.ATTACHMENTS(bookingId))
+      .then((r) => r.data),
+
+  uploadAttachment: (bookingId: number, payload: CreateAttachmentPayload) => {
+    const form = new FormData()
+    form.append('file', payload.file)
+    if (payload.description) form.append('description', payload.description)
+    return apiClient
+      .post<ApiResponse<Attachment>>(
+        API_ENDPOINTS.BOOKINGS.ATTACHMENTS(bookingId),
+        form,
+        { headers: { 'Content-Type': 'multipart/form-data' } },
+      )
+      .then((r) => r.data)
+  },
+}
