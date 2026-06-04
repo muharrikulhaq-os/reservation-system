@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { AlertCircle } from 'lucide-react'
 import { cn } from '@/lib'
 
 // ─────────────────────────────────────────
@@ -66,8 +67,9 @@ export const InputLabel = ({ children, required, className, ...props }: InputLab
 export const InputError = ({ children, className }: { children: React.ReactNode; className?: string }) => {
   if (!children) return null
   return (
-    <p className={cn('mt-1.5 text-xs text-[var(--danger)]', className)}>
-      {children}
+    <p className={cn('mt-1.5 flex items-center gap-1 text-xs text-[var(--danger)]', className)}>
+      <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+      <span>{children}</span>
     </p>
   )
 }

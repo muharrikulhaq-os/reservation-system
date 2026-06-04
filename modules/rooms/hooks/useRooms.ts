@@ -4,7 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEYS } from '@/constants'
-import { roomService } from '@/services'
+import { roomService } from '../api/room.api'
 import type {
   RoomQueryParams,
   CreateRoomPayload,

@@ -4,7 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEYS } from '@/constants'
-import { vehicleService } from '@/services'
+import { vehicleService } from '../api/vehicle.api'
 import type {
   VehicleQueryParams,
   CreateVehiclePayload,

@@ -4,12 +4,10 @@
 // ─────────────────────────────────────────
 
 // ── API Hooks ────────────────────────────
+// ⚠ useVehicles / useRooms / useBookings / useDrivers telah pindah ke modules/*/hooks
+// import dari module barrel: import { useBookings } from '@/modules/booking'
 export * from './api/useAuth'
 export * from './api/useUsers'
-export * from './api/useVehicles'
-export * from './api/useRooms'
-export * from './api/useBookings'
-export * from './api/useDrivers'
 export * from './api/useFuel'
 export * from './api/useMaintenance'
 export * from './api/useGuestBookings'

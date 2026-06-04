@@ -23,6 +23,10 @@ export const API_ENDPOINTS = {
     ME:              `${API_PREFIX}/auth/me`,
   },
 
+  DASHBOARD: {
+    SUMMARY: `${API_PREFIX}/dashboard/summary`
+  },
+
   // ── Users ───────────────────────────────
   USERS: {
     BASE:            `${API_PREFIX}/users`,

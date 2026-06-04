@@ -22,10 +22,9 @@
 ## 2. Struktur Direktori (Aktual)
 
 ```
-./                                    # @/* alias mengarah ke sini (tsconfig: "@/*": ["./*"])
+src/
 ├── app/
-│   ├── layout.tsx                    # Root layout — QueryClientProvider + AuthProvider (import langsung)
-│   ├── page.tsx                      # Root page (redirect atau landing)
+│   ├── layout.tsx                    # Root layout — QueryClientProvider + AuthProvider
 │   ├── (auth)/
 │   │   ├── layout.tsx                # Auth layout (no sidebar)
 │   │   └── login/page.tsx            # ✅ SELESAI
@@ -33,21 +32,15 @@
 │
 ├── components/
 │   ├── ui/                           # Shadcn generated — JANGAN edit manual
-│   ├── common/                       # Reusable lintas fitur
-│   │   ├── Provider/
-│   │   │   └── AuthProvider.tsx      # Hydrate Zustand dari localStorage on mount
-│   │   ├── Button/
-│   │   │   └── Button.tsx            # Button + IconButton (5 variant, 5 size)
-│   │   ├── Card/
-│   │   │   └── Card.tsx              # Card + CardHeader + CardDivider + CardSection
-│   │   ├── Input/
-│   │   │   └── Input.tsx             # Input, InputLabel, InputError, InputHint,
+│   ├── common/                       # Reusable lintas fitur — SEMUA SELESAI
+│   │   ├── AuthProvider.tsx          # Hydrate Zustand dari localStorage on mount
+│   │   ├── Button.tsx                # Button + IconButton (5 variant, 5 size)
+│   │   ├── Card.tsx                  # Card + CardHeader + CardDivider + CardSection
+│   │   ├── Input.tsx                 # Input, InputLabel, InputError, InputHint,
 │   │   │                             # InputField (composed), PasswordInput
-│   │   ├── RoleGuard/
-│   │   │   └── RoleGuard.tsx         # RoleGuard + AdminOnly + DriverOnly + UserOnly
-│   │   ├── Badge/
-│   │   │   └── StatusBadge.tsx       # BookingStatusBadge + ResourceStatusBadge
-│   │   └── index.ts                  # Barrel export ⚠ AuthProvider & RoleGuard belum di-export
+│   │   ├── RoleGuard.tsx             # RoleGuard + AdminOnly + DriverOnly + UserOnly
+│   │   ├── StatusBadge.tsx           # BookingStatusBadge + ResourceStatusBadge
+│   │   └── index.ts                  # Barrel export
 │   └── features/
 │       └── auth/
 │           └── LoginForm.tsx         # ✅ SELESAI
@@ -122,7 +115,7 @@
 │   │                                 # resolveFileUrl, isFileTooLarge, formatFileSize
 │   └── index.ts                      # Barrel export
 │
-├── middleware.ts                     # 🔲 BELUM DIBUAT — Route protection + role-based redirect (Edge)
+├── middleware.ts                     # Route protection + role-based redirect (Edge)
 │
 ├── schemas/
 │   └── auth.schema.ts                # loginSchema + LoginFormData
@@ -134,7 +127,7 @@
 │   ├── user.service.ts               # getAll, getById, getMe, getRoles, getDepartments,
 │   │                                 # create, update, toggleActive, delete, updatePhotoById
 │   ├── vehicle.service.ts            # CRUD + categories + photo + attachments
-│   ├── room.service.ts               # CRUD + photo + attachments  ⚠ file aktual: room.services.ts (typo, perlu rename)
+│   ├── room.service.ts               # CRUD + photo + attachments
 │   ├── booking.service.ts            # CRUD + approve/reject/assign/start/complete +
 │   │                                 # rateDriver + approvalLog + attachments
 │   ├── driver.service.ts             # CRUD + toggleActive + assign/release + history
@@ -152,8 +145,7 @@
 │                                     # hasRole(), isAdmin(), isDriver()
 │
 ├── styles/
-│   └── globals.css                   # CSS variables + Tailwind base + font imports (ini yang aktif)
-│                                     # ⚠ app/globals.css = sisa boilerplate Next.js, tidak diimport, bisa dihapus
+│   └── globals.css                   # CSS variables + Tailwind base + font imports
 │
 └── types/                            # TypeScript interfaces — SEMUA SELESAI
     ├── index.ts                      # Barrel export
@@ -189,9 +181,9 @@
 | `services/` | ✅ Selesai | 12 service, semua endpoint |
 | `hooks/api/` | ✅ Selesai | 12 file, semua query + mutation |
 | `hooks/ui/` | ✅ Selesai | 6 utility hooks |
-| `components/common/` | ⚠ Parsial | Semua komponen ada, tapi AuthProvider & RoleGuard belum di-export dari barrel |
+| `components/common/` | ✅ Selesai | Input, Button, Card, StatusBadge, RoleGuard, AuthProvider |
 | `store/` | ✅ Selesai | Zustand auth store |
-| `middleware.ts` | 🔲 Belum | File belum dibuat |
+| `middleware.ts` | ✅ Selesai | Route guard + role redirect |
 | `schemas/auth` | ✅ Selesai | Login schema |
 | Auth UI | ✅ Selesai | Login page + LoginForm |
 | Dashboard layout | 🔲 Belum | Sidebar, navbar, layout wrapper |
@@ -495,7 +487,254 @@ Route protection
 
 ---
 
-## 8. API Reference Ringkas
+## 8. UI Implementation Rules (WAJIB DIIKUTI)
+
+> **PENTING:** Section ini berisi Tailwind className yang HARUS dipakai.
+> Jangan interpretasi bebas dari tabel design token — SALIN className dari sini.
+
+### 8.1 Shadcn Override Wajib
+
+Semua komponen Shadcn yang dipakai **HARUS** di-override class-nya agar sesuai design system.
+Jangan pernah pakai Shadcn default styling tanpa override.
+
+```tsx
+// ✗ JANGAN — Shadcn default (warna hitam, rounded kecil)
+<Button>Submit</Button>
+<Input placeholder="..." />
+
+// ✓ HARUS — selalu override className
+<Button className="h-10 rounded-lg bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white">
+  Submit
+</Button>
+<Input className="h-10 rounded-lg border-[var(--border-input)] focus-visible:ring-0 focus-visible:border-[1.5px] focus-visible:border-[var(--primary)]" />
+```
+
+### 8.2 Card Container — Wajib Wrap Konten
+
+Setiap grup form, tabel, atau konten panel HARUS dibungkus card:
+
+```tsx
+// ✗ JANGAN — konten tanpa card wrapper
+<form className="space-y-4">
+  <Input />
+  <Button>Submit</Button>
+</form>
+
+// ✓ HARUS — selalu pakai card wrapper
+<div className="rounded-2xl border border-[var(--border-card)] bg-[var(--bg-card)] p-7 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
+  <form className="space-y-5">
+    <Input />
+    <Button>Submit</Button>
+  </form>
+</div>
+```
+
+### 8.3 Input Field — Struktur Lengkap
+
+Setiap input HARUS memiliki: label atas, wrapper `relative` untuk icon, dan error bawah.
+
+```tsx
+{/* POLA WAJIB untuk setiap input field */}
+<div className="w-full">
+  {/* Label */}
+  <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-secondary)]">
+    EMAIL <span className="text-[var(--danger)]">*</span>
+  </label>
+
+  {/* Input wrapper — HARUS relative untuk icon positioning */}
+  <div className="relative">
+    {/* Left icon — HARUS pointer-events-none + absolute */}
+    <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[var(--text-secondary)]">
+      <Mail className="h-4 w-4" />
+    </span>
+
+    {/* Input — HARUS ada semua class ini */}
+    <input
+      type="email"
+      className="h-10 w-full rounded-lg border border-[var(--border-input)] bg-[var(--bg-card)] pl-9 pr-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-disabled)] transition-all duration-150 focus:outline-none focus:border-[1.5px] focus:border-[var(--primary)] disabled:bg-[var(--bg-subtle)] disabled:cursor-not-allowed"
+      placeholder="nama@perusahaan.com"
+    />
+  </div>
+
+  {/* Error — hanya tampil kalau ada error */}
+  <p className="mt-1.5 flex items-center gap-1 text-xs text-[var(--danger)]">
+    <AlertCircle className="h-3 w-3" /> Email wajib diisi
+  </p>
+</div>
+```
+
+### 8.4 Password Input — Toggle HARUS di dalam input
+
+```tsx
+<div className="relative">
+  <input
+    type={show ? 'text' : 'password'}
+    className="h-10 w-full rounded-lg border border-[var(--border-input)] bg-[var(--bg-card)] pl-3 pr-10 text-sm ..."
+  />
+  {/* Toggle — HARUS absolute di DALAM input, bukan di luar */}
+  <button
+    type="button"
+    tabIndex={-1}
+    className="absolute inset-y-0 right-3 flex items-center text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+  >
+    {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+  </button>
+</div>
+```
+
+### 8.5 Button — Class Lengkap
+
+```tsx
+{/* Primary button */}
+<button className="h-10 w-full rounded-lg bg-[var(--primary)] px-4 text-sm font-semibold text-white transition-all hover:bg-[var(--primary-dark)] hover:shadow-[0_2px_8px_rgba(45,44,232,0.25)] disabled:bg-[var(--border-card)] disabled:text-[var(--text-disabled)] disabled:shadow-none">
+  Masuk
+</button>
+
+{/* Secondary button */}
+<button className="h-10 rounded-lg border border-[var(--border-input)] bg-[var(--bg-card)] px-4 text-sm font-medium text-[var(--text-primary)] transition-all hover:bg-[var(--bg-page)]">
+  Batal
+</button>
+```
+
+### 8.6 Error Alert — Pola Wajib
+
+```tsx
+<div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+  <span>Terjadi kesalahan pada server.</span>
+</div>
+```
+
+### 8.7 Login Page — Pola Layout Lengkap
+
+```tsx
+{/* POLA WAJIB: centered layout + card wrapper */}
+<main className="relative min-h-screen overflow-hidden flex items-center justify-center p-4"
+  style={{ backgroundColor: 'var(--bg-page)' }}>
+
+  {/* Decorative blobs */}
+  <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
+    <div className="absolute -top-32 -left-32 h-80 w-80 rounded-full opacity-50 blur-3xl"
+      style={{ backgroundColor: 'var(--primary-light)' }} />
+    <div className="absolute -bottom-32 -right-32 h-80 w-80 rounded-full opacity-35 blur-3xl"
+      style={{ backgroundColor: 'var(--primary-light)' }} />
+  </div>
+
+  <div className="relative z-10 w-full max-w-[400px]">
+
+    {/* Brand — di luar card */}
+    <div className="mb-8 flex flex-col items-center text-center">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl"
+        style={{ backgroundColor: 'var(--primary)' }}>
+        {/* icon */}
+      </div>
+      <h1 className="text-[28px] font-bold" style={{ fontFamily: "'Plus Jakarta Sans'" }}>
+        Reservation System
+      </h1>
+      <p className="mt-1.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
+        Masuk untuk melanjutkan
+      </p>
+    </div>
+
+    {/* Card — WAJIB ada rounded, border, shadow, padding */}
+    <div className="rounded-2xl border border-[var(--border-card)] bg-[var(--bg-card)] p-7"
+      style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+      {/* Form di dalam sini */}
+      <form className="space-y-5">
+        {/* error alert */}
+        {/* input email */}
+        {/* input password */}
+        {/* submit button */}
+      </form>
+    </div>
+
+    {/* Footer */}
+    <p className="mt-6 text-center text-xs" style={{ color: 'var(--text-disabled)' }}>
+      © 2026 Reservation System
+    </p>
+  </div>
+</main>
+```
+
+### 8.8 Spacing Rules
+
+```
+Form fields  → space-y-5    (20px gap antar field)
+Card padding → p-5 atau p-7 (20px atau 28px)
+Page content → space-y-6    (24px gap antar section)
+Stat cards   → gap-4        (16px antar card)
+List items   → divide-y     (border di antara item)
+```
+
+### 8.9 Anti-Patterns (JANGAN LAKUKAN)
+
+```tsx
+// ✗ JANGAN — input tanpa border radius
+className="border border-gray-300"
+// ✓ HARUS
+className="rounded-lg border border-[var(--border-input)]"
+
+// ✗ JANGAN — icon di luar div relative
+<div>
+  <input />
+</div>
+<EyeIcon />
+// ✓ HARUS — icon di dalam div relative
+<div className="relative">
+  <input className="pr-10" />
+  <button className="absolute inset-y-0 right-3 flex items-center">
+    <EyeIcon />
+  </button>
+</div>
+
+// ✗ JANGAN — pakai Tailwind color langsung
+className="bg-blue-600 text-gray-900 border-gray-200"
+// ✓ HARUS — pakai CSS variable
+className="bg-[var(--primary)] text-[var(--text-primary)] border-[var(--border-card)]"
+
+// ✗ JANGAN — konten tanpa card wrapper
+<form>...</form>
+// ✓ HARUS — bungkus dalam card
+<div className="rounded-2xl border border-[var(--border-card)] bg-[var(--bg-card)] p-7 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
+  <form>...</form>
+</div>
+
+// ✗ JANGAN — focus:ring default Shadcn (biru ring lebar)
+className="focus:ring-2 focus:ring-blue-500"
+// ✓ HARUS — border thicken, no ring
+className="focus-visible:ring-0 focus-visible:border-[1.5px] focus-visible:border-[var(--primary)]"
+
+// ✗ JANGAN — hardcode font-family di setiap elemen
+style={{ fontFamily: 'Inter' }}
+// ✓ HARUS — heading pakai Plus Jakarta Sans, body otomatis Inter dari globals.css
+// Heading:
+style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+// Body: tidak perlu style, sudah default Inter dari body css
+```
+
+### 8.10 Tailwind Class Cheat Sheet
+
+| Elemen | className WAJIB |
+|---|---|
+| Page bg | `bg-[var(--bg-page)]` atau `style={{ backgroundColor: 'var(--bg-page)' }}` |
+| Card | `rounded-2xl border border-[var(--border-card)] bg-[var(--bg-card)] p-5 shadow-[0_1px_4px_rgba(0,0,0,0.06)]` |
+| Input | `h-10 w-full rounded-lg border border-[var(--border-input)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-disabled)] focus-visible:ring-0 focus-visible:border-[1.5px] focus-visible:border-[var(--primary)]` |
+| Input error state | tambah `border-[var(--danger)] focus-visible:border-[var(--danger)]` |
+| Input disabled | tambah `disabled:bg-[var(--bg-subtle)] disabled:cursor-not-allowed` |
+| Label | `text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-secondary)] mb-1.5` |
+| Error text | `text-xs text-[var(--danger)] mt-1.5` |
+| Button primary | `h-10 rounded-lg bg-[var(--primary)] text-white font-semibold hover:bg-[var(--primary-dark)]` |
+| Button secondary | `h-10 rounded-lg border border-[var(--border-input)] bg-[var(--bg-card)] text-[var(--text-primary)]` |
+| Badge pill | `rounded-full px-2.5 py-0.5 text-xs font-semibold` |
+| Avatar | `rounded-full` dengan size `h-9 w-9` |
+| Heading | `font-bold text-[var(--text-primary)]` + `style={{ fontFamily: "'Plus Jakarta Sans'" }}` |
+| Body text | `text-sm text-[var(--text-primary)]` (Inter default) |
+| Secondary text | `text-sm text-[var(--text-secondary)]` |
+| Disabled text | `text-xs text-[var(--text-disabled)]` |
+
+---
+
+## 9. API Reference Ringkas
 
 **Base:** `http://localhost:8080/api/v1`  
 **Auth:** `Authorization: Bearer <access_token>`

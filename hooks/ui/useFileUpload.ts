@@ -42,7 +42,7 @@ export const useFileUpload = (options: FileUploadOptions = {}): FileUploadReturn
       setIsDirty(true)
       setError(null)
 
-      if (!acceptedTypes.includes(selected.type)) {
+      if (!(acceptedTypes as readonly string[]).includes(selected.type)) {
         setError(`Format tidak didukung. Gunakan: ${acceptedTypes.join(', ')}`)
         return
       }

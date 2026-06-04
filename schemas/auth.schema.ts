@@ -8,7 +8,7 @@ export const loginSchema = z.object({
   password: z
     .string()
     .min(1, 'Password wajib diisi')
-    .min(8, 'Password minimal 8 karakter'),
+    .min(4, 'Password minimal 4 karakter'),
 })
 
 export type LoginFormData = z.infer<typeof loginSchema>

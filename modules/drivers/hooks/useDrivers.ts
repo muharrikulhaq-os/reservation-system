@@ -4,7 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEYS } from '@/constants'
-import { driverService } from '@/services'
+import { driverService } from '../api/driver.api'
 import type {
   DriverQueryParams,
   CreateDriverPayload,

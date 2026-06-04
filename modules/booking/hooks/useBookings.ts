@@ -4,7 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEYS } from '@/constants'
-import { bookingService } from '@/services'
+import { bookingService } from '../api/booking.api'
 import type {
   BookingQueryParams,
   CreateBookingPayload,
@@ -17,10 +17,18 @@ import type {
 
 // ── Queries ──────────────────────────────
 
-export const useBookings = (params?: BookingQueryParams) =>
+// Mengembalikan PaginatedResponse penuh (data + pagination)
+// agar halaman list bisa pakai meta pagination.
+// `options.enabled` untuk menahan fetch (mis. di kalender
+// saat resourceId belum dipilih).
+export const useBookings = (
+  params?: BookingQueryParams,
+  options?: { enabled?: boolean },
+) =>
   useQuery({
     queryKey: [...QUERY_KEYS.BOOKINGS, params],
-    queryFn:  () => bookingService.getAll(params).then((r) => r.data),
+    queryFn:  () => bookingService.getAll(params),
+    enabled:  options?.enabled ?? true,
   })
 
 export const useBooking = (id: number) =>
