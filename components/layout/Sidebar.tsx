@@ -17,6 +17,8 @@ import {
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth.store'
 import { useLogout } from '@/hooks'
+import { ROLE } from '@/constants'
+import type { RoleName } from '@/types'
 import { UserAvatar } from '@/components/shared/avatar/Avatar'
 
 // ─────────────────────────────────────────
@@ -28,14 +30,16 @@ interface NavItem {
   href:  string
   icon:  React.ElementType
   badge?: number
+  /** Role yang boleh melihat menu ini. Kosong = semua role. */
+  roles?: RoleName[]
 }
 
 const MENU_NAV: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard',      icon: LayoutDashboard },
   { label: 'Booking',   href: '/booking',    icon: CalendarCheck,  badge: 3 },
   { label: 'Vehicles',  href: '/vehicles',   icon: Car },
-  { label: 'Meeting Rooms', href: '/rooms',  icon: Building2 },
-  { label: 'Driver',    href: '/drivers',    icon: UserRound },
+  { label: 'Meeting Rooms', href: '/rooms',  icon: Building2, roles: [ROLE.ADMIN, ROLE.USER] },
+  { label: 'Driver',    href: '/drivers',    icon: UserRound, roles: [ROLE.ADMIN] },
 ]
 
 const ADMIN_NAV: NavItem[] = [
@@ -165,6 +169,12 @@ const BottomUser = () => {
 
 export const Sidebar = () => {
   const isAdmin = useAuthStore((s) => s.isAdmin())
+  const role = useAuthStore((s) => s.user?.role) as RoleName | undefined
+
+  // Saring menu sesuai role pengguna
+  const menuItems = MENU_NAV.filter(
+    (item) => !item.roles || (role ? item.roles.includes(role) : false),
+  )
 
   return (
     <aside className="flex h-full w-[220px] shrink-0 flex-col bg-[var(--bg-card)] border-r border-[var(--border-card)]">
@@ -184,7 +194,7 @@ export const Sidebar = () => {
 
       {/* Nav scrollable area */}
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-4">
-        <NavSection label="Menu" items={MENU_NAV} />
+        <NavSection label="Menu" items={menuItems} />
         {isAdmin && <NavSection label="Admin" items={ADMIN_NAV} />}
       </div>
 

@@ -1,9 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { ResourceStatusBadge } from '@/components/shared/badge/StatusBadge'
+import { Car, Users } from 'lucide-react'
+import { AdminOnly } from '@/components/common'
+import { ResourceStatusBadge, Badge } from '@/components/shared'
 import { createColumnHelper, type ColumnDef } from '@/components/shared/table/DataTable'
-import { formatOdometer } from '@/lib'
+import { resolveFileUrl } from '@/lib'
 import type { Vehicle } from '@/types'
 
 // ─────────────────────────────────────────
@@ -16,51 +18,53 @@ const ch = createColumnHelper<Vehicle>()
 export const vehicleColumns: ColumnDef<Vehicle, unknown>[] = [
   ch.accessor('name', {
     header: 'Kendaraan',
-    cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="text-sm font-medium text-[var(--text-primary)]">
-          {row.original.name}
-        </span>
-        <span className="text-[11px] text-[var(--text-disabled)]">
-          {row.original.brand} {row.original.model} · {row.original.year}
-        </span>
-      </div>
-    ),
-  }),
-
-  ch.accessor('plateNumber', {
-    header: 'Plat',
-    size: 120,
-    cell: ({ getValue }) => (
-      <span className="rounded-md bg-[var(--bg-subtle)] px-2 py-0.5 text-xs font-semibold text-[var(--text-primary)]">
-        {getValue()}
-      </span>
-    ),
+    cell: ({ row }) => {
+      const v = row.original
+      const photo = resolveFileUrl(v.photoUrl)
+      return (
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-12 shrink-0 items-center justify-center overflow-hidden rounded bg-[var(--bg-subtle)] text-[var(--text-disabled)]">
+            {photo ? (
+              <img src={photo} alt={v.name} className="h-full w-full object-cover" />
+            ) : (
+              <Car className="h-4 w-4" />
+            )}
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold text-[var(--text-primary)]">
+              {v.name}
+            </span>
+            <span className="text-[11px] text-[var(--text-secondary)]">
+              {v.plateNumber}
+            </span>
+          </div>
+        </div>
+      )
+    },
   }),
 
   ch.accessor('category', {
     header: 'Kategori',
     size: 120,
-    cell: ({ getValue }) => (
-      <span className="text-sm text-[var(--text-secondary)]">{getValue().name}</span>
-    ),
+    cell: ({ getValue }) => <Badge variant="muted">{getValue().name}</Badge>,
   }),
 
   ch.accessor('capacity', {
     header: 'Kapasitas',
-    size: 100,
+    size: 120,
     cell: ({ getValue }) => (
-      <span className="text-sm text-[var(--text-secondary)]">{getValue()} org</span>
+      <span className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)]">
+        <Users className="h-3.5 w-3.5 text-[var(--text-disabled)]" />
+        {getValue()} Penumpang
+      </span>
     ),
   }),
 
-  ch.accessor('currentOdometer', {
-    header: 'Odometer',
-    size: 120,
+  ch.accessor('year', {
+    header: 'Tahun',
+    size: 80,
     cell: ({ getValue }) => (
-      <span className="text-sm text-[var(--text-secondary)]">
-        {formatOdometer(getValue())}
-      </span>
+      <span className="text-sm text-[var(--text-secondary)]">{getValue()}</span>
     ),
   }),
 
@@ -72,15 +76,25 @@ export const vehicleColumns: ColumnDef<Vehicle, unknown>[] = [
 
   ch.display({
     id: 'actions',
-    size: 60,
+    size: 120,
     header: '',
     cell: ({ row }) => (
-      <Link
-        href={`/dashboard/vehicles/${row.original.id}`}
-        className="text-xs font-medium text-[var(--primary)] hover:underline"
-      >
-        Detail
-      </Link>
+      <div className="flex items-center justify-end gap-3">
+        <Link
+          href={`/vehicles/${row.original.id}`}
+          className="text-xs font-medium text-[var(--primary)] hover:underline"
+        >
+          Detail
+        </Link>
+        <AdminOnly>
+          <Link
+            href={`/vehicles/${row.original.id}/edit`}
+            className="text-xs font-medium text-[var(--text-secondary)] hover:underline"
+          >
+            Edit
+          </Link>
+        </AdminOnly>
+      </div>
     ),
   }),
 ] as ColumnDef<Vehicle, unknown>[]

@@ -271,7 +271,7 @@ const QueueRow = ({
       </div>
 
       {/* Kanan: aksi */}
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:ml-auto sm:w-auto">
         {showActions && (
           <>
             <AppButton
@@ -281,7 +281,7 @@ const QueueRow = ({
               disabled={approving || rejecting}
               onClick={onApprove}
               className="bg-[var(--success)] hover:bg-green-700"
-            >
+            >dashboard/booking
               Setujui
             </AppButton>
             <AppButton

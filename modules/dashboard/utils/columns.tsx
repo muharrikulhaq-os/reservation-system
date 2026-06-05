@@ -60,7 +60,7 @@ export const recentBookingColumns: ColumnDef<Booking, unknown>[] = [
     header: '',
     cell: ({ row }) => (
       <Link
-        href={`/dashboard/booking/${row.original.id}`}
+        href={`/booking/${row.original.id}`}
         className="text-xs font-medium text-[var(--primary)] hover:underline"
       >
         Detail

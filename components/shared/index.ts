@@ -17,4 +17,7 @@ export type {
   AvailabilityCalendarProps,
   CalendarEvent,
   CalendarDayData,
+  DateTimeRange,
 } from './calendar/AvailabilityCalendar'
+
+export * from './Resource'

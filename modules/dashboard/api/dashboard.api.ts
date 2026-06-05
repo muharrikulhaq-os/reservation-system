@@ -6,6 +6,6 @@ import { DashboardSum } from "@/types/dashboard";
 export const dashboardService = {
   dashboard: () =>
     apiClient
-      .get<ApiResponse<DashboardSum>>(API_ENDPOINTS.DASHBOARD.SUMMARY)
+      .get<DashboardSum>(API_ENDPOINTS.DASHBOARD.SUMMARY)
       .then((r) => r.data),
 };

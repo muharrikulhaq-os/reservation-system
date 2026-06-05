@@ -88,6 +88,7 @@ export const AppButton = React.forwardRef<HTMLButtonElement, AppButtonProps>(
       leftIcon,
       rightIcon,
       fullWidth = false,
+      asChild   = false,
       disabled,
       children,
       className,
@@ -102,6 +103,7 @@ export const AppButton = React.forwardRef<HTMLButtonElement, AppButtonProps>(
     return (
       <ShadcnButton
         ref={ref}
+        asChild={asChild}
         variant={shadcnVariant}
         disabled={isDisabled}
         className={cn(
@@ -114,12 +116,21 @@ export const AppButton = React.forwardRef<HTMLButtonElement, AppButtonProps>(
         )}
         {...props}
       >
-        {loading
-          ? <Loader2 className="h-4 w-4 animate-spin" />
-          : leftIcon
-        }
-        {children}
-        {!loading && rightIcon}
+        {/* asChild → Radix Slot butuh tepat satu child, jadi teruskan
+            children apa adanya tanpa wrapper icon/loading. */}
+        {asChild ? (
+          children
+        ) : (
+          <>
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              leftIcon
+            )}
+            {children}
+            {!loading && rightIcon}
+          </>
+        )}
       </ShadcnButton>
     )
   },

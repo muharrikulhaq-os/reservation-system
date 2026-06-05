@@ -1,10 +1,22 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  AlertCircle,
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+} from 'lucide-react'
 import { AppButton } from '@/components/ui-custom'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { Separator } from '@/components/ui/separator'
 import { useBookings } from '@/modules/booking/hooks/useBookings'
-import { BOOKING_STATUS } from '@/constants'
+import { BOOKING_STATUS, BOOKING_STATUS_CONFIG } from '@/constants'
 import type { BookingStatus, ResourceStatus } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -17,12 +29,25 @@ export interface CalendarEvent {
   title: string
   type: 'booking' | 'maintenance'
   status?: BookingStatus | ResourceStatus
+  startTime: string // "08:00"
+  endTime: string // "18:00"
+  startDate: string // ISO full — untuk cek overlap
+  endDate: string // ISO full
 }
 
 export interface CalendarDayData {
   date: string // "YYYY-MM-DD"
   isAvailable: boolean
+  isFullDay: boolean // true jika seluruh hari tidak tersedia
   events: CalendarEvent[]
+}
+
+/** Hasil pemilihan tanggal + jam */
+export interface DateTimeRange {
+  startDate: Date
+  endDate: Date
+  startTime: string // "08:00"
+  endTime: string // "18:00"
 }
 
 export interface AvailabilityCalendarProps {
@@ -31,13 +56,28 @@ export interface AvailabilityCalendarProps {
   resourceType?: 'VEHICLE' | 'ROOM'
   mode?: 'single' | 'range' | 'view'
   selectedDate?: Date | null
-  selectedRange?: { start: Date | null; end: Date | null }
   onSelectDate?: (date: Date) => void
-  onSelectRange?: (range: { start: Date; end: Date }) => void
+  /** Dipanggil saat user menekan "Konfirmasi Jadwal" (tanggal + jam) */
+  onSelectDateTime?: (range: DateTimeRange) => void
+  /** Dipanggil saat range yang dipilih bentrok dengan event yang memblokir */
+  onConflictDetected?: (conflicts: CalendarEvent[]) => void
   minDate?: Date
   maxDate?: Date
   showHeader?: boolean
   className?: string
+}
+
+// ─────────────────────────────────────────
+// TIME OPTIONS — 00:00 s/d 23:30, interval 30 menit
+// ─────────────────────────────────────────
+
+const TIME_OPTIONS: string[] = []
+for (let h = 0; h < 24; h++) {
+  for (let m = 0; m < 60; m += 30) {
+    TIME_OPTIONS.push(
+      `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`,
+    )
+  }
 }
 
 // ─────────────────────────────────────────
@@ -59,6 +99,8 @@ const toKey = (d: Date) => {
   return `${y}-${m}-${day}`
 }
 
+const formatYMD = toKey
+
 const addDays = (d: Date, n: number) =>
   new Date(d.getFullYear(), d.getMonth(), d.getDate() + n)
 
@@ -66,17 +108,46 @@ const addDays = (d: Date, n: number) =>
 const startOfDay = (d: Date) =>
   new Date(d.getFullYear(), d.getMonth(), d.getDate())
 
-const isSameDay = (a: Date, b: Date) => toKey(a) === toKey(b)
+const isSameDayDate = (a: Date, b: Date) => toKey(a) === toKey(b)
 
 const isBetween = (d: Date, start: Date, end: Date) => {
   const t = startOfDay(d).getTime()
   return t > startOfDay(start).getTime() && t < startOfDay(end).getTime()
 }
 
+/** "08:00" dari ISO datetime */
+const formatTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+
+/** "Senin, 10 Oktober 2025" dari Date */
+const formatFullDate = (d: Date) =>
+  d.toLocaleDateString('id-ID', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+
+/** "12 Jun 2025" dari Date */
+const formatShortDate = (d: Date) =>
+  d.toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+
 // ─────────────────────────────────────────
-// EVENT CHIP STYLING
-// (warna hardcode sesuai spesifikasi kalender)
+// EVENT STYLING HELPERS
 // ─────────────────────────────────────────
+
+const isBlocking = (event: CalendarEvent) =>
+  event.type === 'maintenance' ||
+  event.status === BOOKING_STATUS.APPROVED ||
+  event.status === BOOKING_STATUS.ONGOING
 
 const chipClass = (event: CalendarEvent) => {
   if (event.type === 'maintenance') return 'bg-[#F3F4F6] text-[#374151]'
@@ -90,6 +161,28 @@ const chipClass = (event: CalendarEvent) => {
   return 'bg-[#F3F4F6] text-[#374151]'
 }
 
+const getEventDotColor = (event: CalendarEvent): string => {
+  if (event.type === 'maintenance') return 'var(--text-disabled)'
+  if (!event.status) return 'var(--primary)'
+  const cfg = BOOKING_STATUS_CONFIG[event.status as BookingStatus]
+  return cfg?.dotColor ?? 'var(--primary)'
+}
+
+const getStatusBg = (status: string) =>
+  BOOKING_STATUS_CONFIG[status as BookingStatus]?.bg ?? 'var(--bg-subtle)'
+
+const getStatusColor = (status: string) =>
+  BOOKING_STATUS_CONFIG[status as BookingStatus]?.text ?? 'var(--text-secondary)'
+
+const getStatusLabel = (status: string) =>
+  BOOKING_STATUS_CONFIG[status as BookingStatus]?.label ?? status
+
+/** Label jam untuk chip — maintenance tanpa jam → "Seharian" */
+const timeLabel = (event: CalendarEvent) =>
+  event.type === 'maintenance' && !event.startTime
+    ? 'Seharian'
+    : `${event.startTime}-${event.endTime}`
+
 // ─────────────────────────────────────────
 // AVAILABILITY CALENDAR
 // ─────────────────────────────────────────
@@ -99,9 +192,9 @@ export const AvailabilityCalendar = ({
   resourceId,
   mode = 'view',
   selectedDate,
-  selectedRange,
   onSelectDate,
-  onSelectRange,
+  onSelectDateTime,
+  onConflictDetected,
   minDate,
   maxDate,
   showHeader = true,
@@ -110,20 +203,19 @@ export const AvailabilityCalendar = ({
   const today = startOfDay(new Date())
 
   // Bulan yang sedang ditampilkan
-  const initialMonth =
-    selectedDate ?? selectedRange?.start ?? new Date()
+  const initialMonth = selectedDate ?? new Date()
   const [currentMonth, setCurrentMonth] = useState(
     new Date(initialMonth.getFullYear(), initialMonth.getMonth(), 1),
   )
 
-  // Range internal (uncontrolled) untuk mode="range"
-  const [internalRange, setInternalRange] = useState<{
-    start: Date | null
-    end: Date | null
-  }>({ start: selectedRange?.start ?? null, end: selectedRange?.end ?? null })
+  // Pemilihan tanggal (internal)
+  const [selectedStart, setSelectedStart] = useState<Date | null>(null)
+  const [selectedEnd, setSelectedEnd] = useState<Date | null>(null)
+  const [startTime, setStartTime] = useState('08:00')
+  const [endTime, setEndTime] = useState('17:00')
 
-  // Range efektif: controlled prop > internal
-  const range = selectedRange ?? internalRange
+  // Tanggal yang bentrok — untuk highlight merah
+  const [conflictKeys, setConflictKeys] = useState<Set<string>>(new Set())
 
   // ── Fetch internal jika resourceId ada tanpa data ──
   const shouldFetch = !!resourceId && !data
@@ -153,7 +245,7 @@ export const AvailabilityCalendar = ({
     { enabled: shouldFetch },
   )
 
-  // ── Bangun map tanggal -> { events, isAvailable } ──
+  // ── Bangun map tanggal -> CalendarDayData ──
   const dayMap = useMemo(() => {
     const map = new Map<string, CalendarDayData>()
 
@@ -177,6 +269,7 @@ export const AvailabilityCalendar = ({
         const existing = map.get(key) ?? {
           date: key,
           isAvailable: true,
+          isFullDay: false,
           events: [],
         }
         existing.events.push({
@@ -184,8 +277,15 @@ export const AvailabilityCalendar = ({
           title: b.user?.name ?? b.resource?.name ?? 'Booking',
           type: 'booking',
           status: b.status,
+          startTime: formatTime(b.startDate),
+          endTime: formatTime(b.endDate),
+          startDate: b.startDate,
+          endDate: b.endDate,
         })
-        if (blocks) existing.isAvailable = false
+        if (blocks) {
+          existing.isAvailable = false
+          existing.isFullDay = true
+        }
         map.set(key, existing)
       }
     }
@@ -209,8 +309,44 @@ export const AvailabilityCalendar = ({
       new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1),
     )
 
+  // ── Kumpulkan event yang memblokir di rentang tanggal ──
+  const collectConflicts = (start: Date, end: Date): CalendarEvent[] => {
+    const found = new Map<number, CalendarEvent>()
+    for (
+      let d = startOfDay(start);
+      d.getTime() <= startOfDay(end).getTime();
+      d = addDays(d, 1)
+    ) {
+      const dd = dayMap.get(toKey(d))
+      if (!dd) continue
+      for (const ev of dd.events) if (isBlocking(ev)) found.set(ev.id, ev)
+    }
+    return [...found.values()]
+  }
+
+  const rangeKeys = (start: Date, end: Date): Set<string> => {
+    const keys = new Set<string>()
+    for (
+      let d = startOfDay(start);
+      d.getTime() <= startOfDay(end).getTime();
+      d = addDays(d, 1)
+    )
+      keys.add(toKey(d))
+    return keys
+  }
+
+  // ── Reset pemilihan ──
+  const resetSelection = (start: Date | null) => {
+    setSelectedStart(start)
+    setSelectedEnd(null)
+    setStartTime('08:00')
+    setEndTime('17:00')
+    setConflictKeys(new Set())
+    onConflictDetected?.([])
+  }
+
   // ── Handler klik tanggal ──
-  const handleClick = (date: Date) => {
+  const handleDateClick = (date: Date) => {
     if (mode === 'view') return
 
     if (mode === 'single') {
@@ -218,26 +354,74 @@ export const AvailabilityCalendar = ({
       return
     }
 
-    // mode === 'range'
-    const { start, end } = range
-    if (!start || (start && end)) {
-      // mulai range baru
-      const next = { start: date, end: null }
-      if (!selectedRange) setInternalRange(next)
-      onSelectDate?.(date)
-    } else {
-      // start ada, end belum
-      if (startOfDay(date).getTime() > startOfDay(start).getTime()) {
-        const next = { start, end: date }
-        if (!selectedRange) setInternalRange(next)
-        onSelectRange?.({ start, end: date })
-      } else {
-        // klik <= start → reset start
-        const next = { start: date, end: null }
-        if (!selectedRange) setInternalRange(next)
-        onSelectDate?.(date)
-      }
+    // mode === 'range' (tanggal + jam)
+    if (!selectedStart || (selectedStart && selectedEnd)) {
+      // mulai pemilihan baru
+      resetSelection(date)
+      return
     }
+
+    // sudah ada start, belum ada end
+    if (startOfDay(date).getTime() < startOfDay(selectedStart).getTime()) {
+      // klik sebelum start → jadikan start baru
+      resetSelection(date)
+      return
+    }
+
+    // kandidat end (boleh sama dengan start → same-day)
+    const conflicts = collectConflicts(selectedStart, date)
+    if (conflicts.length) {
+      setConflictKeys(rangeKeys(selectedStart, date))
+      onConflictDetected?.(conflicts)
+      return // jangan set end
+    }
+    setConflictKeys(new Set())
+    onConflictDetected?.([])
+    setSelectedEnd(date)
+  }
+
+  // ── Status same-day ──
+  const isSameDay =
+    !!selectedStart &&
+    !!selectedEnd &&
+    isSameDayDate(selectedStart, selectedEnd)
+
+  // ── Validasi jam ──
+  const timeError = useMemo(() => {
+    if (!startTime || !endTime) return null
+    if (isSameDay && endTime <= startTime) {
+      return 'Jam selesai harus lebih dari jam mulai'
+    }
+    return null
+  }, [startTime, endTime, isSameDay])
+
+  // ── Kalkulasi durasi ──
+  const calculatedDuration = useMemo(() => {
+    if (!selectedStart || !selectedEnd || !startTime || !endTime) return '—'
+    const start = new Date(`${formatYMD(selectedStart)}T${startTime}:00`)
+    const end = new Date(`${formatYMD(selectedEnd)}T${endTime}:00`)
+    const ms = end.getTime() - start.getTime()
+    if (ms <= 0) return '—'
+    const hours = Math.floor(ms / 3_600_000)
+    const minutes = Math.floor((ms % 3_600_000) / 60_000)
+    if (hours >= 24) {
+      const days = Math.floor(hours / 24)
+      const remHours = hours % 24
+      return remHours > 0 ? `${days} Hari ${remHours} Jam` : `${days} Hari`
+    }
+    if (minutes === 0) return `${hours} Jam`
+    return `${hours} Jam ${minutes} Menit`
+  }, [selectedStart, selectedEnd, startTime, endTime])
+
+  // ── Konfirmasi ──
+  const handleConfirmDateTime = () => {
+    if (!selectedStart || !selectedEnd || timeError) return
+    onSelectDateTime?.({
+      startDate: selectedStart,
+      endDate: selectedEnd,
+      startTime,
+      endTime,
+    })
   }
 
   return (
@@ -292,10 +476,11 @@ export const AvailabilityCalendar = ({
         {cells.map((cell, i) => {
           const key = toKey(cell)
           const inMonth = cell.getMonth() === currentMonth.getMonth()
-          const isToday = isSameDay(cell, today)
+          const isToday = isSameDayDate(cell, today)
           const isPast = startOfDay(cell).getTime() < today.getTime()
           const dayData = dayMap.get(key)
           const unavailable = dayData ? !dayData.isAvailable : false
+          const isConflict = conflictKeys.has(key)
 
           const beforeMin = minDate
             ? startOfDay(cell).getTime() < startOfDay(minDate).getTime()
@@ -307,17 +492,17 @@ export const AvailabilityCalendar = ({
           // Selected states
           const isSelectedSingle =
             mode === 'single' && selectedDate
-              ? isSameDay(cell, selectedDate)
+              ? isSameDayDate(cell, selectedDate)
               : false
-          // Highlight range berlaku untuk mode "range" maupun "view"
-          // (detail booking menandai rentang tanggalnya).
-          const isRangeStart = range.start
-            ? isSameDay(cell, range.start)
+          const isRangeStart = selectedStart
+            ? isSameDayDate(cell, selectedStart)
             : false
-          const isRangeEnd = range.end ? isSameDay(cell, range.end) : false
+          const isRangeEnd = selectedEnd
+            ? isSameDayDate(cell, selectedEnd)
+            : false
           const isRangeBetween =
-            range.start && range.end
-              ? isBetween(cell, range.start, range.end)
+            selectedStart && selectedEnd
+              ? isBetween(cell, selectedStart, selectedEnd)
               : false
 
           // Bisa diklik?
@@ -340,7 +525,8 @@ export const AvailabilityCalendar = ({
 
           // State background
           let stateCls = 'bg-[var(--bg-card)]'
-          if (!inMonth) stateCls = 'bg-[var(--bg-card)] opacity-40 pointer-events-none'
+          if (!inMonth)
+            stateCls = 'bg-[var(--bg-card)] opacity-40 pointer-events-none'
           else if (isPast)
             stateCls = 'bg-[var(--bg-card)] opacity-30 pointer-events-none'
           else if (unavailable || beforeMin || afterMax)
@@ -359,19 +545,31 @@ export const AvailabilityCalendar = ({
             isRangeBetween && 'bg-[var(--primary-light)] opacity-60',
           )
 
+          // Conflict overlay — prioritas paling tinggi
+          const conflictCls = isConflict
+            ? 'bg-red-50 border-[var(--danger)]'
+            : ''
+
           const events = dayData?.events ?? []
           const visibleEvents = events.slice(0, 2)
           const extra = events.length - visibleEvents.length
+          const hasEvents = events.length > 0
 
-          return (
+          // ── Konten cell ──
+          const cellNode = (
             <div
-              key={key}
-              onClick={isInteractive ? () => handleClick(cell) : undefined}
+              onClick={
+                isInteractive && !hasEvents
+                  ? () => handleDateClick(cell)
+                  : undefined
+              }
               className={cn(
                 'flex min-h-[80px] flex-col p-1.5',
                 borderCls,
                 stateCls,
                 selectedCls,
+                conflictCls,
+                hasEvents && isInteractive && 'cursor-pointer',
               )}
             >
               {/* Nomor tanggal */}
@@ -398,7 +596,7 @@ export const AvailabilityCalendar = ({
                 )}
               </div>
 
-              {/* Event chips */}
+              {/* Event chips — dengan jam */}
               {visibleEvents.map((ev, idx) => (
                 <span
                   key={`${ev.type}-${ev.id}-${idx}`}
@@ -407,6 +605,7 @@ export const AvailabilityCalendar = ({
                     chipClass(ev),
                   )}
                 >
+                  <span className="font-semibold">{timeLabel(ev)}</span>{' '}
                   {ev.title}
                 </span>
               ))}
@@ -416,7 +615,7 @@ export const AvailabilityCalendar = ({
                 </span>
               )}
 
-              {/* Label "Dipilih" / "Mulai" / "Selesai" */}
+              {/* Label "Mulai" / "Selesai" */}
               {isSelectedSingle && (
                 <span className="mt-auto flex items-center gap-1 pt-0.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-[var(--primary)]" />
@@ -425,20 +624,191 @@ export const AvailabilityCalendar = ({
                   </span>
                 </span>
               )}
-              {isRangeStart && (
+              {isRangeStart && !isSelectedSingle && (
                 <span className="mt-auto pt-0.5 text-[10px] text-[var(--primary)]">
-                  Mulai
+                  {isSameDay ? 'Mulai & Selesai' : 'Mulai'}
                 </span>
               )}
-              {isRangeEnd && (
+              {isRangeEnd && !isRangeStart && (
                 <span className="mt-auto pt-0.5 text-[10px] text-[var(--primary)]">
                   Selesai
                 </span>
               )}
             </div>
           )
+
+          // Cell tanpa event → render langsung
+          if (!hasEvents) {
+            return <div key={key}>{cellNode}</div>
+          }
+
+          // Cell dengan event → bungkus Popover
+          return (
+            <Popover key={key}>
+              <PopoverTrigger asChild>{cellNode}</PopoverTrigger>
+              <PopoverContent
+                side="bottom"
+                align="start"
+                className="w-72 rounded-xl border border-[var(--border-card)] bg-[var(--bg-card)] p-0 shadow-[var(--shadow-dropdown)]"
+              >
+                {/* Header */}
+                <div className="px-4 pb-2 pt-3">
+                  <p
+                    className="text-sm font-semibold text-[var(--text-primary)]"
+                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                  >
+                    {formatFullDate(cell)}
+                  </p>
+                  <p className="text-xs text-[var(--text-secondary)]">
+                    {events.length} jadwal
+                  </p>
+                </div>
+
+                <Separator className="bg-[var(--border-divider)]" />
+
+                {/* Event list */}
+                <div className="max-h-48 space-y-2 overflow-y-auto px-4 py-2">
+                  {events.map((event) => (
+                    <div
+                      key={`${event.type}-${event.id}`}
+                      className="flex items-start gap-3 py-1.5"
+                    >
+                      <span
+                        className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: getEventDotColor(event) }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-[var(--text-primary)]">
+                          {timeLabel(event)}
+                        </p>
+                        <p className="truncate text-xs text-[var(--text-secondary)]">
+                          {event.title}
+                        </p>
+                        {event.status && (
+                          <span
+                            className="mt-1 inline-block rounded-full px-1.5 py-0.5 text-[9px] font-medium"
+                            style={{
+                              backgroundColor: getStatusBg(event.status),
+                              color: getStatusColor(event.status),
+                            }}
+                          >
+                            {getStatusLabel(event.status)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Footer — hanya di mode non-view & tanggal available */}
+                {mode !== 'view' && dayData?.isAvailable && isInteractive && (
+                  <>
+                    <Separator className="bg-[var(--border-divider)]" />
+                    <div className="px-4 py-2">
+                      <button
+                        onClick={() => handleDateClick(cell)}
+                        className="w-full rounded-lg bg-[var(--primary-light)] py-1.5 text-xs font-semibold text-[var(--primary)] transition-colors hover:bg-[var(--primary)] hover:text-white"
+                      >
+                        Pilih tanggal ini
+                      </button>
+                    </div>
+                  </>
+                )}
+              </PopoverContent>
+            </Popover>
+          )
         })}
       </div>
+
+      {/* ── TIME PICKER — muncul setelah start + end terpilih ── */}
+      {mode === 'range' && selectedStart && selectedEnd && (
+        <div className="mt-4 rounded-xl border border-[var(--border-card)] bg-[var(--bg-subtle)] p-4">
+          {/* Info tanggal terpilih */}
+          <div className="mb-3 flex items-center gap-2 text-sm">
+            <CalendarIcon className="h-4 w-4 text-[var(--primary)]" />
+            <span className="font-medium text-[var(--text-primary)]">
+              {isSameDay
+                ? formatFullDate(selectedStart)
+                : `${formatShortDate(selectedStart)} — ${formatShortDate(selectedEnd)}`}
+            </span>
+          </div>
+
+          {/* Time inputs row */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Jam mulai */}
+            <div>
+              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-secondary)]">
+                {isSameDay
+                  ? 'JAM MULAI'
+                  : `JAM MULAI · ${formatShortDate(selectedStart)}`}
+              </label>
+              <select
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="h-10 w-full rounded-lg border border-[var(--border-input)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus-visible:border-[1.5px] focus-visible:border-[var(--primary)] focus-visible:outline-none focus-visible:ring-0"
+              >
+                {TIME_OPTIONS.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Jam selesai */}
+            <div>
+              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-secondary)]">
+                {isSameDay
+                  ? 'JAM SELESAI'
+                  : `JAM SELESAI · ${formatShortDate(selectedEnd)}`}
+              </label>
+              <select
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="h-10 w-full rounded-lg border border-[var(--border-input)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus-visible:border-[1.5px] focus-visible:border-[var(--primary)] focus-visible:outline-none focus-visible:ring-0"
+              >
+                {TIME_OPTIONS.map((t) => (
+                  <option
+                    key={t}
+                    value={t}
+                    disabled={isSameDay && t <= startTime}
+                  >
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Durasi otomatis */}
+          <div className="mt-3 flex items-center gap-2 rounded-lg border border-[var(--border-divider)] bg-[var(--bg-card)] px-3 py-2">
+            <Clock className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
+            <span className="text-xs text-[var(--text-secondary)]">
+              Durasi:{' '}
+              <span className="font-medium text-[var(--text-primary)]">
+                {calculatedDuration}
+              </span>
+            </span>
+          </div>
+
+          {/* Error jika jam invalid */}
+          {timeError && (
+            <p className="mt-2 flex items-center gap-1 text-xs text-[var(--danger)]">
+              <AlertCircle className="h-3 w-3" /> {timeError}
+            </p>
+          )}
+
+          {/* Tombol konfirmasi */}
+          <button
+            type="button"
+            onClick={handleConfirmDateTime}
+            disabled={!!timeError}
+            className="mt-3 h-9 w-full rounded-lg bg-[var(--primary)] text-sm font-semibold text-white transition-all hover:bg-[var(--primary-dark)] disabled:bg-[var(--border-card)] disabled:text-[var(--text-disabled)]"
+          >
+            Konfirmasi Jadwal
+          </button>
+        </div>
+      )}
     </div>
   )
 }

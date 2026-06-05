@@ -1,26 +1,59 @@
 'use client'
 
-import { Search } from 'lucide-react'
-import { DataTable } from '@/components/shared/table/DataTable'
+import Link from 'next/link'
+import { Plus, Search } from 'lucide-react'
+import { DataTable, PageHeader } from '@/components/shared'
+import { AppButton, InputSelect } from '@/components/ui-custom'
+import { AdminOnly } from '@/components/common'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useTableFilter } from '@/hooks'
 import { RESOURCE_STATUS, RESOURCE_STATUS_CONFIG } from '@/constants'
-import type { ResourceStatus } from '@/types'
-import { useVehicles } from './hooks/useVehicles'
+import type { ResourceStatus, SelectOption } from '@/types'
+import { useVehicles, useVehicleCategories } from './hooks/useVehicles'
 import { vehicleColumns } from './utils/columns'
 
 // ─────────────────────────────────────────
 // VEHICLES PAGE — katalog kendaraan
 // ─────────────────────────────────────────
 
+const STATUS_TABS: { value: string; label: string }[] = [
+  { value: 'ALL', label: 'Semua' },
+  { value: RESOURCE_STATUS.AVAILABLE, label: RESOURCE_STATUS_CONFIG.AVAILABLE.label },
+  { value: RESOURCE_STATUS.MAINTENANCE, label: RESOURCE_STATUS_CONFIG.MAINTENANCE.label },
+  { value: RESOURCE_STATUS.INACTIVE, label: RESOURCE_STATUS_CONFIG.INACTIVE.label },
+]
+
 export const VehiclesPage = () => {
   const { search, setSearch, filters, setFilter, params } = useTableFilter({
     status: undefined as ResourceStatus | undefined,
+    categoryId: undefined as number | undefined,
   })
 
+  const { data: categories } = useVehicleCategories()
   const { data, isLoading } = useVehicles(params)
 
+  const categoryOptions: SelectOption<number>[] = (categories ?? []).map((c) => ({
+    value: c.id,
+    label: c.name,
+  }))
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="space-y-6">
+      <PageHeader
+        title="Kendaraan"
+        description="Katalog kendaraan operasional perusahaan"
+        actions={
+          <AdminOnly>
+            <Link href="/vehicles/new">
+              <AppButton variant="primary" leftIcon={<Plus className="h-4 w-4" />}>
+                Tambah Kendaraan
+              </AppButton>
+            </Link>
+          </AdminOnly>
+        }
+      />
+
+      {/* Filter row */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative w-full max-w-xs">
           <Search className="pointer-events-none absolute inset-y-0 left-3 my-auto h-4 w-4 text-[var(--text-disabled)]" />
@@ -28,24 +61,42 @@ export const VehiclesPage = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari kendaraan / plat..."
-            className="h-9 w-full rounded-lg border border-[var(--border-input)] bg-[var(--bg-card)] pl-9 pr-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-disabled)] focus:border-[var(--primary)] focus:outline-none"
+            className="h-10 w-full rounded-lg border border-[var(--border-input)] bg-[var(--bg-card)] pl-9 pr-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-disabled)] focus-visible:border-[1.5px] focus-visible:border-[var(--primary)] focus-visible:outline-none"
           />
         </div>
 
-        <select
-          value={filters.status ?? ''}
-          onChange={(e) =>
-            setFilter('status', (e.target.value || undefined) as ResourceStatus | undefined)
+        <div className="w-44">
+          <InputSelect
+            placeholder="Semua Kategori"
+            options={categoryOptions}
+            value={filters.categoryId ?? ''}
+            onChange={(e) =>
+              setFilter(
+                'categoryId',
+                e.target.value ? Number(e.target.value) : undefined,
+              )
+            }
+          />
+        </div>
+
+        <Tabs
+          value={filters.status ?? 'ALL'}
+          onValueChange={(v) =>
+            setFilter('status', v === 'ALL' ? undefined : (v as ResourceStatus))
           }
-          className="h-9 rounded-lg border border-[var(--border-input)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:border-[var(--primary)] focus:outline-none"
         >
-          <option value="">Semua Status</option>
-          {Object.values(RESOURCE_STATUS).map((s) => (
-            <option key={s} value={s}>
-              {RESOURCE_STATUS_CONFIG[s].label}
-            </option>
-          ))}
-        </select>
+          <TabsList className="rounded-lg bg-[var(--bg-subtle)] p-1">
+            {STATUS_TABS.map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="rounded-md px-3 text-sm font-medium text-[var(--text-secondary)] data-[state=active]:bg-[var(--bg-card)] data-[state=active]:text-[var(--primary)] data-[state=active]:shadow-sm"
+              >
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </div>
 
       <DataTable

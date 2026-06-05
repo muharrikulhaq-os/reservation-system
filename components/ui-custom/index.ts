@@ -14,13 +14,17 @@ export {
   InputText,
   InputEmail,
   InputPassword,
+  InputNumber,
+  InputRupiah,
   InputTextArea,
   InputFile,
+  InputDate,
   InputDateTime,
   InputSelect,
 } from "./Appinput";
 export type {
   InputTextProps,
   InputPasswordProps,
+  InputNumberProps,
   InputSelectProps,
 } from "./Appinput";

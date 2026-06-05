@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { PageHeader } from '@/components/shared'
 import { BookingForm } from './BookingForm'
 
@@ -15,7 +16,10 @@ export const BookingCreate = () => {
         description="Ajukan peminjaman kendaraan atau ruangan"
         backHref="/booking"
       />
-      <BookingForm />
+      {/* BookingForm pakai useSearchParams → wajib di dalam Suspense */}
+      <Suspense fallback={null}>
+        <BookingForm />
+      </Suspense>
     </div>
   )
 }

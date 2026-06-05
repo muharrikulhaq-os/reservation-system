@@ -88,10 +88,6 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
 
   const isVehicle = booking.resource.type === RESOURCE_TYPE.VEHICLE;
   const ResourceIcon = isVehicle ? Car : DoorOpen;
-  const bookingRange = {
-    start: new Date(booking.startDate),
-    end: new Date(booking.endDate),
-  };
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[3fr_2fr]">
@@ -193,12 +189,10 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
 
         {/* e: Kalender (view only) */}
         <Card>
-          <CardHeader title="Jadwal Ketersediaan" />
           <AvailabilityCalendar
             resourceId={booking.resource.id}
             resourceType={booking.resource.type}
             mode="view"
-            selectedRange={bookingRange}
           />
         </Card>
 

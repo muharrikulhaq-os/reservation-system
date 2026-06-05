@@ -12,15 +12,17 @@ import { TOKEN_CONFIG } from '@/constants'
 
 const PUBLIC_ROUTES  = ['/login', '/register', '/guest-booking']
 const AUTH_ROUTES    = ['/login', '/register']  // redirect ke dashboard jika sudah login
-const ADMIN_ROUTES   = ['/admin', '/reports', '/users', '/settings']
-const DRIVER_ROUTES  = ['/driver']
+// Hanya ADMIN
+const ADMIN_ROUTES   = ['/admin', '/reports', '/users', '/settings', '/drivers', '/booking/approval']
+// Terlarang untuk DRIVER (ruangan + membuat booking)
+const DRIVER_FORBIDDEN = ['/rooms', '/booking/new']
 
 // ── Helpers ──────────────────────────────
 
-const isPublicRoute  = (path: string) => PUBLIC_ROUTES.some((r)  => path.startsWith(r))
-const isAuthRoute    = (path: string) => AUTH_ROUTES.some((r)    => path.startsWith(r))
-const isAdminRoute   = (path: string) => ADMIN_ROUTES.some((r)   => path.startsWith(r))
-const isDriverRoute  = (path: string) => DRIVER_ROUTES.some((r)  => path.startsWith(r))
+const isPublicRoute        = (path: string) => PUBLIC_ROUTES.some((r)      => path.startsWith(r))
+const isAuthRoute          = (path: string) => AUTH_ROUTES.some((r)        => path.startsWith(r))
+const isAdminRoute         = (path: string) => ADMIN_ROUTES.some((r)       => path.startsWith(r))
+const isDriverForbidden    = (path: string) => DRIVER_FORBIDDEN.some((r)   => path.startsWith(r))
 
 // ─────────────────────────────────────────
 // MIDDLEWARE
@@ -52,8 +54,8 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/unauthorized', request.url))
   }
 
-  // 4. Role-based: driver-only routes
-  if (isLoggedIn && isDriverRoute(pathname) && userRole !== 'DRIVER') {
+  // 4. Role-based: driver tidak boleh akses ruangan & membuat booking
+  if (isLoggedIn && isDriverForbidden(pathname) && userRole === 'DRIVER') {
     return NextResponse.redirect(new URL('/unauthorized', request.url))
   }
 

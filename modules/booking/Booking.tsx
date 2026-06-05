@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTableFilter } from "@/hooks";
 import { BOOKING_STATUS_CONFIG, RESOURCE_TYPE } from "@/constants";
 import type { BookingStatus, ResourceType, SelectOption } from "@/types";
+import { useAuthStore } from "@/store/auth.store";
 import { useBookings } from "./hooks/useBookings";
 import { bookingColumns } from "./utils/columns";
 
@@ -36,6 +37,9 @@ export const BookingPage = () => {
 
   const { data, isLoading } = useBookings(params);
 
+  // Driver tidak dapat membuat booking
+  const isDriver = useAuthStore((s) => s.isDriver());
+
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -43,11 +47,16 @@ export const BookingPage = () => {
         title="Booking"
         description="Kelola seluruh peminjaman kendaraan & ruangan"
         actions={
-          <Link href="/booking/new">
-            <AppButton variant="primary" leftIcon={<Plus className="h-4 w-4" />}>
-              Buat Booking
-            </AppButton>
-          </Link>
+          isDriver ? undefined : (
+            <Link href="/booking/new">
+              <AppButton
+                variant="primary"
+                leftIcon={<Plus className="h-4 w-4" />}
+              >
+                Buat Booking
+              </AppButton>
+            </Link>
+          )
         }
       />
 

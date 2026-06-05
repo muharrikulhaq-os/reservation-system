@@ -1,11 +1,11 @@
-'use client'
+"use client";
 
-import { usePathname } from 'next/navigation'
-import { Search, Bell, HelpCircle } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
-import { useAuthStore } from '@/store/auth.store'
-import { UserAvatar } from '@/components/shared/avatar/Avatar'
+import { usePathname } from "next/navigation";
+import { Search, Bell, HelpCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/auth.store";
+import { UserAvatar } from "@/components/shared/avatar/Avatar";
 
 // ─────────────────────────────────────────
 // PAGE TITLE MAP
@@ -13,25 +13,25 @@ import { UserAvatar } from '@/components/shared/avatar/Avatar'
 // ─────────────────────────────────────────
 
 const PAGE_TITLES: Record<string, string> = {
-  '/dashboard':               'Dashboard',
-  '/dashboard/booking':       'Booking',
-  '/dashboard/vehicles':      'Kendaraan',
-  '/dashboard/rooms':         'Ruangan',
-  '/dashboard/drivers':       'Driver',
-  '/dashboard/reports':       'Laporan',
-  '/dashboard/users':         'Pengguna',
-  '/dashboard/settings':      'Pengaturan',
-}
+  "/dashboard": "Dashboard",
+  "/booking": "Booking",
+  "/vehicles": "Kendaraan",
+  "/rooms": "Ruangan",
+  "/drivers": "Driver",
+  "/reports": "Laporan",
+  "/users": "Pengguna",
+  "/settings": "Pengaturan",
+};
 
 const usePageTitle = () => {
-  const pathname = usePathname()
+  const pathname = usePathname();
   // Cek exact match dulu, lalu prefix match
-  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname]
+  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
   const match = Object.entries(PAGE_TITLES)
-    .filter(([k]) => k !== '/dashboard' && pathname.startsWith(k))
-    .sort((a, b) => b[0].length - a[0].length)[0]
-  return match ? match[1] : 'Dashboard'
-}
+    .filter(([k]) => k !== "/dashboard" && pathname.startsWith(k))
+    .sort((a, b) => b[0].length - a[0].length)[0];
+  return match ? match[1] : "Dashboard";
+};
 
 // ─────────────────────────────────────────
 // ICON BUTTON
@@ -43,17 +43,17 @@ const NavIconBtn = ({
   badge,
   className,
 }: {
-  icon: React.ElementType
-  label: string
-  badge?: boolean
-  className?: string
+  icon: React.ElementType;
+  label: string;
+  badge?: boolean;
+  className?: string;
 }) => (
   <button
     aria-label={label}
     className={cn(
-      'relative flex h-9 w-9 items-center justify-center rounded-lg',
-      'text-[var(--text-secondary)] transition-colors',
-      'hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]',
+      "relative flex h-9 w-9 items-center justify-center rounded-lg",
+      "text-[var(--text-secondary)] transition-colors",
+      "hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]",
       className,
     )}
   >
@@ -62,19 +62,18 @@ const NavIconBtn = ({
       <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[var(--danger)]" />
     )}
   </button>
-)
+);
 
 // ─────────────────────────────────────────
 // NAVBAR
 // ─────────────────────────────────────────
 
 export const Navbar = () => {
-  const title = usePageTitle()
-  const user  = useAuthStore((s) => s.user)
+  const title = usePageTitle();
+  const user = useAuthStore((s) => s.user);
 
   return (
     <header className="flex h-[56px] shrink-0 items-center justify-between gap-4 border-b border-[var(--border-card)] bg-[var(--bg-card)] px-5">
-
       {/* Page title */}
       <h1
         className="text-lg font-bold text-[var(--primary)] shrink-0"
@@ -94,8 +93,8 @@ export const Navbar = () => {
 
       {/* Right icons */}
       <div className="flex items-center gap-1 shrink-0">
-        <NavIconBtn icon={Bell}        label="Notifikasi" badge />
-        <NavIconBtn icon={HelpCircle}  label="Bantuan" />
+        <NavIconBtn icon={Bell} label="Notifikasi" badge />
+        <NavIconBtn icon={HelpCircle} label="Bantuan" />
 
         {/* Avatar */}
         {user && (
@@ -105,5 +104,5 @@ export const Navbar = () => {
         )}
       </div>
     </header>
-  )
-}
+  );
+};
