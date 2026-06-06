@@ -4,7 +4,7 @@
 //         master_settings, reports, audit_logs
 // ─────────────────────────────────────────
 
-import type { FuelType } from './enums'
+import type { FuelType, ResourceStatus, ResourceType } from './enums'
 
 // ─────────────────────────────────────────
 // FUEL EXPENSES
@@ -218,4 +218,165 @@ export interface AuditLogQueryParams {
 export interface HealthStatus {
   status: 'healthy' | 'unhealthy'
   db: 'connected' | 'disconnected'
+}
+
+// ─────────────────────────────────────────
+// REPORT TYPES — EXTENDED
+// TODO: Beberapa type ini belum ada endpoint-nya di backend.
+//       Ditandai dengan [DUMMY] — data sementara dari frontend.
+//       Hapus dummy dan ganti fetch setelah backend siap.
+// ─────────────────────────────────────────
+
+// [EXISTING] — sudah ada di atas:
+// BookingSummaryReport, ResourceUsageReport, FuelExpenseReport,
+// MaintenanceCostReport, DriverRatingReport, DriverActivityReport,
+// OverdueBooking, AuditLog, ReportDateParams, AuditLogQueryParams
+
+// [DUMMY] — endpoint belum ada
+export interface ReportOverview {
+  totalBookings: number
+  totalCost: number
+  avgUtilization: number
+  overdueCount: number
+  previousPeriod: {
+    totalBookings: number
+    totalCost: number
+    avgUtilization: number
+    overdueCount: number
+  }
+  changePercent: {
+    bookings: number // +12.5 atau -3.2
+    cost: number
+    utilization: number
+    overdue: number
+  }
+}
+
+// [DUMMY]
+export interface BookingTrend {
+  period: string // "2025-W22" atau "2025-06"
+  count: number
+  vehicle: number
+  room: number
+}
+
+// [DUMMY]
+export interface BookingByDepartment {
+  departmentId: number
+  departmentName: string
+  total: number
+  pending: number
+  approved: number
+  completed: number
+  cancelled: number
+  rejected: number
+}
+
+// [DUMMY]
+export interface BookingByResource {
+  resourceId: number
+  resourceName: string
+  resourceType: ResourceType
+  totalBookings: number
+  totalHours: number
+}
+
+// [DUMMY]
+export interface ApprovalPerformance {
+  avgApprovalTimeHours: number
+  approvedWithin24h: number // persentase
+  totalProcessed: number
+}
+
+// [DUMMY]
+export interface ResourceAvailability {
+  resourceId: number
+  name: string
+  type: ResourceType
+  status: ResourceStatus
+  currentBooking: { id: number; user: string; endDate: string } | null
+  nextBooking: { id: number; user: string; startDate: string } | null
+  idleHoursThisMonth: number
+}
+
+// [DUMMY]
+export interface CostSummary {
+  totalFuelCost: number
+  totalMaintenanceCost: number
+  totalCost: number
+  previousPeriod: {
+    totalFuelCost: number
+    totalMaintenanceCost: number
+    totalCost: number
+  }
+  changePercent: {
+    fuel: number
+    maintenance: number
+    total: number
+  }
+}
+
+// [DUMMY]
+export interface CostByVehicle {
+  vehicleId: number
+  name: string
+  plateNumber: string
+  fuelCost: number
+  maintenanceCost: number
+  totalCost: number
+  totalKm: number
+  avgCostPerKm: number
+}
+
+// [DUMMY]
+export interface CostByDepartment {
+  departmentId: number
+  departmentName: string
+  bookingCount: number
+  fuelCost: number
+  maintenanceCost: number
+  totalCost: number
+}
+
+// [DUMMY]
+export interface CostTrend {
+  period: string
+  fuelCost: number
+  maintenanceCost: number
+  totalCost: number
+}
+
+// [DUMMY]
+export interface DriverPerformance {
+  driverId: number
+  driverName: string
+  totalTrips: number
+  totalKm: number
+  totalFuelCost: number
+  avgCostPerKm: number
+  avgRating: number
+  totalReviews: number
+  onTimeRate: number // persentase
+  lateCount: number
+}
+
+// [DUMMY]
+export interface DepartmentSummary {
+  departmentId: number
+  departmentName: string
+  bookingCount: number
+  fuelCost: number
+  maintenanceCost: number
+  totalCost: number
+  topResource: string
+}
+
+// Query params tambahan
+export interface ReportTrendParams {
+  groupBy?: 'daily' | 'weekly' | 'monthly'
+  periods?: number
+}
+
+export interface ReportPeriodParams {
+  period?: 'monthly' | 'quarterly' | 'yearly'
 }

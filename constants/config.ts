@@ -69,6 +69,19 @@ export const QUERY_KEYS = {
     DRIVER_ACTIVITY: ["reports", "driver-activity"] as const,
     OVERDUE_BOOKINGS: ["reports", "overdue-bookings"] as const,
     AUDIT_LOGS: ["reports", "audit-logs"] as const,
+    // --- Extended (sebagian masih dummy, lihat report.api.ts) ---
+    OVERVIEW: ["reports", "overview"] as const,
+    BOOKING_TREND: ["reports", "booking-trend"] as const,
+    BOOKING_BY_DEPT: ["reports", "booking-by-department"] as const,
+    BOOKING_BY_RESOURCE: ["reports", "booking-by-resource"] as const,
+    APPROVAL_PERF: ["reports", "approval-performance"] as const,
+    RESOURCE_AVAIL: ["reports", "resource-availability"] as const,
+    COST_SUMMARY: ["reports", "cost-summary"] as const,
+    COST_BY_VEHICLE: ["reports", "cost-by-vehicle"] as const,
+    COST_BY_DEPT: ["reports", "cost-by-department"] as const,
+    COST_TREND: ["reports", "cost-trend"] as const,
+    DRIVER_PERFORMANCE: ["reports", "driver-performance"] as const,
+    DEPT_SUMMARY: ["reports", "department-summary"] as const,
   },
 } as const;
 
