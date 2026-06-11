@@ -13,6 +13,9 @@ import type {
   AssignVehiclePayload,
   RateDriverPayload,
   CreateAttachmentPayload,
+  SubstituteResourcePayload,
+  MergeBookingPayload,
+  SubmitReturnReportPayload,
 } from '@/types'
 
 // ── Queries ──────────────────────────────
@@ -38,10 +41,25 @@ export const useBooking = (id: number) =>
     enabled:  !!id,
   })
 
+/** @deprecated Gunakan {@link useBookingActivity}. */
 export const useBookingApprovalLog = (bookingId: number) =>
   useQuery({
     queryKey: [...QUERY_KEYS.BOOKINGS, bookingId, 'approval-log'],
     queryFn:  () => bookingService.getApprovalLog(bookingId).then((r) => r.data),
+    enabled:  !!bookingId,
+  })
+
+export const useBookingActivity = (bookingId: number) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.BOOKINGS, bookingId, 'activity'],
+    queryFn:  () => bookingService.getActivity(bookingId).then((r) => r.data),
+    enabled:  !!bookingId,
+  })
+
+export const useBookingMergeInfo = (bookingId: number) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.BOOKINGS, bookingId, 'merge-info'],
+    queryFn:  () => bookingService.getMergeInfo(bookingId).then((r) => r.data),
     enabled:  !!bookingId,
   })
 
@@ -57,6 +75,14 @@ export const useBookingAttachments = (bookingId: number) =>
     queryKey: [...QUERY_KEYS.BOOKINGS, bookingId, 'attachments'],
     queryFn:  () => bookingService.getAttachments(bookingId).then((r) => r.data),
     enabled:  !!bookingId,
+  })
+
+export const useReturnReport = (bookingId: number) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.BOOKINGS, bookingId, 'return-report'],
+    queryFn:  () => bookingService.getReturnReport(bookingId).then((r) => r.data),
+    enabled:  !!bookingId,
+    retry:    false, // 404 = belum ada report, jangan retry
   })
 
 // ── Mutations ────────────────────────────
@@ -126,6 +152,34 @@ export const useRateDriver = () => {
     mutationFn: ({ bookingId, payload }: { bookingId: number; payload: RateDriverPayload }) =>
       bookingService.rateDriver(bookingId, payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.BOOKINGS }),
+  })
+}
+
+export const useSubstituteResource = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: SubstituteResourcePayload }) =>
+      bookingService.substituteResource(id, payload),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.BOOKINGS }),
+  })
+}
+
+export const useMergeBooking = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: MergeBookingPayload }) =>
+      bookingService.merge(id, payload),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.BOOKINGS }),
+  })
+}
+
+export const useSubmitReturnReport = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ bookingId, payload }: { bookingId: number; payload: SubmitReturnReportPayload }) =>
+      bookingService.submitReturnReport(bookingId, payload),
+    onSuccess: (_, { bookingId }) =>
+      qc.invalidateQueries({ queryKey: [...QUERY_KEYS.BOOKINGS, bookingId] }),
   })
 }
 

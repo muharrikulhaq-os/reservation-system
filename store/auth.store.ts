@@ -22,6 +22,8 @@ interface AuthStore {
   hasRole: (role: RoleName | RoleName[]) => boolean
   isAdmin: () => boolean
   isDriver: () => boolean
+  isEmployee: () => boolean
+  isRoomKeeper: () => boolean
 }
 
 export const useAuthStore = create<AuthStore>((set, get) => ({
@@ -51,6 +53,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     return roles.includes(user.role as RoleName)
   },
 
-  isAdmin:  () => get().hasRole('ADMIN'),
-  isDriver: () => get().hasRole('DRIVER'),
+  isAdmin:      () => get().hasRole('ADMIN'),
+  isDriver:     () => get().hasRole('DRIVER'),
+  isEmployee:   () => get().hasRole('EMPLOYEE'),
+  isRoomKeeper: () => get().hasRole('ROOM_KEEPER'),
 }))

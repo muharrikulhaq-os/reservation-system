@@ -44,6 +44,18 @@ export const assignVehicleSchema = z.object({
     .positive('Kendaraan wajib dipilih'),
 })
 
+// --- Merge Booking ---
+
+export const mergeBookingSchema = z.object({
+  targetBookingId: z
+    .number({ error: 'Pilih booking yang akan digabungkan' })
+    .int()
+    .positive('Pilih booking yang akan digabungkan'),
+  reason: z.string().min(1, 'Alasan penggabungan wajib diisi'),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+})
+
 // --- Rate Driver ---
 
 export const rateDriverSchema = z.object({
@@ -62,4 +74,5 @@ export type CreateBookingFormData = z.infer<typeof createBookingSchema>
 export type ApproveBookingFormData = z.infer<typeof approveBookingSchema>
 export type RejectBookingFormData = z.infer<typeof rejectBookingSchema>
 export type AssignVehicleFormData = z.infer<typeof assignVehicleSchema>
+export type MergeBookingFormData = z.infer<typeof mergeBookingSchema>
 export type RateDriverFormData = z.infer<typeof rateDriverSchema>

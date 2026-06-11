@@ -20,6 +20,13 @@ import type {
   AssignVehiclePayload,
   RateDriverPayload,
   CreateAttachmentPayload,
+  SubstituteResourcePayload,
+  MergeBookingPayload,
+  BookingMergeResponse,
+  BookingMergeInfo,
+  BookingActivity,
+  ReturnReport,
+  SubmitReturnReportPayload,
 } from '@/types'
 
 export const bookingService = {
@@ -89,12 +96,60 @@ export const bookingService = {
       )
       .then((r) => r.data),
 
-  // ── Approval Log ──────────────────────
+  // ── Resource Substitution & Merge ─────
 
+  substituteResource: (id: number, payload: SubstituteResourcePayload) =>
+    apiClient
+      .patch<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.SUBSTITUTE_RESOURCE(id), payload)
+      .then((r) => r.data),
+
+  merge: (id: number, payload: MergeBookingPayload) =>
+    apiClient
+      .post<ApiResponse<BookingMergeResponse>>(API_ENDPOINTS.BOOKINGS.MERGE(id), payload)
+      .then((r) => r.data),
+
+  getMergeInfo: (id: number) =>
+    apiClient
+      .get<ApiResponse<BookingMergeInfo[]>>(API_ENDPOINTS.BOOKINGS.MERGE_INFO(id))
+      .then((r) => r.data),
+
+  // ── Activity Timeline ─────────────────
+
+  getActivity: (id: number) =>
+    apiClient
+      .get<ApiResponse<BookingActivity[]>>(API_ENDPOINTS.BOOKINGS.ACTIVITY(id))
+      .then((r) => r.data),
+
+  // ── Approval Log (deprecated → getActivity) ──
+
+  /** @deprecated Gunakan {@link bookingService.getActivity}. */
   getApprovalLog: (id: number) =>
     apiClient
       .get<ApiResponse<ApprovalLog[]>>(API_ENDPOINTS.BOOKINGS.APPROVAL_LOG(id))
       .then((r) => r.data),
+
+  // ── Return Report ─────────────────────
+
+  getReturnReport: (bookingId: number) =>
+    apiClient
+      .get<ApiResponse<ReturnReport>>(API_ENDPOINTS.BOOKINGS.RETURN_REPORT(bookingId))
+      .then((r) => r.data),
+
+  submitReturnReport: (bookingId: number, payload: SubmitReturnReportPayload) => {
+    const form = new FormData()
+    form.append('note', payload.note)
+    form.append('location', payload.location)
+    if (payload.photos) {
+      payload.photos.forEach((photo) => form.append('photos[]', photo))
+    }
+    return apiClient
+      .post<ApiResponse<ReturnReport>>(
+        API_ENDPOINTS.BOOKINGS.RETURN_REPORT(bookingId),
+        form,
+        { headers: { 'Content-Type': 'multipart/form-data' } },
+      )
+      .then((r) => r.data)
+  },
 
   // ── Attachments ───────────────────────
 

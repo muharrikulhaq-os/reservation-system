@@ -3,7 +3,7 @@
 // ─────────────────────────────────────────
 
 import type { Timestamps } from './common'
-import type { BookingStatus, ApprovalAction, ResourceType } from './enums'
+import type { BookingStatus, ApprovalAction, ResourceType, BookingActivityAction } from './enums'
 import type { UserSummary } from './auth'
 import type { ResourceRef, VehicleSummary } from './resource'
 import type { DriverSummary } from './driver'
@@ -24,10 +24,105 @@ export interface Booking extends Timestamps {
   returnedAt: string | null
   assignedDriver: DriverSummary | null
   assignedVehicle: VehicleSummary | null
+  // Pengalihan resource oleh admin saat approve
+  isReassigned?: boolean
+  originalResource?: OriginalResource | null
+}
+
+// --- Resource Substitution ---
+
+export interface OriginalResource {
+  id: number
+  name: string
+  type: ResourceType
+}
+
+export interface SubstituteResourcePayload {
+  resourceId: number
+  note?: string
+}
+
+// --- Booking Merge ---
+
+export interface LinkedBooking {
+  bookingId: number
+  userId: number
+  userName: string
+  employeeId: string
+  department: string
+  purpose: string
+}
+
+export interface BookingMergeInfo {
+  mergeId: number
+  primaryBookingId: number
+  mergedBookingId: number
+  isPrimary: boolean
+  mergedBy: string
+  reason: string | null
+  createdAt: string
+  linkedBooking: LinkedBooking
+}
+
+export interface BookingMergeResponse {
+  mergeId: number
+  primaryBookingId: number
+  mergedBookingId: number
+  mergedBy: number
+  reason: string | null
+  effectiveStartDate: string
+  effectiveEndDate: string
+  createdAt: string
+}
+
+export interface MergeBookingPayload {
+  targetBookingId: number
+  reason: string // WAJIB — alasan penggabungan
+  startDate?: string
+  endDate?: string
+}
+
+// --- Return Report (laporan pengembalian kendaraan) ---
+
+export interface ReturnReportPhoto {
+  id: number
+  filePath: string
+  fileName: string
+  fileType: string
+}
+
+export interface ReturnReport {
+  id: number
+  bookingId: number
+  submittedBy: {
+    id: number
+    name: string
+  }
+  note: string
+  location: string
+  submittedAt: string
+  photos: ReturnReportPhoto[]
+}
+
+export interface SubmitReturnReportPayload {
+  note: string
+  location: string
+  photos?: File[] // multipart
+}
+
+// --- Booking Activity Timeline ---
+
+export interface BookingActivity {
+  id: number
+  action: BookingActivityAction
+  description: string | null
+  actor: string | null
+  createdAt: string
 }
 
 // --- Approval Log ---
 
+/** @deprecated Digantikan oleh {@link BookingActivity} + endpoint /activity. */
 export interface ApprovalLog {
   id: number
   bookingId: number

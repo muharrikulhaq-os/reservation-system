@@ -1,7 +1,7 @@
 'use client'
 
 import Link from "next/link";
-import { Car, DoorOpen, Eye, X } from "lucide-react";
+import { ArrowRightLeft, Building2, Car, Eye, GitMerge, X } from "lucide-react";
 import { UserAvatar } from "@/components/shared/avatar/Avatar";
 import { BookingStatusBadge } from "@/components/shared/badge/StatusBadge";
 import {
@@ -20,12 +20,6 @@ import type { Booking } from "@/types";
 // ─────────────────────────────────────────
 
 const ch = createColumnHelper<Booking>();
-
-// Icon + label per tipe resource
-const RESOURCE_META = {
-  [RESOURCE_TYPE.VEHICLE]: { Icon: Car, label: "Kendaraan" },
-  [RESOURCE_TYPE.ROOM]: { Icon: DoorOpen, label: "Ruangan" },
-} as const;
 
 // ─────────────────────────────────────────
 // ROW ACTIONS — detail + cancel (saat PENDING)
@@ -100,22 +94,43 @@ export const bookingColumns: ColumnDef<Booking, unknown>[] = [
 
   ch.accessor("resource", {
     header: "Resource",
-    cell: ({ getValue }) => {
-      const resource = getValue();
-      const meta = RESOURCE_META[resource.type];
-      const Icon = meta.Icon;
+    cell: ({ row }) => {
+      const booking = row.original;
+      const resource = booking.resource;
+      const isReassigned = booking.isReassigned === true;
+      // TODO: ganti cast `any` setelah backend mengonfirmasi field `isMerged`
+      // ada di response list booking. Jika tidak, label hanya tampil di detail.
+      const isMerged = (booking as { isMerged?: boolean }).isMerged === true;
+      const isVehicle = resource.type === RESOURCE_TYPE.VEHICLE;
+
       return (
         <div className="flex items-center gap-2.5">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
-            <Icon className="h-4 w-4" />
+            {isVehicle ? (
+              <Car className="h-4 w-4" />
+            ) : (
+              <Building2 className="h-4 w-4" />
+            )}
           </span>
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-[var(--text-primary)]">
-              {resource.name}
-            </p>
-            <p className="truncate text-xs text-[var(--text-secondary)]">
-              {meta.label}
-            </p>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="truncate text-sm font-medium text-[var(--text-primary)]">
+                {resource.name}
+              </span>
+              {isReassigned && (
+                <span className="inline-flex items-center gap-0.5 rounded-full bg-purple-50 px-1.5 py-0.5 text-[9px] font-semibold text-purple-600">
+                  <ArrowRightLeft className="h-2.5 w-2.5" /> Dialihkan
+                </span>
+              )}
+              {isMerged && (
+                <span className="inline-flex items-center gap-0.5 rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-semibold text-sky-600">
+                  <GitMerge className="h-2.5 w-2.5" /> Digabungkan
+                </span>
+              )}
+            </div>
+            <span className="text-xs text-[var(--text-secondary)]">
+              {isVehicle ? "Kendaraan" : "Ruangan"}
+            </span>
           </div>
         </div>
       );

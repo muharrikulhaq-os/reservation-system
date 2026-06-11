@@ -1,16 +1,25 @@
 "use client";
 
-import { useState } from "react";
 import {
   AlertCircle,
+  AlertTriangle,
+  ArrowRightLeft,
+  Ban,
   Car,
   Check,
+  CheckCircle,
   Clock,
   DoorOpen,
   Download,
+  FileCheck,
+  GitMerge,
+  Merge,
   Paperclip,
   Phone,
   Play,
+  Plus,
+  Star,
+  UserCheck,
   X,
 } from "lucide-react";
 import {
@@ -23,37 +32,36 @@ import {
 import {
   AvailabilityCalendar,
   BookingStatusBadge,
+  Badge,
   UserAvatar,
 } from "@/components/shared";
+import { AppButton, InputFile } from "@/components/ui-custom";
 import {
-  AppButton,
-  InputTextArea,
-  InputSelect,
-  InputFile,
-} from "@/components/ui-custom";
-import {
-  formatDate,
   formatDateTime,
   formatDuration,
   getErrorMessage,
   resolveFileUrl,
   formatFileSize,
 } from "@/lib";
-import { BOOKING_STATUS, RESOURCE_TYPE, APPROVAL_ACTION } from "@/constants";
-import type { SelectOption } from "@/types";
+import { BOOKING_STATUS, RESOURCE_TYPE, ACTIVITY_ACTION_CONFIG } from "@/constants";
+import type { BookingActivityAction } from "@/types";
+import { useAuthStore } from "@/store/auth.store";
 import {
   useBooking,
-  useBookingApprovalLog,
+  useBookingActivity,
+  useBookingMergeInfo,
   useBookingAttachments,
-  useApproveBooking,
-  useRejectBooking,
-  useAssignVehicle,
+  useCancelBooking,
+  useReturnReport,
   useStartBooking,
   useCompleteBooking,
   useUploadBookingAttachment,
 } from "../hooks/useBookings";
-import { useDrivers } from "@/modules/drivers/hooks/useDrivers";
-import { useVehicles } from "@/modules/vehicles/hooks/useVehicles";
+import { BookingApprovalPanel } from "./BookingApprovalPanel";
+import { BookingAssignPanel } from "./BookingAssignPanel";
+import { BookingMergePanel } from "./BookingMergePanel";
+import { ReturnReportModal } from "./ReturnReportModal";
+import { ReturnReportCard } from "./ReturnReportCard";
 
 // ─────────────────────────────────────────
 // BOOKING DETAIL
@@ -63,10 +71,31 @@ interface BookingDetailProps {
   bookingId: number;
 }
 
+// Icon timeline per aksi (decouple dari string di ACTIVITY_ACTION_CONFIG)
+const ACTIVITY_ICON: Record<BookingActivityAction, React.ComponentType<{ className?: string }>> = {
+  CREATE: Plus,
+  APPROVE: Check,
+  REJECT: X,
+  CANCEL: Ban,
+  ASSIGN: UserCheck,
+  START: Play,
+  COMPLETE: CheckCircle,
+  RATE_DRIVER: Star,
+  SUBSTITUTE_RESOURCE: ArrowRightLeft,
+  MERGE: Merge,
+  SUBMIT_RETURN_REPORT: FileCheck,
+};
+
 export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
-  const { data: booking, isLoading } = useBooking(bookingId);
-  const { data: approvalLog } = useBookingApprovalLog(bookingId);
+  const { data: booking, isLoading, refetch } = useBooking(bookingId);
+  const { data: activity } = useBookingActivity(bookingId);
+  const { data: mergeInfo } = useBookingMergeInfo(bookingId);
   const { data: attachments } = useBookingAttachments(bookingId);
+  const { data: returnReport } = useReturnReport(bookingId);
+
+  const isAdmin = useAuthStore((s) => s.isAdmin());
+  const isDriver = useAuthStore((s) => s.isDriver());
+  const { mutate: cancelBooking, isPending: isCancelling } = useCancelBooking();
 
   if (isLoading) {
     return (
@@ -93,7 +122,46 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[3fr_2fr]">
       {/* ══ KOLOM KIRI ══ */}
       <div className="flex flex-col gap-5">
-        {/* a + b + c: Info utama */}
+        {/* Banner pengalihan — hanya untuk employee pemilik booking */}
+        {!isAdmin &&
+          booking.isReassigned &&
+          booking.originalResource &&
+          booking.status === BOOKING_STATUS.PENDING && (
+            <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-amber-800">
+                  Resource Anda Dialihkan
+                </p>
+                <p className="mt-0.5 text-xs text-amber-700">
+                  Resource awal{" "}
+                  <span className="font-medium">
+                    {booking.originalResource.name}
+                  </span>{" "}
+                  telah diganti ke{" "}
+                  <span className="font-medium">{booking.resource.name}</span>{" "}
+                  oleh admin.
+                </p>
+                <p className="mt-1 text-xs text-amber-600">
+                  Jika Anda tidak setuju, Anda dapat membatalkan booking ini.
+                </p>
+                <div className="mt-3">
+                  <AppButton
+                    variant="danger"
+                    size="sm"
+                    loading={isCancelling}
+                    onClick={() =>
+                      cancelBooking(booking.id, { onSuccess: () => refetch() })
+                    }
+                  >
+                    Batalkan Booking
+                  </AppButton>
+                </div>
+              </div>
+            </div>
+          )}
+
+        {/* Info utama */}
         <Card>
           <div className="mb-5">
             <BookingStatusBadge
@@ -103,7 +171,6 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           </div>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            {/* Peminjam */}
             <InfoBlock label="Peminjam">
               <div className="flex items-center gap-2.5">
                 <UserAvatar name={booking.user.name} size="md" />
@@ -118,7 +185,6 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
               </div>
             </InfoBlock>
 
-            {/* Resource */}
             <InfoBlock label="Resource">
               <div className="flex items-center gap-2.5">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
@@ -158,7 +224,6 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
 
           <CardDivider />
 
-          {/* Tujuan */}
           <InfoBlock label="Tujuan Peminjaman">
             <CardSection>
               <p className="text-sm leading-relaxed text-[var(--text-primary)]">
@@ -168,7 +233,81 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           </InfoBlock>
         </Card>
 
-        {/* d: Driver (jika vehicle + assignedDriver) */}
+        {/* A. Info Pengalihan */}
+        {booking.isReassigned && (
+          <Card className="border-l-[3px] border-l-[#7C3AED]">
+            <div className="mb-4 flex items-center gap-2">
+              <ArrowRightLeft className="h-4 w-4 text-[#7C3AED]" />
+              <h3 className="text-sm font-bold text-[var(--text-primary)]">
+                Resource Dialihkan
+              </h3>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <InfoBlock label="Awalnya">
+                <p className="truncate text-sm font-medium text-[var(--text-secondary)] line-through opacity-60">
+                  {booking.originalResource?.name ?? "—"}
+                </p>
+              </InfoBlock>
+              <InfoBlock label="Diganti Ke">
+                <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
+                  {booking.resource.name}
+                </p>
+              </InfoBlock>
+            </div>
+          </Card>
+        )}
+
+        {/* B. Info Merge */}
+        {mergeInfo && mergeInfo.length > 0 && (
+          <Card className="border-l-[3px] border-l-[#0284C7]">
+            <div className="mb-4 flex items-center gap-2">
+              <GitMerge className="h-4 w-4 text-[#0284C7]" />
+              <h3 className="text-sm font-bold text-[var(--text-primary)]">
+                Booking Digabungkan
+              </h3>
+            </div>
+            <ul className="space-y-3">
+              {mergeInfo.map((m) => (
+                <li
+                  key={m.mergeId}
+                  className="flex items-start justify-between gap-3 rounded-xl bg-[var(--bg-subtle)] p-3"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <UserAvatar name={m.linkedBooking.userName} size="md" />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
+                        {m.linkedBooking.userName}
+                      </p>
+                      <p className="truncate text-xs text-[var(--text-secondary)]">
+                        {m.linkedBooking.department} · {m.linkedBooking.employeeId}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-[var(--text-secondary)]">
+                        {m.linkedBooking.purpose}
+                      </p>
+                      <p className="mt-1.5 text-[11px] text-[var(--text-disabled)]">
+                        Digabungkan oleh {m.mergedBy} · {formatDateTime(m.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant={m.isPrimary ? "info" : "muted"}>
+                    {m.isPrimary ? "Utama" : "Digabung"}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+
+        {/* Merge panel — admin pilih booking lain untuk digabung */}
+        <AdminOnly>
+          {isVehicle &&
+            (booking.status === BOOKING_STATUS.PENDING ||
+              booking.status === BOOKING_STATUS.APPROVED) && (
+              <BookingMergePanel booking={booking} onMergeComplete={refetch} />
+            )}
+        </AdminOnly>
+
+        {/* Driver ditugaskan */}
         {isVehicle && booking.assignedDriver && (
           <Card>
             <CardHeader title="Driver Ditugaskan" />
@@ -187,7 +326,13 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           </Card>
         )}
 
-        {/* e: Kalender (view only) */}
+        {/* Return report — review (tampil saat ONGOING/COMPLETED & sudah ada) */}
+        {(booking.status === BOOKING_STATUS.ONGOING ||
+          booking.status === BOOKING_STATUS.COMPLETED) && (
+          <ReturnReportCard bookingId={booking.id} />
+        )}
+
+        {/* Kalender (view only) */}
         <Card>
           <AvailabilityCalendar
             resourceId={booking.resource.id}
@@ -195,59 +340,82 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
             mode="view"
           />
         </Card>
+      </div>
 
-        {/* f: Riwayat approval */}
-        {approvalLog && approvalLog.length > 0 && (
+      {/* ══ KOLOM KANAN ══ */}
+      <div className="flex flex-col gap-5">
+        <AdminOnly>
+          {booking.status === BOOKING_STATUS.PENDING && (
+            <BookingApprovalPanel booking={booking} onActionComplete={refetch} />
+          )}
+
+          {booking.status === BOOKING_STATUS.APPROVED &&
+            booking.resource.type === RESOURCE_TYPE.VEHICLE &&
+            !booking.assignedDriver && (
+              <BookingAssignPanel booking={booking} onActionComplete={refetch} />
+            )}
+
+          {booking.status === BOOKING_STATUS.APPROVED &&
+            !(
+              booking.resource.type === RESOURCE_TYPE.VEHICLE &&
+              !booking.assignedDriver
+            ) && <StartPanel bookingId={booking.id} onActionComplete={refetch} />}
+
+          {booking.status === BOOKING_STATUS.ONGOING && (
+            <CompletePanel
+              bookingId={booking.id}
+              hasReturnReport={!!returnReport}
+              onActionComplete={refetch}
+            />
+          )}
+        </AdminOnly>
+
+        {/* Driver: kirim laporan pengembalian */}
+        {isDriver &&
+          booking.status === BOOKING_STATUS.ONGOING &&
+          booking.resource.type === RESOURCE_TYPE.VEHICLE && (
+            <Card>
+              <CardHeader title="Laporan Pengembalian" />
+              <ReturnReportModal bookingId={booking.id} onSuccess={refetch} />
+            </Card>
+          )}
+
+        {/* Activity Timeline (dipindah dari kolom kiri) */}
+        {activity && activity.length > 0 && (
           <Card>
-            <CardHeader title="Riwayat Persetujuan" />
-            <ol className="relative space-y-5">
-              {approvalLog?.map((log) => {
-                const isApprove = log.action === APPROVAL_ACTION.APPROVED;
+            <CardHeader title="Riwayat Aktivitas" />
+            <ol className="relative ml-3 space-y-5 border-l border-[var(--border-divider)] pl-6">
+              {activity.map((item) => {
+                const cfg = ACTIVITY_ACTION_CONFIG[item.action];
+                const Icon = ACTIVITY_ICON[item.action];
                 return (
-                  <li key={log.id} className="flex gap-3">
+                  <li key={item.id} className="relative">
                     <span
-                      className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
-                      style={{
-                        backgroundColor: isApprove ? "#DCFCE7" : "#FEE2E2",
-                        color: isApprove ? "#166534" : "#991B1B",
-                      }}
+                      className="absolute -left-[2.1rem] flex h-6 w-6 items-center justify-center rounded-full"
+                      style={{ backgroundColor: `${cfg.color}26` }}
                     >
-                      {isApprove ? (
-                        <Check className="h-3.5 w-3.5" />
-                      ) : (
-                        <X className="h-3.5 w-3.5" />
-                      )}
+                      <Icon className="h-3 w-3" />
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-[var(--text-primary)]">
-                        {isApprove ? "Disetujui" : "Ditolak"} oleh{" "}
-                        {log.actionBy?.name}
+                    <p className="text-sm font-medium text-[var(--text-primary)]">
+                      {cfg.label}
+                    </p>
+                    {item.description && (
+                      <p className="mt-0.5 text-sm text-[var(--text-secondary)]">
+                        {item.description}
                       </p>
-                      <p className="text-xs text-[var(--text-secondary)]">
-                        {formatDateTime(log.actionAt)}
-                      </p>
-                      {log.note && (
-                        <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                          {log.note}
-                        </p>
-                      )}
-                    </div>
+                    )}
+                    <p className="mt-0.5 text-xs text-[var(--text-disabled)]">
+                      {item.actor ? `${item.actor} · ` : ""}
+                      {formatDateTime(item.createdAt)}
+                    </p>
                   </li>
                 );
               })}
             </ol>
           </Card>
         )}
-      </div>
 
-      {/* ══ KOLOM KANAN ══ */}
-      <div className="flex flex-col gap-5">
-        {/* a: Tindakan (admin only) */}
-        <AdminOnly>
-          <ActionPanel booking={booking} />
-        </AdminOnly>
-
-        {/* b: Lampiran */}
+        {/* Lampiran */}
         <Card>
           <CardHeader title="Lampiran" />
 
@@ -297,186 +465,90 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
 };
 
 // ─────────────────────────────────────────
-// ACTION PANEL (admin)
+// START PANEL (APPROVED siap jalan → ONGOING)
 // ─────────────────────────────────────────
 
-const ActionPanel = ({
-  booking,
+const StartPanel = ({
+  bookingId,
+  onActionComplete,
 }: {
-  booking: NonNullable<ReturnType<typeof useBooking>["data"]>;
+  bookingId: number;
+  onActionComplete?: () => void;
 }) => {
-  const [note, setNote] = useState("");
-  const [driverId, setDriverId] = useState("");
-  const [vehicleId, setVehicleId] = useState("");
-
-  const approve = useApproveBooking();
-  const reject = useRejectBooking();
-  const assign = useAssignVehicle();
   const start = useStartBooking();
-  const complete = useCompleteBooking();
-
-  const { data: drivers } = useDrivers({ limit: 100 });
-  const { data: vehicles } = useVehicles({ limit: 100 });
-
-  const isVehicle = booking.resource.type === RESOURCE_TYPE.VEHICLE;
-  const needsAssign =
-    booking.status === BOOKING_STATUS.APPROVED &&
-    isVehicle &&
-    !booking.assignedDriver;
-
-  const driverOptions: SelectOption[] = (drivers ?? []).map((d) => ({
-    value: d.id,
-    label: d.name,
-  }));
-  const vehicleOptions: SelectOption[] = (vehicles ?? []).map((v) => ({
-    value: v.id,
-    label: `${v.name} (${v.plateNumber})`,
-  }));
-
-  const error =
-    approve.error ||
-    reject.error ||
-    assign.error ||
-    start.error ||
-    complete.error;
-  const isBusy =
-    approve.isPending ||
-    reject.isPending ||
-    assign.isPending ||
-    start.isPending ||
-    complete.isPending;
-
-  // Tidak ada aksi untuk status final
-  const hasActions =
-    booking.status === BOOKING_STATUS.PENDING ||
-    booking.status === BOOKING_STATUS.APPROVED ||
-    booking.status === BOOKING_STATUS.ONGOING;
-
-  if (!hasActions) return null;
-
   return (
     <Card>
-      <CardHeader title="Tindakan" />
-
-      {error && (
-        <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{getErrorMessage(error)}</span>
-        </div>
-      )}
-
-      {/* PENDING → approve / reject */}
-      {booking.status === BOOKING_STATUS.PENDING && (
-        <div className="space-y-3">
-          <InputTextArea
-            label="Catatan"
-            rows={3}
-            placeholder="Catatan (wajib untuk penolakan)…"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
-          <div className="flex gap-3">
-            <AppButton
-              variant="primary"
-              fullWidth
-              loading={approve.isPending}
-              disabled={isBusy}
-              leftIcon={<Check className="h-4 w-4" />}
-              className="bg-[var(--success)] hover:bg-green-700"
-              onClick={() =>
-                approve.mutate({
-                  id: booking.id,
-                  payload: note ? { note } : undefined,
-                })
-              }
-            >
-              Setujui
-            </AppButton>
-            <AppButton
-              variant="danger"
-              fullWidth
-              loading={reject.isPending}
-              disabled={isBusy || !note.trim()}
-              leftIcon={<X className="h-4 w-4" />}
-              onClick={() =>
-                reject.mutate({ id: booking.id, payload: { note } })
-              }
-            >
-              Tolak
-            </AppButton>
-          </div>
-        </div>
-      )}
-
-      {/* APPROVED + vehicle tanpa driver → assign */}
-      {needsAssign && (
-        <div className="space-y-3">
-          <InputSelect
-            label="Driver"
-            required
-            placeholder="Pilih driver"
-            options={driverOptions}
-            value={driverId}
-            onChange={(e) => setDriverId(e.target.value)}
-          />
-          <InputSelect
-            label="Kendaraan"
-            required
-            placeholder="Pilih kendaraan"
-            options={vehicleOptions}
-            value={vehicleId}
-            onChange={(e) => setVehicleId(e.target.value)}
-          />
-          <AppButton
-            variant="primary"
-            fullWidth
-            loading={assign.isPending}
-            disabled={isBusy || !driverId || !vehicleId}
-            onClick={() =>
-              assign.mutate({
-                id: booking.id,
-                payload: {
-                  driverId: Number(driverId),
-                  vehicleId: Number(vehicleId),
-                },
-              })
-            }
-          >
-            Tugaskan & Konfirmasi
-          </AppButton>
-        </div>
-      )}
-
-      {/* APPROVED siap jalan (room, atau vehicle sudah ada driver) → start */}
-      {booking.status === BOOKING_STATUS.APPROVED && !needsAssign && (
-        <AppButton
-          variant="primary"
-          fullWidth
-          loading={start.isPending}
-          disabled={isBusy}
-          leftIcon={<Play className="h-4 w-4" />}
-          onClick={() => start.mutate(booking.id)}
-        >
-          Mulai
-        </AppButton>
-      )}
-
-      {/* ONGOING → complete */}
-      {booking.status === BOOKING_STATUS.ONGOING && (
-        <AppButton
-          variant="primary"
-          fullWidth
-          loading={complete.isPending}
-          disabled={isBusy}
-          leftIcon={<Check className="h-4 w-4" />}
-          onClick={() => complete.mutate(booking.id)}
-        >
-          Selesaikan
-        </AppButton>
-      )}
+      <CardHeader title="Mulai" />
+      {start.error && <PanelError error={start.error} />}
+      <AppButton
+        fullWidth
+        loading={start.isPending}
+        leftIcon={<Play className="h-4 w-4" />}
+        onClick={() =>
+          start.mutate(bookingId, { onSuccess: () => onActionComplete?.() })
+        }
+      >
+        Mulai Booking
+      </AppButton>
     </Card>
   );
 };
+
+// ─────────────────────────────────────────
+// COMPLETE PANEL (ONGOING → COMPLETED)
+// ─────────────────────────────────────────
+
+const CompletePanel = ({
+  bookingId,
+  hasReturnReport,
+  onActionComplete,
+}: {
+  bookingId: number;
+  hasReturnReport?: boolean;
+  onActionComplete?: () => void;
+}) => {
+  const complete = useCompleteBooking();
+  return (
+    <Card>
+      <CardHeader title="Selesaikan" />
+      {complete.error && <PanelError error={complete.error} />}
+
+      {hasReturnReport ? (
+        <div className="mb-3 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2">
+          <CheckCircle className="h-4 w-4 shrink-0 text-green-600" />
+          <span className="text-xs text-green-700">
+            Laporan pengembalian sudah diterima
+          </span>
+        </div>
+      ) : (
+        <div className="mb-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
+          <span className="text-xs text-amber-700">
+            Driver belum mengirim laporan pengembalian
+          </span>
+        </div>
+      )}
+
+      <AppButton
+        fullWidth
+        loading={complete.isPending}
+        leftIcon={<Check className="h-4 w-4" />}
+        onClick={() =>
+          complete.mutate(bookingId, { onSuccess: () => onActionComplete?.() })
+        }
+      >
+        {hasReturnReport ? "Selesaikan Booking" : "Selesaikan Tanpa Laporan"}
+      </AppButton>
+    </Card>
+  );
+};
+
+const PanelError = ({ error }: { error: unknown }) => (
+  <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+    <span>{getErrorMessage(error)}</span>
+  </div>
+);
 
 // ─────────────────────────────────────────
 // ATTACHMENT UPLOAD

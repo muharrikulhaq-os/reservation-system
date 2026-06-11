@@ -45,7 +45,7 @@ export interface AuthUser {
   employeeId: string
   name: string
   email: string
-  role: string       // "USER" | "ADMIN" | "DRIVER" — plain string di login response
+  role: string       // "EMPLOYEE" | "ADMIN" | "DRIVER" | "ROOM_KEEPER" — plain string di login response
   department: string // "Operations" — plain string
 }
 

@@ -38,7 +38,7 @@ const MENU_NAV: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard',      icon: LayoutDashboard },
   { label: 'Booking',   href: '/booking',    icon: CalendarCheck,  badge: 3 },
   { label: 'Vehicles',  href: '/vehicles',   icon: Car },
-  { label: 'Meeting Rooms', href: '/rooms',  icon: Building2, roles: [ROLE.ADMIN, ROLE.USER] },
+  { label: 'Meeting Rooms', href: '/rooms',  icon: Building2, roles: [ROLE.ADMIN, ROLE.EMPLOYEE] },
   { label: 'Driver',    href: '/drivers',    icon: UserRound, roles: [ROLE.ADMIN] },
 ]
 

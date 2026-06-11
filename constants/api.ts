@@ -73,6 +73,11 @@ export const API_ENDPOINTS = {
     DRIVER_RATINGS:  (driverId: number) => `${API_PREFIX}/bookings/drivers/${driverId}/ratings`,
     APPROVAL_LOG:    (id: number) => `${API_PREFIX}/bookings/${id}/approval-log`,
     ATTACHMENTS:     (id: number) => `${API_PREFIX}/bookings/${id}/attachments`,
+    SUBSTITUTE_RESOURCE: (id: number) => `${API_PREFIX}/bookings/${id}/substitute-resource`,
+    MERGE:               (id: number) => `${API_PREFIX}/bookings/${id}/merge`,
+    MERGE_INFO:          (id: number) => `${API_PREFIX}/bookings/${id}/merge-info`,
+    ACTIVITY:            (id: number) => `${API_PREFIX}/bookings/${id}/activity`,
+    RETURN_REPORT:       (id: number) => `${API_PREFIX}/bookings/${id}/return-report`,
   },
 
   // ── Drivers ─────────────────────────────

@@ -28,3 +28,6 @@ export type {
   InputNumberProps,
   InputSelectProps,
 } from "./Appinput";
+
+export { TimePicker, TIME_OPTIONS } from "./TimePicker";
+export type { TimePickerProps } from "./TimePicker";

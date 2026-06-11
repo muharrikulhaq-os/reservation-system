@@ -9,14 +9,16 @@ import type {
   RoleName,
   FuelType,
   ApprovalAction,
+  BookingActivityAction,
 } from '@/types'
 
 // --- Role ---
 
 export const ROLE = {
-  ADMIN:  'ADMIN',
-  USER:   'USER',
-  DRIVER: 'DRIVER',
+  ADMIN:       'ADMIN',
+  EMPLOYEE:    'EMPLOYEE',
+  DRIVER:      'DRIVER',
+  ROOM_KEEPER: 'ROOM_KEEPER',
 } as const satisfies Record<string, RoleName>
 
 // --- Resource Type ---
@@ -132,3 +134,20 @@ export const RESOURCE_STATUS_CONFIG = {
     text:     '#374151',
   },
 } as const satisfies Record<ResourceStatus, { label: string; bg: string; text: string }>
+
+// --- Booking Activity UI Config ---
+// label + nama icon lucide (di-resolve di komponen) + warna dot
+
+export const ACTIVITY_ACTION_CONFIG = {
+  CREATE:              { label: 'Booking Dibuat',                icon: 'Plus',           color: '#0284C7' },
+  APPROVE:             { label: 'Disetujui',                     icon: 'Check',          color: '#16A34A' },
+  REJECT:              { label: 'Ditolak',                       icon: 'X',              color: '#DC2626' },
+  CANCEL:              { label: 'Dibatalkan',                    icon: 'Ban',            color: '#9CA3AF' },
+  ASSIGN:              { label: 'Driver & Kendaraan Ditugaskan', icon: 'UserCheck',      color: '#2D2CE8' },
+  START:               { label: 'Dimulai',                       icon: 'Play',           color: '#0284C7' },
+  COMPLETE:            { label: 'Selesai',                       icon: 'CheckCircle',    color: '#16A34A' },
+  RATE_DRIVER:         { label: 'Rating Diberikan',              icon: 'Star',           color: '#D97706' },
+  SUBSTITUTE_RESOURCE: { label: 'Resource Dialihkan',            icon: 'ArrowRightLeft', color: '#7C3AED' },
+  MERGE:               { label: 'Booking Digabungkan',           icon: 'Merge',          color: '#0284C7' },
+  SUBMIT_RETURN_REPORT:{ label: 'Laporan Pengembalian Dikirim',  icon: 'FileCheck',      color: '#0284C7' },
+} as const satisfies Record<BookingActivityAction, { label: string; icon: string; color: string }>

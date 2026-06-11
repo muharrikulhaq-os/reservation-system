@@ -8,7 +8,7 @@ import {
   ChevronRight,
   Clock,
 } from 'lucide-react'
-import { AppButton } from '@/components/ui-custom'
+import { AppButton, TimePicker } from '@/components/ui-custom'
 import {
   Popover,
   PopoverContent,
@@ -202,6 +202,13 @@ export const AvailabilityCalendar = ({
 }: AvailabilityCalendarProps) => {
   const today = startOfDay(new Date())
 
+  // Waktu sekarang — untuk men-disable jam/tanggal yang sudah lewat
+  const now = new Date()
+  const todayStr = toKey(now)
+  const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(
+    now.getMinutes(),
+  ).padStart(2, '0')}`
+
   // Bulan yang sedang ditampilkan
   const initialMonth = selectedDate ?? new Date()
   const [currentMonth, setCurrentMonth] = useState(
@@ -349,6 +356,12 @@ export const AvailabilityCalendar = ({
   const handleDateClick = (date: Date) => {
     if (mode === 'view') return
 
+    // Jika tanggal = hari ini & semua jam sudah lewat → tidak bisa dipilih
+    if (toKey(date) === todayStr) {
+      const lastOption = TIME_OPTIONS[TIME_OPTIONS.length - 1] // "23:30"
+      if (currentTime >= lastOption) return
+    }
+
     if (mode === 'single') {
       onSelectDate?.(date)
       return
@@ -386,14 +399,33 @@ export const AvailabilityCalendar = ({
     !!selectedEnd &&
     isSameDayDate(selectedStart, selectedEnd)
 
+  // ── Status tanggal = hari ini (untuk disable jam lewat) ──
+  const isStartDateToday = !!selectedStart && formatYMD(selectedStart) === todayStr
+  const isEndDateToday = !!selectedEnd && formatYMD(selectedEnd) === todayStr
+
+  // disableBefore untuk start: jika tanggal mulai = hari ini, disable jam <= sekarang
+  const startTimeDisable = isStartDateToday ? currentTime : undefined
+  // disableBefore untuk end:
+  // - same day → disable jam <= startTime
+  // - end = hari ini (beda hari dari start) → disable jam <= sekarang
+  // - selain itu → tidak ada disable
+  const endTimeDisable = isSameDay
+    ? startTime
+    : isEndDateToday
+      ? currentTime
+      : undefined
+
   // ── Validasi jam ──
   const timeError = useMemo(() => {
     if (!startTime || !endTime) return null
+    if (isStartDateToday && startTime <= currentTime) {
+      return 'Jam mulai harus setelah waktu sekarang'
+    }
     if (isSameDay && endTime <= startTime) {
       return 'Jam selesai harus lebih dari jam mulai'
     }
     return null
-  }, [startTime, endTime, isSameDay])
+  }, [startTime, endTime, isSameDay, isStartDateToday, currentTime])
 
   // ── Kalkulasi durasi ──
   const calculatedDuration = useMemo(() => {
@@ -735,49 +767,26 @@ export const AvailabilityCalendar = ({
 
           {/* Time inputs row */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Jam mulai */}
-            <div>
-              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-secondary)]">
-                {isSameDay
+            <TimePicker
+              value={startTime}
+              onChange={setStartTime}
+              disableBefore={startTimeDisable}
+              label={
+                isSameDay
                   ? 'JAM MULAI'
-                  : `JAM MULAI · ${formatShortDate(selectedStart)}`}
-              </label>
-              <select
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="h-10 w-full rounded-lg border border-[var(--border-input)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus-visible:border-[1.5px] focus-visible:border-[var(--primary)] focus-visible:outline-none focus-visible:ring-0"
-              >
-                {TIME_OPTIONS.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Jam selesai */}
-            <div>
-              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-secondary)]">
-                {isSameDay
+                  : `JAM MULAI · ${formatShortDate(selectedStart)}`
+              }
+            />
+            <TimePicker
+              value={endTime}
+              onChange={setEndTime}
+              disableBefore={endTimeDisable}
+              label={
+                isSameDay
                   ? 'JAM SELESAI'
-                  : `JAM SELESAI · ${formatShortDate(selectedEnd)}`}
-              </label>
-              <select
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="h-10 w-full rounded-lg border border-[var(--border-input)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus-visible:border-[1.5px] focus-visible:border-[var(--primary)] focus-visible:outline-none focus-visible:ring-0"
-              >
-                {TIME_OPTIONS.map((t) => (
-                  <option
-                    key={t}
-                    value={t}
-                    disabled={isSameDay && t <= startTime}
-                  >
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
+                  : `JAM SELESAI · ${formatShortDate(selectedEnd)}`
+              }
+            />
           </div>
 
           {/* Durasi otomatis */}

@@ -31,6 +31,10 @@ export const DriverOnly = ({ children, fallback }: Omit<RoleGuardProps, 'roles'>
   <RoleGuard roles="DRIVER" fallback={fallback}>{children}</RoleGuard>
 )
 
-export const UserOnly = ({ children, fallback }: Omit<RoleGuardProps, 'roles'>) => (
-  <RoleGuard roles={['USER', 'ADMIN']} fallback={fallback}>{children}</RoleGuard>
+export const EmployeeOnly = ({ children, fallback }: Omit<RoleGuardProps, 'roles'>) => (
+  <RoleGuard roles={['EMPLOYEE', 'ADMIN']} fallback={fallback}>{children}</RoleGuard>
+)
+
+export const RoomKeeperOnly = ({ children, fallback }: Omit<RoleGuardProps, 'roles'>) => (
+  <RoleGuard roles="ROOM_KEEPER" fallback={fallback}>{children}</RoleGuard>
 )
