@@ -1,15 +1,12 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { FileCheck, MapPin } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-} from '@/components/ui/dialog'
-import { Card, CardSection } from '@/components/common'
-import { formatDateTime, resolveFileUrl } from '@/lib'
-import type { ReturnReportPhoto } from '@/types'
-import { useReturnReport } from '../hooks/useBookings'
+import { useState } from "react";
+import { FileCheck, MapPin } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Card, CardSection } from "@/components/common";
+import { formatDateTime, resolveFileUrl } from "@/lib";
+import type { ReturnReportPhoto } from "@/types";
+import { useReturnReport } from "../hooks/useBookings";
 
 // ─────────────────────────────────────────
 // RETURN REPORT CARD (admin review, read-only)
@@ -17,15 +14,15 @@ import { useReturnReport } from '../hooks/useBookings'
 // ─────────────────────────────────────────
 
 interface ReturnReportCardProps {
-  bookingId: number
+  bookingId: number;
 }
 
 export const ReturnReportCard = ({ bookingId }: ReturnReportCardProps) => {
-  const { data: report, isError } = useReturnReport(bookingId)
-  const [preview, setPreview] = useState<ReturnReportPhoto | null>(null)
+  const { data: report, isError } = useReturnReport(bookingId);
+  const [preview, setPreview] = useState<ReturnReportPhoto | null>(null);
 
   // 404 / belum ada report → jangan tampilkan apa pun
-  if (isError || !report) return null
+  if (isError || !report) return null;  
 
   return (
     <Card>
@@ -39,7 +36,7 @@ export const ReturnReportCard = ({ bookingId }: ReturnReportCardProps) => {
       <div className="space-y-4">
         <div>
           <p className="text-sm text-[var(--text-primary)]">
-            Dikirim oleh{' '}
+            Dikirim oleh{" "}
             <span className="font-semibold">{report.submittedBy.name}</span>
           </p>
           <p className="text-xs text-[var(--text-secondary)]">
@@ -83,10 +80,11 @@ export const ReturnReportCard = ({ bookingId }: ReturnReportCardProps) => {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={resolveFileUrl(photo.filePath) ?? ''}
+                    src={resolveFileUrl(photo.filePath) ?? ""}
                     alt={photo.fileName}
                     className="h-full w-full object-cover"
                   />
+                  {/* {photo.filePath} */}
                 </button>
               ))}
             </div>
@@ -98,12 +96,15 @@ export const ReturnReportCard = ({ bookingId }: ReturnReportCardProps) => {
       </div>
 
       {/* Preview foto full size */}
-      <Dialog open={!!preview} onOpenChange={(open) => !open && setPreview(null)}>
+      <Dialog
+        open={!!preview}
+        onOpenChange={(open) => !open && setPreview(null)}
+      >
         <DialogContent className="max-w-2xl rounded-2xl p-2 shadow-[var(--shadow-modal)]">
           {preview && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={resolveFileUrl(preview.filePath) ?? ''}
+              src={resolveFileUrl(preview.filePath) ?? ""}
               alt={preview.fileName}
               className="max-h-[80vh] w-full rounded-xl object-contain"
             />
@@ -111,5 +112,5 @@ export const ReturnReportCard = ({ bookingId }: ReturnReportCardProps) => {
         </DialogContent>
       </Dialog>
     </Card>
-  )
-}
+  );
+};

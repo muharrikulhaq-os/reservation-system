@@ -153,4 +153,6 @@ export interface UserQueryParams {
   limit?: number
   search?: string
   roleId?: number
+  departmentId?: number
+  isActive?: boolean
 }

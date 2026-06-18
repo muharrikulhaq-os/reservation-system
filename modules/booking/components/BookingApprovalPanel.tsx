@@ -36,6 +36,7 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
   const [substituteOpen, setSubstituteOpen] = useState(false)
   const [substituteId, setSubstituteId] = useState('')
   const [substituteReason, setSubstituteReason] = useState('')
+  const [approveNote, setApproveNote] = useState('')
   const [rejectNote, setRejectNote] = useState('')
 
   const approve = useApproveBooking()
@@ -61,10 +62,15 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
 
   if (booking.status !== BOOKING_STATUS.PENDING) return null
 
+  // Approve biasa: cukup klik "Setujui", TANPA pilih kendaraan.
+  // Assignment driver + kendaraan dilakukan terpisah di BookingAssignPanel
+  // setelah status APPROVED. Catatan bersifat opsional.
   const handleApprove = () => {
-    if (!window.confirm('Setujui booking ini?')) return
     approve.mutate(
-      { id: booking.id, payload: undefined },
+      {
+        id: booking.id,
+        payload: approveNote.trim() ? { note: approveNote.trim() } : undefined,
+      },
       { onSuccess: () => onActionComplete?.() },
     )
   }
@@ -114,17 +120,26 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
         </div>
       )}
 
-      {/* 1. Setujui */}
-      <AppButton
-        fullWidth
-        loading={approve.isPending && !substitute.isPending}
-        disabled={isBusy}
-        leftIcon={<Check className="h-4 w-4" />}
-        className="bg-[#16A34A] text-white hover:bg-green-700"
-        onClick={handleApprove}
-      >
-        Setujui
-      </AppButton>
+      {/* 1. Setujui (dengan catatan opsional) */}
+      <div className="space-y-3">
+        <InputTextArea
+          label="Catatan (Opsional)"
+          rows={2}
+          placeholder="Tambahkan catatan untuk peminjam…"
+          value={approveNote}
+          onChange={(e) => setApproveNote(e.target.value)}
+        />
+        <AppButton
+          fullWidth
+          loading={approve.isPending && !substitute.isPending}
+          disabled={isBusy}
+          leftIcon={<Check className="h-4 w-4" />}
+          className="bg-[#16A34A] text-white hover:bg-green-700"
+          onClick={handleApprove}
+        >
+          Setujui
+        </AppButton>
+      </div>
 
       {/* 2. Alihkan & Setujui */}
       <AppButton

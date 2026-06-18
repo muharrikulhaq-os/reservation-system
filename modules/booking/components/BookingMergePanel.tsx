@@ -2,7 +2,13 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { AlertCircle, ExternalLink, GitMerge } from 'lucide-react'
+import {
+  AlertCircle,
+  Car,
+  ExternalLink,
+  GitMerge,
+  UserRound,
+} from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -20,12 +26,17 @@ import {
 import { getErrorMessage } from '@/lib'
 import { BOOKING_STATUS, RESOURCE_TYPE } from '@/constants'
 import type { Booking } from '@/types'
-import { useBookings, useMergeBooking } from '../hooks/useBookings'
+import {
+  useApproveBooking,
+  useBookings,
+  useMergeBooking,
+} from '../hooks/useBookings'
 
 // ─────────────────────────────────────────
-// BOOKING MERGE PANEL (admin, VEHICLE, PENDING/APPROVED)
-// Menampilkan booking kendaraan lain di tanggal yang sama,
-// lalu admin memilih satu untuk digabungkan.
+// BOOKING MERGE PANEL (admin, VEHICLE, PENDING)
+// Menampilkan booking kendaraan milik USER LAIN yang sudah APPROVED
+// di tanggal yang sama. Admin memilih satu sebagai PRIMARY, lalu
+// booking ini (target) otomatis ikut disetujui + driver/resource primary.
 // ─────────────────────────────────────────
 
 interface BookingMergePanelProps {
@@ -49,25 +60,25 @@ const endOfDayIso = (iso: string) => {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59).toISOString()
 }
 
-const MERGEABLE_STATUSES: Booking['status'][] = [
-  BOOKING_STATUS.PENDING,
-  BOOKING_STATUS.APPROVED,
-]
-
 export const BookingMergePanel = ({
   booking,
   onMergeComplete,
 }: BookingMergePanelProps) => {
-  // Semua booking VEHICLE pada tanggal yang sama dengan booking ini
+  // Booking VEHICLE yang sudah APPROVED di tanggal yang sama dengan booking ini
   const { data } = useBookings({
     resourceType: RESOURCE_TYPE.VEHICLE,
     startDate: startOfDayIso(booking.startDate),
     endDate: endOfDayIso(booking.startDate),
-    limit: 20,
+    status: BOOKING_STATUS.APPROVED,
+    limit: 50,
   })
 
+  // Hanya booking APPROVED milik user lain (bukan peminjam booking ini)
   const candidates = (data?.data ?? []).filter(
-    (b) => b.id !== booking.id && MERGEABLE_STATUSES.includes(b.status),
+    (b) =>
+      b.id !== booking.id &&
+      b.status === BOOKING_STATUS.APPROVED &&
+      b.user.id !== booking.user.id,
   )
 
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
@@ -77,6 +88,7 @@ export const BookingMergePanel = ({
   const [reason, setReason] = useState('')
 
   const merge = useMergeBooking()
+  const approve = useApproveBooking()
 
   const openMergeForm = (candidate: Booking) => {
     setSelectedBooking(candidate)
@@ -94,45 +106,58 @@ export const BookingMergePanel = ({
     setReason('')
   }
 
+  // Merge lalu otomatis approve booking ini (target).
+  // - id (path)       = PRIMARY = candidate yang sudah APPROVED
+  // - targetBookingId = booking ini (PENDING) yang ikut digabungkan
+  // Setelah merge sukses, booking ini di-approve dengan catatan
+  // "telah dilakukan merge" → status berubah ke APPROVED.
   const handleMerge = async () => {
     if (!selectedBooking || !reason.trim()) return
     const startDate = new Date(`${mergeDate}T${mergeStartTime}:00`).toISOString()
     const endDate = new Date(`${mergeDate}T${mergeEndTime}:00`).toISOString()
     try {
       await merge.mutateAsync({
-        id: booking.id,
+        id: selectedBooking.id,
         payload: {
-          targetBookingId: selectedBooking.id,
+          targetBookingId: booking.id,
           reason: reason.trim(),
           startDate,
           endDate,
         },
       })
+      // Auto-approve booking ini (target) setelah merge
+      await approve.mutateAsync({
+        id: booking.id,
+        payload: { note: 'telah dilakukan merge' },
+      })
       setSelectedBooking(null)
       onMergeComplete?.()
     } catch {
-      // ditampilkan via merge.error di dalam dialog
+      // ditampilkan via error di dalam dialog
     }
   }
 
   return (
     <Card>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-1 flex items-center justify-between">
         <h3
           className="flex items-center gap-2 text-base font-bold text-[var(--text-primary)]"
           style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
         >
           <GitMerge className="h-4 w-4 text-[#0284C7]" />
-          Booking Kendaraan Hari Ini
+          Gabungkan dengan Booking Lain
         </h3>
         <span className="rounded-full bg-[var(--bg-subtle)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-secondary)]">
           {candidates.length}
         </span>
       </div>
+      <p className="mb-4 text-xs text-[var(--text-secondary)]">
+        Booking kendaraan yang sudah disetujui di tanggal yang sama
+      </p>
 
       {candidates.length === 0 ? (
-        <p className="text-sm text-[var(--text-secondary)]">
-          Tidak ada booking kendaraan lain di tanggal yang sama.
+        <p className="py-4 text-center text-sm text-[var(--text-disabled)]">
+          Tidak ada booking kendaraan lain yang sudah disetujui di tanggal ini.
         </p>
       ) : (
         <div className="space-y-3">
@@ -141,37 +166,50 @@ export const BookingMergePanel = ({
               key={c.id}
               className="rounded-xl border border-[var(--border-card)] p-4"
             >
-              <div className="flex items-center gap-2.5">
-                <UserAvatar name={c.user.name} size="md" />
-                <div className="min-w-0">
+              {/* User info */}
+              <div className="mb-2 flex items-center gap-2.5">
+                <UserAvatar name={c.user.name} size="sm" />
+                <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
-                    #{c.id} · {c.user.name}
+                    {c.user.name}
                   </p>
                   <p className="truncate text-xs text-[var(--text-secondary)]">
                     {c.user.department}
                   </p>
                 </div>
+                <BookingStatusBadge status={c.status} />
               </div>
 
-              <p className="mt-2 truncate text-xs text-[var(--text-secondary)]">
-                {c.resource.name}
-                {c.assignedVehicle?.plateNumber
-                  ? ` · ${c.assignedVehicle.plateNumber}`
-                  : ''}
-              </p>
-              <p className="mt-1 text-xs text-[var(--text-secondary)]">
+              {/* Resource + Driver — dari booking yang sudah approved */}
+              <div className="mb-2 rounded-lg bg-[var(--bg-subtle)] p-2.5 text-xs">
+                <div className="flex items-center gap-2 text-[var(--text-primary)]">
+                  <Car className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
+                  <span className="font-medium">
+                    {c.resource.name}
+                    {c.assignedVehicle?.plateNumber
+                      ? ` · ${c.assignedVehicle.plateNumber}`
+                      : ''}
+                  </span>
+                </div>
+                {c.assignedDriver && (
+                  <div className="mt-1 flex items-center gap-2 text-[var(--text-secondary)]">
+                    <UserRound className="h-3.5 w-3.5" />
+                    <span>Driver: {c.assignedDriver.name}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Waktu + Tujuan */}
+              <p className="text-xs text-[var(--text-secondary)]">
                 {formatTime(c.startDate)} - {formatTime(c.endDate)}
                 {c.purpose ? ` · ${c.purpose}` : ''}
               </p>
 
-              <div className="mt-2.5">
-                <BookingStatusBadge status={c.status} />
-              </div>
-
+              {/* Action */}
               <div className="mt-3 flex items-center justify-between">
                 <AppButton variant="link" size="sm" asChild>
                   <Link href={`/booking/${c.id}`} target="_blank">
-                    <ExternalLink className="h-3.5 w-3.5" /> Lihat Detail
+                    <ExternalLink className="h-3.5 w-3.5" /> Detail
                   </Link>
                 </AppButton>
                 <AppButton size="sm" onClick={() => openMergeForm(c)}>
@@ -200,18 +238,26 @@ export const BookingMergePanel = ({
 
           {selectedBooking && (
             <div className="mt-2 space-y-4">
-              {merge.error && (
+              {(merge.error || approve.error) && (
                 <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>{getErrorMessage(merge.error)}</span>
+                  <span>{getErrorMessage(merge.error || approve.error)}</span>
                 </div>
               )}
 
-              <MergeBookingInfo title="Booking Utama" booking={booking} />
               <MergeBookingInfo
-                title="Digabungkan Dengan"
+                title="Booking Utama (sudah disetujui)"
                 booking={selectedBooking}
               />
+              <MergeBookingInfo
+                title="Digabungkan (booking ini)"
+                booking={booking}
+              />
+
+              <p className="rounded-lg bg-[var(--bg-subtle)] px-3 py-2 text-xs text-[var(--text-secondary)]">
+                Setelah digabung, booking ini langsung disetujui dan otomatis
+                mengikuti driver &amp; kendaraan dari booking utama.
+              </p>
 
               <InputDate
                 label="Tanggal Perjalanan Gabungan"
@@ -245,18 +291,18 @@ export const BookingMergePanel = ({
                 <AppButton
                   variant="secondary"
                   fullWidth
-                  disabled={merge.isPending}
+                  disabled={merge.isPending || approve.isPending}
                   onClick={() => setSelectedBooking(null)}
                 >
                   Batal
                 </AppButton>
                 <AppButton
                   fullWidth
-                  loading={merge.isPending}
-                  disabled={merge.isPending || !reason.trim()}
+                  loading={merge.isPending || approve.isPending}
+                  disabled={merge.isPending || approve.isPending || !reason.trim()}
                   onClick={handleMerge}
                 >
-                  Gabungkan Booking
+                  Gabungkan &amp; Setujui
                 </AppButton>
               </div>
             </div>

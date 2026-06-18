@@ -12,6 +12,8 @@ export { BookingStatusBadge, ResourceStatusBadge, Badge } from './badge/StatusBa
 
 export { PageHeader } from './page-header/PageHeader'
 
+export { StatCard } from './stat-card/StatCard'
+
 export { AvailabilityCalendar } from './calendar/AvailabilityCalendar'
 export type {
   AvailabilityCalendarProps,

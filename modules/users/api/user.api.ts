@@ -1,5 +1,6 @@
 // ─────────────────────────────────────────
-// USER SERVICE
+// USER API (call layer)
+// Semua endpoint sudah tersedia di backend — tidak ada dummy.
 // ─────────────────────────────────────────
 
 import { apiClient } from '@/lib'
@@ -17,7 +18,7 @@ import type {
   UpdateProfilePhotoResponse,
 } from '@/types'
 
-export const userService = {
+export const userApi = {
   // ── List & Detail ─────────────────────
 
   getAll: (params?: UserQueryParams) =>
@@ -28,23 +29,6 @@ export const userService = {
   getById: (id: number) =>
     apiClient
       .get<ApiResponse<User>>(API_ENDPOINTS.USERS.BY_ID(id))
-      .then((r) => r.data),
-
-  getMe: () =>
-    apiClient
-      .get<ApiResponse<User>>(API_ENDPOINTS.USERS.ME)
-      .then((r) => r.data),
-
-  // ── Lookup (dropdown) ─────────────────
-
-  getRoles: () =>
-    apiClient
-      .get<ApiResponse<Role[]>>(API_ENDPOINTS.USERS.ROLES)
-      .then((r) => r.data),
-
-  getDepartments: () =>
-    apiClient
-      .get<ApiResponse<Department[]>>(API_ENDPOINTS.USERS.DEPARTMENTS)
       .then((r) => r.data),
 
   // ── CRUD ──────────────────────────────
@@ -69,9 +53,9 @@ export const userService = {
       .delete<ApiResponse<null>>(API_ENDPOINTS.USERS.BY_ID(id))
       .then((r) => r.data),
 
-  // ── Photo (Admin — update foto user lain) ──
+  // ── Photo (admin — update foto user lain) ──
 
-  updatePhotoById: (id: number, file: File) => {
+  updatePhoto: (id: number, file: File) => {
     const form = new FormData()
     form.append('photo', file)
     return apiClient
@@ -82,4 +66,16 @@ export const userService = {
       )
       .then((r) => r.data)
   },
+
+  // ── Lookup (dropdown) ──────────────────
+
+  getRoles: () =>
+    apiClient
+      .get<ApiResponse<Role[]>>(API_ENDPOINTS.USERS.ROLES)
+      .then((r) => r.data),
+
+  getDepartments: () =>
+    apiClient
+      .get<ApiResponse<Department[]>>(API_ENDPOINTS.USERS.DEPARTMENTS)
+      .then((r) => r.data),
 }

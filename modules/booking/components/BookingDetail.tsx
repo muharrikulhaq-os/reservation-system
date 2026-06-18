@@ -298,13 +298,12 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           </Card>
         )}
 
-        {/* Merge panel — admin pilih booking lain untuk digabung */}
+        {/* Merge panel — admin pilih booking APPROVED lain untuk digabung.
+            Hanya saat booking ini PENDING + VEHICLE (hilang setelah merged → APPROVED). */}
         <AdminOnly>
-          {isVehicle &&
-            (booking.status === BOOKING_STATUS.PENDING ||
-              booking.status === BOOKING_STATUS.APPROVED) && (
-              <BookingMergePanel booking={booking} onMergeComplete={refetch} />
-            )}
+          {isVehicle && booking.status === BOOKING_STATUS.PENDING && (
+            <BookingMergePanel booking={booking} onMergeComplete={refetch} />
+          )}
         </AdminOnly>
 
         {/* Driver ditugaskan */}

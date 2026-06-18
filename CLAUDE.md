@@ -13,160 +13,98 @@
 | **Nama** | Reservation System |
 | **Deskripsi** | Platform peminjaman kendaraan & ruang rapat internal perusahaan |
 | **Backend** | Golang · PostgreSQL · REST API · Base URL: `http://localhost:8080` · Prefix: `/api/v1` |
-| **Frontend** | Next.js 14 (App Router) · TypeScript · Tailwind CSS · Shadcn/ui |
-| **State & Data** | TanStack Query v5 · Zustand · React Hook Form · Zod · Axios |
+| **Frontend** | Next.js 16 (App Router) · React 19 · TypeScript · Tailwind v4 · Shadcn/ui (radix-ui) |
+| **State & Data** | TanStack Query v5 · Zustand v5 · React Hook Form · Zod v4 · Axios · TanStack Table v8 · Recharts v3 |
+| **Package manager** | **pnpm** (ada `pnpm-workspace.yaml`) |
 | **Target** | Web (sekarang) → Android & iOS (ekspansi) |
+
+> **Gate verifikasi:** `pnpm exec tsc --noEmit`. **ESLint saat ini RUSAK** (config refer `eslint-plugin-prettier` yang belum terpasang) — jangan andalkan `pnpm lint`.
 
 ---
 
 ## 2. Struktur Direktori (Aktual)
 
 ```
-src/
-├── app/
-│   ├── layout.tsx                    # Root layout — QueryClientProvider + AuthProvider
-│   ├── (auth)/
-│   │   ├── layout.tsx                # Auth layout (no sidebar)
-│   │   └── login/page.tsx            # ✅ SELESAI
-│   └── (dashboard)/                  # Semua halaman protected (belum dibuat)
-│
-├── components/
-│   ├── ui/                           # Shadcn generated — JANGAN edit manual
-│   ├── common/                       # Reusable lintas fitur — SEMUA SELESAI
-│   │   ├── AuthProvider.tsx          # Hydrate Zustand dari localStorage on mount
-│   │   ├── Button.tsx                # Button + IconButton (5 variant, 5 size)
-│   │   ├── Card.tsx                  # Card + CardHeader + CardDivider + CardSection
-│   │   ├── Input.tsx                 # Input, InputLabel, InputError, InputHint,
-│   │   │                             # InputField (composed), PasswordInput
-│   │   ├── RoleGuard.tsx             # RoleGuard + AdminOnly + DriverOnly + UserOnly
-│   │   ├── StatusBadge.tsx           # BookingStatusBadge + ResourceStatusBadge
-│   │   └── index.ts                  # Barrel export
-│   └── features/
-│       └── auth/
-│           └── LoginForm.tsx         # ✅ SELESAI
-│
-├── constants/                        # SEMUA nilai konstan — edit di sini, berlaku global
-│   ├── api.ts                        # API_ENDPOINTS (semua endpoint, fungsi helper)
-│   ├── booking.ts                    # BOOKING_STATUS, RESOURCE_TYPE, RESOURCE_STATUS,
-│   │                                 # APPROVAL_ACTION, FUEL_TYPE, ROLE,
-│   │                                 # BOOKING_STATUS_CONFIG, RESOURCE_STATUS_CONFIG
-│   ├── config.ts                     # APP_CONFIG, TOKEN_CONFIG, QUERY_KEYS,
-│   │                                 # QUERY_CONFIG, PAGINATION, SETTING_KEYS
-│   └── index.ts                      # Barrel export
-│
-├── hooks/
-│   ├── api/                          # TanStack Query hooks — SEMUA SELESAI
-│   │   ├── useAuth.ts                # useMe, useLogin, useLogout, useChangePassword,
-│   │   │                             # useUpdateProfilePhoto, useDeleteProfilePhoto
-│   │   ├── useUsers.ts               # useUsers, useUser, useUserRoles, useUserDepartments,
-│   │   │                             # useCreateUser, useUpdateUser, useToggleUserActive,
-│   │   │                             # useDeleteUser, useUpdateUserPhoto
-│   │   ├── useVehicles.ts            # useVehicles, useVehicle, useVehicleCategories,
-│   │   │                             # useVehicleAttachments, useCreateVehicle,
-│   │   │                             # useUpdateVehicle, useUpdateVehicleStatus,
-│   │   │                             # useUpdateVehiclePhoto, useDeleteVehicle,
-│   │   │                             # useCreateVehicleCategory, useDeleteVehicleCategory,
-│   │   │                             # useUploadVehicleAttachment
-│   │   ├── useRooms.ts               # useRooms, useRoom, useRoomAttachments,
-│   │   │                             # useCreateRoom, useUpdateRoom, useUpdateRoomStatus,
-│   │   │                             # useUpdateRoomPhoto, useDeleteRoom,
-│   │   │                             # useUploadRoomAttachment
-│   │   ├── useBookings.ts            # useBookings, useBooking, useBookingApprovalLog,
-│   │   │                             # useDriverRatings, useBookingAttachments,
-│   │   │                             # useCreateBooking, useCancelBooking, useApproveBooking,
-│   │   │                             # useRejectBooking, useAssignVehicle, useStartBooking,
-│   │   │                             # useCompleteBooking, useRateDriver,
-│   │   │                             # useUploadBookingAttachment
-│   │   ├── useDrivers.ts             # useDrivers, useDriver, useDriverAssignmentHistory,
-│   │   │                             # useCreateDriver, useUpdateDriver, useToggleDriverActive,
-│   │   │                             # useAssignDriverToVehicle, useReleaseDriverFromVehicle
-│   │   ├── useFuel.ts                # useFuelExpenses, useFuelExpense,
-│   │   │                             # useCreateBbmExpense, useCreateListrikExpense,
-│   │   │                             # useDeleteFuelExpense
-│   │   ├── useMaintenance.ts         # useMaintenanceRecords, useMaintenanceRecord,
-│   │   │                             # useCreateMaintenance, useUpdateMaintenance,
-│   │   │                             # useDeleteMaintenance
-│   │   ├── useGuestBookings.ts       # useGuestBookingByToken, useGuestBookings,
-│   │   │                             # useCreateGuestBooking, useCompleteGuestBookingByToken,
-│   │   │                             # useCancelGuestBookingByToken, useApproveGuestBooking,
-│   │   │                             # useRejectGuestBooking, useStartGuestBooking
-│   │   ├── useReports.ts             # useBookingSummaryReport, useResourceUsageReport,
-│   │   │                             # useFuelExpenseReport, useMaintenanceCostReport,
-│   │   │                             # useDriverRatingsReport, useDriverActivityReport,
-│   │   │                             # useOverdueBookingsReport, useAuditLogs
-│   │   ├── useSettings.ts            # useMasterSettings, useMasterSetting, useUpsertSetting
-│   │   └── useAttachments.ts         # useDeleteAttachment
-│   ├── ui/                           # UI/behavior hooks — SEMUA SELESAI
-│   │   ├── useDebounce.ts            # Delay value update (default 400ms)
-│   │   ├── useDisclosure.ts          # open/close state untuk modal, drawer, dropdown
-│   │   ├── usePagination.ts          # page + limit state management
-│   │   ├── useTableFilter.ts         # search + pagination + filters (composed)
-│   │   ├── useFileUpload.ts          # validasi & preview file sebelum upload
-│   │   └── useConfirm.ts             # state untuk confirm dialog + generic data <T>
-│   └── index.ts                      # Barrel export semua hooks
-│
-├── lib/
-│   ├── axios.ts                      # Axios instance + interceptors + cookie sync
-│   │                                 # syncTokensToCookies(), clearTokenCookies()
-│   ├── queryClient.ts                # QueryClient config (retry logic, stale time)
-│   ├── token.ts                      # tokenStorage (abstraksi localStorage)
-│   ├── utils.ts                      # cn(), getErrorMessage(), formatDate/DateTime,
-│   │                                 # formatCurrency, formatOdometer, getInitials,
-│   │                                 # resolveFileUrl, isFileTooLarge, formatFileSize
-│   └── index.ts                      # Barrel export
-│
-├── middleware.ts                     # Route protection + role-based redirect (Edge)
-│
-├── schemas/
-│   └── auth.schema.ts                # loginSchema + LoginFormData
-│
-├── services/                         # API call layer — SEMUA SELESAI
-│   ├── auth.service.ts               # register, login, refresh, logout, forgotPassword,
-│   │                                 # verifyOtp, resetPassword, changePassword, getMe,
-│   │                                 # updateProfilePhoto, deleteProfilePhoto
-│   ├── user.service.ts               # getAll, getById, getMe, getRoles, getDepartments,
-│   │                                 # create, update, toggleActive, delete, updatePhotoById
-│   ├── vehicle.service.ts            # CRUD + categories + photo + attachments
-│   ├── room.service.ts               # CRUD + photo + attachments
-│   ├── booking.service.ts            # CRUD + approve/reject/assign/start/complete +
-│   │                                 # rateDriver + approvalLog + attachments
-│   ├── driver.service.ts             # CRUD + toggleActive + assign/release + history
-│   ├── fuel.service.ts               # getAll, getById, createBbm, createListrik, delete
-│   ├── maintenance.service.ts        # CRUD
-│   ├── guestBooking.service.ts       # Public (token-based) + Admin
-│   ├── report.service.ts             # 8 laporan
-│   ├── setting.service.ts            # getAll, getByKey, upsert
-│   ├── attachment.service.ts         # delete global
-│   └── index.ts                      # Barrel export
-│
-├── store/
-│   └── auth.store.ts                 # Zustand: user, accessToken, isAuthenticated,
-│                                     # setAuth, setAccessToken, clearAuth,
-│                                     # hasRole(), isAdmin(), isDriver()
-│
-├── styles/
-│   └── globals.css                   # CSS variables + Tailwind base + font imports
-│
-└── types/                            # TypeScript interfaces — SEMUA SELESAI
-    ├── index.ts                      # Barrel export
-    ├── enums.ts                      # RoleName, ResourceType, ResourceStatus,
-    │                                 # BookingStatus, ApprovalAction, FuelType
-    ├── common.ts                     # ApiResponse<T>, PaginatedResponse<T>,
-    │                                 # PaginationMeta, BaseQueryParams, SelectOption
-    ├── auth.ts                       # User, UserSummary, AuthUser, Role, Department,
-    │                                 # LoginPayload/Response, RegisterPayload,
-    │                                 # ChangePasswordPayload, AuthState, UserQueryParams
-    ├── resource.ts                   # Vehicle, VehicleSummary, VehicleRef, Room,
-    │                                 # RoomSummary, ResourceRef, VehicleCategory,
-    │                                 # Attachment + semua payload
-    ├── driver.ts                     # Driver, DriverSummary, DriverAssignment,
-    │                                 # DriverRating + semua payload
-    ├── booking.ts                    # Booking, GuestBooking, GuestBookingCreated,
-    │                                 # ApprovalLog, BookingStatusResponse,
-    │                                 # DriverRatingResponse + semua payload
-    └── operational.ts                # FuelExpense (BBM & LISTRIK), MaintenanceRecord,
-                                      # MasterSetting, AuditLog, HealthStatus +
-                                      # 5 tipe laporan + semua payload
+# Struktur HYBRID: fitur "resource" tinggal di modules/, cross-cutting di root.
+# TIDAK ADA folder src/. Routes di app/(main)/, BUKAN app/dashboard/.
+
+app/
+├── layout.tsx                        # Root layout — QueryProvider + AuthProvider
+├── page.tsx                          # Root redirect
+├── globals.css                       # CSS variables + Tailwind v4 base + font
+├── (auth)/
+│   └── login/page.tsx                # ✅ SELESAI
+└── (main)/                           # Protected — pakai Sidebar + Navbar
+    ├── dashboard/page.tsx            # → <Dashboard/>
+    ├── booking/
+    │   ├── page.tsx                  # list → <Booking/>
+    │   ├── new/page.tsx              # → <BookingCreate/>
+    │   ├── approval/page.tsx         # → <ApprovalQueue/> (admin)
+    │   └── [id]/page.tsx             # → <BookingDetail/>
+    ├── vehicles/{page, new, [id], [id]/edit}
+    ├── rooms/{page, new, [id], [id]/edit}
+    ├── drivers/page.tsx
+    └── reports/page.tsx              # → <Reports/>
+
+modules/                              # FITUR berbasis domain
+├── <feature>/                        # pola tiap modul:
+│   ├── api/<feature>.api.ts          #   call layer (pakai apiClient dari @/lib)
+│   ├── hooks/use<Feature>.ts         #   TanStack Query hooks
+│   ├── components/                   #   komponen fitur
+│   ├── utils/columns.tsx             #   kolom DataTable
+│   ├── <Feature>.tsx                 #   view utama (di-import oleh page)
+│   └── index.ts                      #   barrel
+├── booking/      # ✅ Booking.tsx + BookingForm/Create/Detail, ApprovalQueue,
+│                 #   BookingApprovalPanel, BookingAssignPanel, BookingMergePanel,
+│                 #   ReturnReportModal, ReturnReportCard | api/booking.api.ts
+│                 #   hooks/useBookings.ts (useSubstituteResource, useMergeBooking,
+│                 #   useBookingActivity, useBookingMergeInfo, useReturnReport,
+│                 #   useSubmitReturnReport; useBookingApprovalLog @deprecated)
+├── vehicles/     # ✅ Vehicles.tsx + CRUD
+├── rooms/        # ✅ Rooms.tsx + CRUD
+├── drivers/      # ✅ Drivers.tsx + assignment/rating
+├── dashboard/    # ✅ Dashboard.tsx
+├── reports/      # ✅ Reports.tsx (6 tab, recharts v3) — sebagian endpoint DUMMY
+│                 #   (cari `TODO [BACKEND]` di modules/reports/api/report.api.ts)
+└── auth, fuel, maintenance, report, setting, user/   # 🔲 KOSONG (placeholder)
+
+components/
+├── ui/                               # Shadcn generated — JANGAN edit manual
+├── ui-custom/                        # Wrapper Shadcn + token (barrel: @/components/ui-custom)
+│   ├── Appbutton.tsx                 # AppButton, IconButton
+│   ├── Appinput.tsx                  # AppLabel, AppFieldError, AppFieldHint,
+│   │                                 # InputText/Email/Password/Number/Rupiah/TextArea/
+│   │                                 # File/Date/DateTime/Select
+│   └── TimePicker.tsx                # TimePicker (hybrid dropdown/manual, disable masa lalu)
+├── shared/                           # Reusable lintas fitur (barrel: @/components/shared)
+│   ├── table/DataTable.tsx           # DataTable + createColumnHelper + ColumnDef
+│   ├── avatar/Avatar.tsx             # UserAvatar
+│   ├── badge/StatusBadge.tsx         # BookingStatusBadge, ResourceStatusBadge, Badge
+│   ├── page-header/PageHeader.tsx    # PageHeader
+│   ├── calendar/AvailabilityCalendar.tsx
+│   └── Resource/                     # komponen resource bersama
+├── layout/
+│   ├── Sidebar.tsx                   # Sidebar nav (240px)
+│   └── Navbar.tsx                    # Top navbar (56px)
+├── common/                           # Provider + primitive lama
+│   ├── Provider/                     # AuthProvider, QueryProvider
+│   ├── Alert/  Badge/  Button/  Card/  Input/
+│   └── RoleGuard/                    # RoleGuard + AdminOnly + DriverOnly +
+│                                     # EmployeeOnly + RoomKeeperOnly (UserOnly DIHAPUS)
+└── features/auth/                    # LoginForm
+
+# ── CROSS-CUTTING (root, dipakai semua modul) ──
+constants/   # api.ts, booking.ts (ROLE, *_CONFIG, ACTIVITY_ACTION_CONFIG), config.ts | @/constants
+lib/         # axios.ts, queryClient.ts, token.ts, utils.ts | apiClient + helpers dari @/lib
+hooks/       # api/ (useAuth, useUsers, useFuel, useMaintenance, useGuestBookings,
+│            #       useReports, useSettings, useAttachments) + ui/ (6 utility hooks) | @/hooks
+services/    # auth, user, fuel, maintenance, guestBooking, report, setting, attachment | @/services
+│            # (booking/vehicle/room/driver call layer PINDAH ke modules/*/api/)
+schemas/     # auth, booking, room, vehicle .schema.ts
+store/       # auth.store.ts (Zustand: + isEmployee(), isRoomKeeper())
+types/       # enums, common, auth, resource, driver, booking, operational | @/types
+proxy.ts     # ⚠️ Next.js 16 "middleware" — route protection + role redirect (Edge).
+             #   Di Next 16 file ini bernama proxy.ts, BUKAN middleware.ts.
 ```
 
 ---
@@ -178,22 +116,23 @@ src/
 | `types/` | ✅ Selesai | Semua domain, disesuaikan dengan API aktual |
 | `constants/` | ✅ Selesai | Enum, endpoints, query keys, UI config |
 | `lib/` | ✅ Selesai | axios + refresh queue + cookie sync |
-| `services/` | ✅ Selesai | 12 service, semua endpoint |
-| `hooks/api/` | ✅ Selesai | 12 file, semua query + mutation |
-| `hooks/ui/` | ✅ Selesai | 6 utility hooks |
-| `components/common/` | ✅ Selesai | Input, Button, Card, StatusBadge, RoleGuard, AuthProvider |
-| `store/` | ✅ Selesai | Zustand auth store |
-| `middleware.ts` | ✅ Selesai | Route guard + role redirect |
-| `schemas/auth` | ✅ Selesai | Login schema |
+| `services/` (cross-cutting) | ✅ Selesai | auth, user, fuel, maintenance, guestBooking, report, setting, attachment |
+| `hooks/api/` + `hooks/ui/` | ✅ Selesai | cross-cutting query/mutation + 6 utility hooks |
+| `components/` (ui-custom, shared, common, layout) | ✅ Selesai | AppButton/Input, DataTable, PageHeader, Badge, RoleGuard, Sidebar/Navbar |
+| `store/` | ✅ Selesai | Zustand auth store (+ isEmployee, isRoomKeeper) |
+| `proxy.ts` (eks-middleware) | ✅ Selesai | Route guard + role redirect (Next 16 rename) |
+| `schemas/` | ✅ Selesai | auth, booking, room, vehicle |
 | Auth UI | ✅ Selesai | Login page + LoginForm |
-| Dashboard layout | 🔲 Belum | Sidebar, navbar, layout wrapper |
-| Fitur booking | 🔲 Belum | List, form, detail, approval flow |
-| Fitur vehicle | 🔲 Belum | Katalog, CRUD, status |
-| Fitur room | 🔲 Belum | Katalog, CRUD, status |
-| Fitur driver | 🔲 Belum | List, assignment, rating |
-| Fitur fuel | 🔲 Belum | Input BBM/listrik |
-| Fitur reports | 🔲 Belum | Dashboard admin |
-| Fitur settings | 🔲 Belum | Master settings |
+| Dashboard layout | ✅ Selesai | Sidebar + Navbar + `(main)` layout |
+| Fitur booking | ✅ Selesai | List, form, detail, approval/assign/merge, return-report, activity timeline |
+| Fitur vehicle | ✅ Selesai | Katalog, CRUD, status |
+| Fitur room | ✅ Selesai | Katalog, CRUD, status |
+| Fitur driver | ✅ Selesai | List, assignment, rating |
+| Fitur reports | 🟡 Sebagian | 6 tab tampil; beberapa endpoint masih DUMMY (`TODO [BACKEND]`); belum ada link sidebar |
+| Fitur dashboard | ✅ Selesai | `modules/dashboard` |
+| Fitur fuel | 🔲 Belum | Modul `modules/fuel` masih kosong (service root sudah ada) |
+| Fitur maintenance | 🔲 Belum | Modul `modules/maintenance` kosong (service root sudah ada) |
+| Fitur settings / user | 🔲 Belum | Modul `modules/setting` & `modules/user` kosong (service root sudah ada) |
 
 ---
 
@@ -266,7 +205,7 @@ tokenStorage.getAccess()
 
 ### Role protection — dua lapisan
 ```tsx
-// Lapisan 1: middleware.ts (server-side, tidak bisa di-bypass)
+// Lapisan 1: proxy.ts (eks-middleware, server-side, tidak bisa di-bypass)
 // Lapisan 2: RoleGuard (client-side, untuk tampil/sembunyikan UI)
 <AdminOnly>
   <ApproveButton />
@@ -278,17 +217,20 @@ tokenStorage.getAccess()
 ## 5. Pola Standar — Template Siap Pakai
 
 ### Menambah fitur baru (urutan wajib)
+> Fitur domain/"resource" baru → buat satu modul di `modules/[feature]/`.
+> Layanan lintas-fitur (auth, settings, dll) tetap di root `services/` + `hooks/api/`.
+
 1. Types di `types/[domain].ts`
 2. Constants (jika ada enum/endpoint baru) di `constants/`
 3. Zod schema di `schemas/[feature].schema.ts`
-4. Service di `services/[feature].service.ts`
-5. Hook di `hooks/api/use[Feature].ts`
-6. Component di `components/features/[feature]/`
-7. Page di `app/(dashboard)/[feature]/page.tsx`
+4. API call layer di `modules/[feature]/api/[feature].api.ts` (pakai `apiClient` dari `@/lib`)
+5. Hook di `modules/[feature]/hooks/use[Feature].ts`
+6. Komponen di `modules/[feature]/components/` + view `modules/[feature]/[Feature].tsx` + `index.ts` barrel
+7. Page di `app/(main)/[feature]/page.tsx` (cukup import view dari modul)
 
 ### Hook pattern
 ```ts
-// hooks/api/use[Feature].ts
+// modules/[feature]/hooks/use[Feature].ts (atau hooks/api/ untuk cross-cutting)
 export const use[Feature]s = (params?: [Feature]QueryParams) =>
   useQuery({
     queryKey: [...QUERY_KEYS.[FEATURE], params],
@@ -306,7 +248,7 @@ export const useCreate[Feature] = () => {
 
 ### Service pattern
 ```ts
-// services/[feature].service.ts
+// modules/[feature]/api/[feature].api.ts (atau services/ untuk cross-cutting)
 export const [feature]Service = {
   getAll: (params?: [Feature]QueryParams) =>
     apiClient
@@ -333,7 +275,7 @@ export const [feature]Service = {
 
 ### Form component pattern
 ```tsx
-// components/features/[feature]/[Feature]Form.tsx
+// modules/[feature]/components/[Feature]Form.tsx
 'use client'
 
 export const [Feature]Form = ({ onSuccess }: { onSuccess?: () => void }) => {
@@ -358,7 +300,7 @@ export const [Feature]Form = ({ onSuccess }: { onSuccess?: () => void }) => {
 
 ### Halaman list dengan filter
 ```tsx
-// app/(dashboard)/[feature]/page.tsx
+// app/(main)/[feature]/page.tsx
 'use client'
 
 export default function [Feature]Page() {
@@ -386,7 +328,7 @@ export default function [Feature]Page() {
 Login form submit
   → authService.login()
   → onSuccess: setAuth(user, accessToken, refreshToken)   ← Zustand store
-             + syncTokensToCookies(accessToken, role)      ← cookie untuk middleware
+             + syncTokensToCookies(accessToken, role)      ← cookie untuk proxy.ts
              + router.replace('/dashboard')
 
 Request selanjutnya
@@ -398,7 +340,7 @@ Page refresh / reload
   → AuthProvider mount → cek localStorage → fetch /me → hydrate Zustand
 
 Route protection
-  → middleware.ts (Edge): baca cookie, redirect jika perlu
+  → proxy.ts (Edge, eks-middleware): baca cookie, redirect jika perlu
   → RoleGuard (client): sembunyikan UI berdasarkan role
 ```
 
@@ -406,7 +348,7 @@ Route protection
 | Cookie | Isi | Tujuan |
 |---|---|---|
 | `access_token` | JWT access token | Middleware route protection |
-| `user_role` | `ADMIN` / `USER` / `DRIVER` | Middleware role-based redirect |
+| `user_role` | `ADMIN` / `EMPLOYEE` / `DRIVER` / `ROOM_KEEPER` | Proxy (eks-middleware) role-based redirect |
 
 ### Middleware routes
 | Prefix | Proteksi |
@@ -760,13 +702,13 @@ style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
 { "success": false, "message": "...", "error": { "code": "...", "message": "..." } }
 ```
 
-**Role:** `ADMIN` (akses penuh) · `USER` (buat booking) · `DRIVER` (input BBM, start perjalanan)
+**Role:** `ADMIN` (akses penuh) · `EMPLOYEE` (buat booking) · `DRIVER` (input BBM, start perjalanan) · `ROOM_KEEPER` (kelola ruangan)
 
 ---
 
 ## 9. ERD Ringkas
 
-**Enums:** `RoleName`: USER/ADMIN/DRIVER · `ResourceType`: VEHICLE/ROOM · `ResourceStatus`: AVAILABLE/MAINTENANCE/INACTIVE · `BookingStatus`: PENDING/APPROVED/REJECTED/ONGOING/COMPLETED/CANCELLED/OVERDUE · `FuelType`: BBM/LISTRIK
+**Enums:** `RoleName`: ADMIN/EMPLOYEE/DRIVER/ROOM_KEEPER · `ResourceType`: VEHICLE/ROOM · `ResourceStatus`: AVAILABLE/MAINTENANCE/INACTIVE · `BookingStatus`: PENDING/APPROVED/REJECTED/ONGOING/COMPLETED/CANCELLED/OVERDUE · `FuelType`: BBM/LISTRIK
 
 **Relasi:**
 - `users` → `roles` (N:1) + `departments` (N:1)
@@ -796,5 +738,5 @@ Siapkan dari sekarang agar tidak perlu refactor besar:
 - Struktur barrel export (`types/index.ts`, `constants/index.ts`, `services/index.ts`, `hooks/index.ts`)
 - Nama dan struktur `QUERY_KEYS` — breaking change ke seluruh cache
 - `lib/axios.ts` — interceptors refresh token ada di sini
-- `middleware.ts` — route protection
+- `proxy.ts` (eks-`middleware.ts`, Next 16) — route protection
 - CSS variable names di `globals.css` — dipakai di seluruh komponen

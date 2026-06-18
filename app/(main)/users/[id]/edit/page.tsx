@@ -1,0 +1,15 @@
+import type { Metadata } from 'next'
+import { UserEdit } from '@/modules/users'
+
+export const metadata: Metadata = {
+  title: 'Edit Pengguna — Reservation System',
+}
+
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+  return <UserEdit userId={Number(id)} />
+}
