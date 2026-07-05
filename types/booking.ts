@@ -183,8 +183,8 @@ export interface CreateBookingPayload {
   startDate: string // RFC3339
   endDate: string
   purpose: string
-  passengerCount?: number // jumlah penumpang (untuk hitung sisa kursi)
-  driverId?: number       // opsional, hanya untuk VEHICLE
+  passengerCount: number // WAJIB — untuk validasi kapasitas
+  driverId?: number      // opsional — jika kosong, di-auto-pick / admin assign
 }
 
 export interface ApproveBookingPayload {

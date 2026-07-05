@@ -27,28 +27,21 @@ export interface DriverSummary {
 
 // --- Driver Availability (untuk pemilihan driver saat create booking) ---
 
-export interface DriverWithAvailability {
-  id: number
-  name: string
-  phoneNumber: string
-  isActive: boolean
-  // Info ketersediaan pada tanggal/waktu tertentu
-  hasExistingBooking: boolean // sudah punya booking di waktu itu
-  existingBooking?: {
-    bookingId: number
-    vehicleName: string
-    vehicleCapacity: number
-    destination: string    // tujuan (dari purpose)
-    startDate: string
-    endDate: string
-    occupiedSeats: number  // kursi terpakai
-    remainingSeats: number // sisa kursi
-  } | null
+// Response dari GET /drivers/available
+export interface AvailableDriver {
+  driverId: number
+  driverName: string
+  employeeId: string
+  vehicleId: number
+  plateNumber: string
+  vehicleCapacity: number
+  overlappingPassengers: number // penumpang dari booking lain yang overlap
+  remainingSeats: number        // sisa kursi = capacity - overlappingPassengers
 }
 
-export interface DriverAvailabilityParams {
-  startDate: string
-  endDate: string
+export interface AvailableDriverParams {
+  startDate: string // RFC3339
+  endDate: string   // RFC3339
 }
 
 // --- Driver Assignment History ---

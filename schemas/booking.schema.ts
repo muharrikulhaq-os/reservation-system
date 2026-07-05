@@ -17,6 +17,11 @@ export const createBookingSchema = z.object({
     .string()
     .min(10, 'Minimal 10 karakter')
     .max(500, 'Maksimal 500 karakter'),
+  passengerCount: z
+    .number({ error: 'Jumlah penumpang wajib diisi' })
+    .min(1, 'Minimal 1 penumpang'),
+  driverId: z.number().optional(),
+  // Validasi kapasitas dilakukan di komponen (butuh data kapasitas kendaraan)
 })
 
 // --- Approve Booking ---

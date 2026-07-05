@@ -30,7 +30,7 @@ interface TableFilterReturn<TFilters extends Record<string, unknown>> {
 
 export const useTableFilter = <TFilters extends Record<string, unknown>>(
   initialFilters: TFilters,
-  initialLimit = PAGINATION.DEFAULT_LIMIT,
+  initialLimit: number = PAGINATION.DEFAULT_LIMIT,
 ): TableFilterReturn<TFilters> => {
   const [search, setSearchRaw]   = useState('')
   const [filters, setFiltersState] = useState<TFilters>(initialFilters)

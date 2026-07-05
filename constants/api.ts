@@ -88,7 +88,7 @@ export const API_ENDPOINTS = {
     ASSIGN:          (id: number) => `${API_PREFIX}/drivers/${id}/assign`,
     RELEASE:         (id: number) => `${API_PREFIX}/drivers/${id}/release`,
     ASSIGNMENTS:     (id: number) => `${API_PREFIX}/drivers/${id}/assignments`,
-    AVAILABILITY:    `${API_PREFIX}/drivers/availability`, // ?startDate=&endDate=
+    AVAILABLE:       `${API_PREFIX}/drivers/available`, // ?startDate=&endDate=
   },
 
   // ── Fuel Expenses (legacy BBM/LISTRIK terpisah) ──

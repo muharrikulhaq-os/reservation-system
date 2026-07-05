@@ -21,7 +21,7 @@ interface PaginationReturn extends PaginationState {
 }
 
 export const usePagination = (
-  initialLimit = PAGINATION.DEFAULT_LIMIT,
+  initialLimit: number = PAGINATION.DEFAULT_LIMIT,
 ): PaginationReturn => {
   const [page,  setPageState]  = useState<number>(PAGINATION.DEFAULT_PAGE)
   const [limit, setLimitState] = useState<number>(initialLimit)

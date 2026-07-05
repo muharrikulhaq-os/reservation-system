@@ -22,6 +22,17 @@ export const useVehicles = (params?: VehicleQueryParams) =>
     queryFn:  () => vehicleService.getAll(params).then((r) => r.data),
   })
 
+// Varian dengan PaginatedResponse penuh (data + pagination) untuk picker/list
+export const useVehiclesPaginated = (
+  params?: VehicleQueryParams,
+  options?: { enabled?: boolean },
+) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.VEHICLES, 'paginated', params],
+    queryFn:  () => vehicleService.getAll(params),
+    enabled:  options?.enabled ?? true,
+  })
+
 export const useVehicle = (id: number) =>
   useQuery({
     queryKey: [...QUERY_KEYS.VEHICLES, id],

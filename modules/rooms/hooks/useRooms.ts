@@ -21,6 +21,17 @@ export const useRooms = (params?: RoomQueryParams) =>
     queryFn:  () => roomService.getAll(params).then((r) => r.data),
   })
 
+// Varian dengan PaginatedResponse penuh (data + pagination) untuk picker/list
+export const useRoomsPaginated = (
+  params?: RoomQueryParams,
+  options?: { enabled?: boolean },
+) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.ROOMS, 'paginated', params],
+    queryFn:  () => roomService.getAll(params),
+    enabled:  options?.enabled ?? true,
+  })
+
 export const useRoom = (id: number) =>
   useQuery({
     queryKey: [...QUERY_KEYS.ROOMS, id],

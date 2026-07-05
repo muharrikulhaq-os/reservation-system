@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle, AlertTriangle, Building2, Car, Clock, DoorOpen } from 'lucide-react'
+import { AlertCircle, Building2, Car, Clock } from 'lucide-react'
 import { Card, CardHeader, CardSection } from '@/components/common'
 import { AppButton, InputTextArea, InputNumber } from '@/components/ui-custom'
 import { DriverSelector } from './DriverSelector'
+import { ResourcePicker } from './ResourcePicker'
 import {
   AvailabilityCalendar,
   ResourceStatusBadge,
@@ -16,8 +17,8 @@ import {
 } from '@/components/shared'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getErrorMessage, formatShortDate, formatDuration } from '@/lib'
-import { RESOURCE_TYPE, RESOURCE_STATUS } from '@/constants'
-import type { ResourceStatus, ResourceType } from '@/types'
+import { RESOURCE_TYPE } from '@/constants'
+import type { ResourceType, Vehicle, Room } from '@/types'
 import {
   createBookingSchema,
   type CreateBookingFormData,
@@ -26,44 +27,28 @@ import { useCreateBooking } from '../hooks/useBookings'
 import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
 import { useRooms } from '@/modules/rooms/hooks/useRooms'
 
-// ─────────────────────────────────────────
-// Bentuk resource yang bisa dipilih (vehicle/room
-// dinormalisasi jadi satu shape)
-// ─────────────────────────────────────────
-
-interface SelectableResource {
-  resourceId: number
-  name: string
-  subtitle: string
-  status: ResourceStatus
-  type: ResourceType
-}
-
 export const BookingForm = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const preselectedResourceId = searchParams.get('resourceId')
   const preselectedType = searchParams.get('type') as ResourceType | null
 
-  const [activeTab, setActiveTab] = useState<ResourceType>(
+  const [resourceType, setResourceType] = useState<ResourceType>(
     preselectedType === RESOURCE_TYPE.ROOM
       ? RESOURCE_TYPE.ROOM
       : RESOURCE_TYPE.VEHICLE,
   )
-  const [selected, setSelected] = useState<SelectableResource | null>(null)
-  // Tampilkan picker? Default disembunyikan jika ada preselect.
+  const [selected, setSelected] = useState<Vehicle | Room | null>(null)
   const [showPicker, setShowPicker] = useState(!preselectedResourceId)
-  // Jadwal terpilih dari calendar (tanggal + jam, sudah dikonfirmasi)
   const [schedule, setSchedule] = useState<DateTimeRange | null>(null)
   const [conflicts, setConflicts] = useState<CalendarEvent[]>([])
-  // Pilihan driver (opsional, hanya VEHICLE) + jumlah penumpang
   const [selectedDriverId, setSelectedDriverId] = useState<number | null>(null)
-  const [passengerCount, setPassengerCount] = useState<number | undefined>(undefined)
+  const [suggestedDriverId, setSuggestedDriverId] = useState<number | null>(null)
+  const [passengerCount, setPassengerCount] = useState<number>(1)
 
-  const { data: vehicles, isLoading: loadingVehicles } = useVehicles({
-    limit: 100,
-  })
-  const { data: rooms, isLoading: loadingRooms } = useRooms({ limit: 100 })
+  // Untuk resolusi preselect dari query param
+  const { data: vehicles } = useVehicles({ limit: 100 })
+  const { data: rooms } = useRooms({ limit: 100 })
 
   const { mutate, isPending, error } = useCreateBooking()
 
@@ -74,41 +59,41 @@ export const BookingForm = () => {
     formState: { errors },
   } = useForm<CreateBookingFormData>({
     resolver: zodResolver(createBookingSchema),
-    defaultValues: { purpose: '' },
+    defaultValues: { purpose: '', passengerCount: 1 },
   })
 
-  // Normalisasi resource list sesuai tab
-  const resources: SelectableResource[] =
-    activeTab === RESOURCE_TYPE.VEHICLE
-      ? (vehicles ?? []).map((v) => ({
-          resourceId: v.resourceId,
-          name: v.name,
-          subtitle: v.plateNumber,
-          status: v.status,
-          type: RESOURCE_TYPE.VEHICLE,
-        }))
-      : (rooms ?? []).map((r) => ({
-          resourceId: r.resourceId,
-          name: r.name,
-          subtitle: r.location,
-          status: r.status,
-          type: RESOURCE_TYPE.ROOM,
-        }))
+  const isVehicle = resourceType === RESOURCE_TYPE.VEHICLE
+  const capacity =
+    isVehicle && selected ? (selected as Vehicle).capacity : undefined
+  const subtitle = selected
+    ? isVehicle
+      ? (selected as Vehicle).plateNumber
+      : (selected as Room).location
+    : ''
 
-  const isLoadingResources =
-    activeTab === RESOURCE_TYPE.VEHICLE ? loadingVehicles : loadingRooms
-
-  // Pilih resource → set form value, reset range
-  const handleSelectResource = (resource: SelectableResource) => {
+  // Pilih resource → set form value + reset turunannya
+  const handleSelectResource = (resource: Vehicle | Room) => {
     setSelected(resource)
     setShowPicker(false)
     setValue('resourceId', resource.resourceId, { shouldValidate: true })
     setSchedule(null)
     setConflicts([])
     setSelectedDriverId(null)
-    setPassengerCount(undefined)
+    setSuggestedDriverId(null)
+    setPassengerCount(1)
+    setValue('passengerCount', 1, { shouldValidate: true })
     setValue('startDate', '', { shouldValidate: false })
     setValue('endDate', '', { shouldValidate: false })
+  }
+
+  const resetOnTabChange = (type: ResourceType) => {
+    setResourceType(type)
+    setSelected(null)
+    setSchedule(null)
+    setConflicts([])
+    setSelectedDriverId(null)
+    setSuggestedDriverId(null)
+    setPassengerCount(1)
   }
 
   // Auto-select resource dari query param (sekali, saat data siap)
@@ -118,26 +103,14 @@ export const BookingForm = () => {
     if (preselectedType === RESOURCE_TYPE.ROOM) {
       const r = (rooms ?? []).find((x) => x.resourceId === idNum)
       if (r) {
-        setActiveTab(RESOURCE_TYPE.ROOM)
-        handleSelectResource({
-          resourceId: r.resourceId,
-          name: r.name,
-          subtitle: r.location,
-          status: r.status,
-          type: RESOURCE_TYPE.ROOM,
-        })
+        setResourceType(RESOURCE_TYPE.ROOM)
+        handleSelectResource(r)
       }
     } else {
       const v = (vehicles ?? []).find((x) => x.resourceId === idNum)
       if (v) {
-        setActiveTab(RESOURCE_TYPE.VEHICLE)
-        handleSelectResource({
-          resourceId: v.resourceId,
-          name: v.name,
-          subtitle: v.plateNumber,
-          status: v.status,
-          type: RESOURCE_TYPE.VEHICLE,
-        })
+        setResourceType(RESOURCE_TYPE.VEHICLE)
+        handleSelectResource(v)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -146,17 +119,18 @@ export const BookingForm = () => {
   // Konfirmasi jadwal dari calendar (tanggal + jam digabung jadi ISO)
   const handleDateTimeSelect = (range: DateTimeRange) => {
     setSchedule(range)
-    const startISO = new Date(
-      `${formatYMD(range.startDate)}T${range.startTime}:00`,
-    ).toISOString()
-    const endISO = new Date(
-      `${formatYMD(range.endDate)}T${range.endTime}:00`,
-    ).toISOString()
-    setValue('startDate', startISO, { shouldValidate: true })
-    setValue('endDate', endISO, { shouldValidate: true })
+    setValue(
+      'startDate',
+      new Date(`${formatYMD(range.startDate)}T${range.startTime}:00`).toISOString(),
+      { shouldValidate: true },
+    )
+    setValue(
+      'endDate',
+      new Date(`${formatYMD(range.endDate)}T${range.endTime}:00`).toISOString(),
+      { shouldValidate: true },
+    )
   }
 
-  // ISO gabungan tanggal + jam (untuk ringkasan & durasi)
   const startISO = schedule
     ? new Date(
         `${formatYMD(schedule.startDate)}T${schedule.startTime}:00`,
@@ -168,24 +142,33 @@ export const BookingForm = () => {
       ).toISOString()
     : null
 
-  const isVehicle = selected?.type === RESOURCE_TYPE.VEHICLE
+  const handlePassengerChange = (v: number | undefined) => {
+    const n = v ?? 1
+    setPassengerCount(n)
+    setValue('passengerCount', n, { shouldValidate: true })
+  }
+
+  // Validasi kapasitas (butuh data kendaraan)
+  const isPassengerValid =
+    !isVehicle || (passengerCount >= 1 && passengerCount <= (capacity ?? 0))
+
+  const finalDriverId = selectedDriverId ?? suggestedDriverId ?? undefined
 
   const onSubmit = (data: CreateBookingFormData) =>
     mutate(
       {
         ...data,
-        // Hanya kirim untuk VEHICLE
-        driverId: isVehicle ? selectedDriverId ?? undefined : undefined,
-        passengerCount: isVehicle ? passengerCount : undefined,
+        passengerCount: isVehicle ? passengerCount : 1,
+        driverId: isVehicle ? finalDriverId : undefined,
       },
       { onSuccess: () => router.push('/booking') },
     )
 
-  const TypeIcon = selected?.type === RESOURCE_TYPE.ROOM ? Building2 : Car
+  const TypeIcon = isVehicle ? Car : Building2
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* ── a. Resource: summary (preselect) atau picker ── */}
+      {/* ── a. Resource: summary atau picker ── */}
       {selected && !showPicker ? (
         <Card>
           <CardHeader title="Resource Dipilih" />
@@ -198,7 +181,7 @@ export const BookingForm = () => {
                 {selected.name}
               </p>
               <p className="truncate text-xs text-[var(--text-secondary)]">
-                {selected.subtitle}
+                {subtitle}
               </p>
             </div>
             <ResourceStatusBadge status={selected.status} />
@@ -219,15 +202,8 @@ export const BookingForm = () => {
           />
 
           <Tabs
-            value={activeTab}
-            onValueChange={(v) => {
-              setActiveTab(v as ResourceType)
-              setSelected(null)
-              setSchedule(null)
-              setConflicts([])
-              setSelectedDriverId(null)
-              setPassengerCount(undefined)
-            }}
+            value={resourceType}
+            onValueChange={(v) => resetOnTabChange(v as ResourceType)}
             className="mb-4"
           >
             <TabsList className="rounded-lg bg-[var(--bg-subtle)] p-1">
@@ -246,47 +222,11 @@ export const BookingForm = () => {
             </TabsList>
           </Tabs>
 
-          {isLoadingResources ? (
-            <p className="py-8 text-center text-sm text-[var(--text-secondary)]">
-              Memuat resource…
-            </p>
-          ) : resources.length === 0 ? (
-            <p className="py-8 text-center text-sm text-[var(--text-secondary)]">
-              Tidak ada resource tersedia
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {resources.map((resource) => {
-                const isSelected = selected?.resourceId === resource.resourceId
-                const isAvailable = resource.status === RESOURCE_STATUS.AVAILABLE
-                const ResIcon =
-                  resource.type === RESOURCE_TYPE.ROOM ? DoorOpen : Car
-
-                return (
-                  <button
-                    key={resource.resourceId}
-                    type="button"
-                    disabled={!isAvailable}
-                    onClick={() => handleSelectResource(resource)}
-                    className={cnCard(isSelected, isAvailable)}
-                  >
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
-                      <ResIcon className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0 flex-1 text-left">
-                      <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
-                        {resource.name}
-                      </p>
-                      <p className="truncate text-xs text-[var(--text-secondary)]">
-                        {resource.subtitle}
-                      </p>
-                    </div>
-                    <ResourceStatusBadge status={resource.status} />
-                  </button>
-                )
-              })}
-            </div>
-          )}
+          <ResourcePicker
+            resourceType={resourceType}
+            value={selected?.id ?? null}
+            onChange={handleSelectResource}
+          />
 
           {errors.resourceId && (
             <p className="mt-2 flex items-center gap-1 text-xs text-[var(--danger)]">
@@ -296,7 +236,32 @@ export const BookingForm = () => {
         </Card>
       )}
 
-      {/* ── b. Kalender ketersediaan (setelah pilih resource) ── */}
+      {/* ── a2. Jumlah penumpang (hanya VEHICLE) ── */}
+      {selected && isVehicle && (
+        <Card>
+          <CardHeader title="Jumlah Penumpang" />
+          <div className="max-w-[220px]">
+            <InputNumber
+              label="Jumlah Penumpang"
+              min={1}
+              max={capacity}
+              value={passengerCount}
+              onChange={handlePassengerChange}
+            />
+          </div>
+          <p className="mt-1 text-xs text-[var(--text-secondary)]">
+            Kapasitas {selected.name}: {capacity} orang
+          </p>
+          {!isPassengerValid && (
+            <p className="mt-1 flex items-center gap-1 text-xs text-[var(--danger)]">
+              <AlertCircle className="h-3 w-3" />
+              Jumlah penumpang melebihi kapasitas kendaraan ({capacity} orang)
+            </p>
+          )}
+        </Card>
+      )}
+
+      {/* ── b. Kalender ketersediaan ── */}
       {selected && (
         <Card>
           <CardHeader
@@ -305,17 +270,16 @@ export const BookingForm = () => {
           />
           <AvailabilityCalendar
             resourceId={selected.resourceId}
-            resourceType={selected.type}
+            resourceType={resourceType}
             mode="range"
             minDate={new Date()}
             onSelectDateTime={handleDateTimeSelect}
             onConflictDetected={setConflicts}
           />
 
-          {/* Banner bentrok */}
           {conflicts.length > 0 && (
             <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <div>
                 <p className="font-semibold">Jadwal bentrok</p>
                 <ul className="mt-1 space-y-0.5 text-xs">
@@ -343,7 +307,6 @@ export const BookingForm = () => {
         <Card>
           <CardHeader title="Detail Booking" />
 
-          {/* Ringkasan resource */}
           <CardSection className="mb-5 flex items-center gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-card)] text-[var(--text-secondary)]">
               <TypeIcon className="h-5 w-5" />
@@ -353,12 +316,11 @@ export const BookingForm = () => {
                 {selected.name}
               </p>
               <p className="truncate text-xs text-[var(--text-secondary)]">
-                {selected.subtitle}
+                {subtitle}
               </p>
             </div>
           </CardSection>
 
-          {/* Ringkasan jadwal (read-only — dari calendar) */}
           <CardSection className="mb-5">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -395,7 +357,6 @@ export const BookingForm = () => {
             </div>
           </CardSection>
 
-          {/* Tujuan */}
           <InputTextArea
             label="Tujuan Peminjaman"
             required
@@ -409,30 +370,20 @@ export const BookingForm = () => {
         </Card>
       )}
 
-      {/* ── c2. Pilih driver — opsional, hanya VEHICLE ── */}
-      {isVehicle && schedule && startISO && endISO && (
+      {/* ── c2. Pilih driver — hanya VEHICLE, setelah jadwal ── */}
+      {isVehicle && selected && schedule && startISO && endISO && (
         <Card>
           <CardHeader
-            title="Pilih Driver (Opsional)"
-            description="Kosongkan jika ingin admin yang menugaskan driver"
+            title="Pilih Driver"
+            description="Kosongkan untuk penugasan otomatis / oleh admin"
           />
-
-          {/* Jumlah penumpang — untuk hitung sisa kursi */}
-          <div className="mb-4 max-w-[220px]">
-            <InputNumber
-              label="Jumlah Penumpang"
-              min={1}
-              placeholder="mis. 3"
-              value={passengerCount ?? ''}
-              onChange={(v) => setPassengerCount(v)}
-            />
-          </div>
-
           <DriverSelector
             startDate={startISO}
             endDate={endISO}
+            passengerCount={passengerCount}
             value={selectedDriverId}
             onChange={setSelectedDriverId}
+            onSuggestedChange={setSuggestedDriverId}
           />
         </Card>
       )}
@@ -454,7 +405,12 @@ export const BookingForm = () => {
         >
           Batal
         </AppButton>
-        <AppButton type="submit" variant="primary" loading={isPending}>
+        <AppButton
+          type="submit"
+          variant="primary"
+          loading={isPending}
+          disabled={isPending || !isPassengerValid}
+        >
           Ajukan Booking
         </AppButton>
       </div>
@@ -463,19 +419,8 @@ export const BookingForm = () => {
 }
 
 // ─────────────────────────────────────────
-// Helper kecil
+// Helper
 // ─────────────────────────────────────────
-
-const cnCard = (isSelected: boolean, isAvailable: boolean) =>
-  [
-    'flex items-center gap-3 rounded-xl border p-3 transition-all',
-    isSelected
-      ? 'border-[1.5px] border-[var(--primary)] bg-[var(--primary-light)]'
-      : 'border-[var(--border-card)] bg-[var(--bg-card)] hover:border-[var(--border-input)]',
-    !isAvailable && 'cursor-not-allowed opacity-50',
-  ]
-    .filter(Boolean)
-    .join(' ')
 
 /** YYYY-MM-DD dari komponen tanggal lokal (bukan UTC) */
 const formatYMD = (d: Date) =>
