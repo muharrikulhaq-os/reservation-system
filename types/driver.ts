@@ -25,6 +25,32 @@ export interface DriverSummary {
   phoneNumber: string
 }
 
+// --- Driver Availability (untuk pemilihan driver saat create booking) ---
+
+export interface DriverWithAvailability {
+  id: number
+  name: string
+  phoneNumber: string
+  isActive: boolean
+  // Info ketersediaan pada tanggal/waktu tertentu
+  hasExistingBooking: boolean // sudah punya booking di waktu itu
+  existingBooking?: {
+    bookingId: number
+    vehicleName: string
+    vehicleCapacity: number
+    destination: string    // tujuan (dari purpose)
+    startDate: string
+    endDate: string
+    occupiedSeats: number  // kursi terpakai
+    remainingSeats: number // sisa kursi
+  } | null
+}
+
+export interface DriverAvailabilityParams {
+  startDate: string
+  endDate: string
+}
+
 // --- Driver Assignment History ---
 
 export interface DriverAssignment {

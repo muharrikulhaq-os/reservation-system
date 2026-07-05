@@ -9,6 +9,8 @@ import type {
   PaginatedResponse,
   Driver,
   DriverAssignment,
+  DriverWithAvailability,
+  DriverAvailabilityParams,
   ToggleDriverActiveResponse,
   DriverQueryParams,
   CreateDriverPayload,
@@ -57,5 +59,14 @@ export const driverService = {
   getAssignmentHistory: (id: number) =>
     apiClient
       .get<ApiResponse<DriverAssignment[]>>(API_ENDPOINTS.DRIVERS.ASSIGNMENTS(id))
+      .then((r) => r.data),
+
+  // Ketersediaan driver pada rentang tanggal/waktu (untuk pemilihan saat create booking)
+  getAvailability: (params: DriverAvailabilityParams) =>
+    apiClient
+      .get<ApiResponse<DriverWithAvailability[]>>(
+        API_ENDPOINTS.DRIVERS.AVAILABILITY,
+        { params },
+      )
       .then((r) => r.data),
 }

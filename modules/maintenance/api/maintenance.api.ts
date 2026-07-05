@@ -10,16 +10,13 @@ import type {
   MaintenanceRecord,
   MaintenanceQueryParams,
   CreateMaintenancePayload,
-  UpdateMaintenancePayload,
+  CompleteMaintenancePayload,
 } from '@/types'
 
-export const maintenanceService = {
+export const maintenanceApi = {
   getAll: (params?: MaintenanceQueryParams) =>
     apiClient
-      .get<PaginatedResponse<MaintenanceRecord>>(
-        API_ENDPOINTS.MAINTENANCE.BASE,
-        { params },
-      )
+      .get<PaginatedResponse<MaintenanceRecord>>(API_ENDPOINTS.MAINTENANCE.BASE, { params })
       .then((r) => r.data),
 
   getById: (id: number) =>
@@ -27,20 +24,25 @@ export const maintenanceService = {
       .get<ApiResponse<MaintenanceRecord>>(API_ENDPOINTS.MAINTENANCE.BY_ID(id))
       .then((r) => r.data),
 
-  // POST otomatis ubah status resource → MAINTENANCE
+  // POST otomatis ubah status resource → MAINTENANCE (backend handle)
   create: (payload: CreateMaintenancePayload) =>
     apiClient
       .post<ApiResponse<MaintenanceRecord>>(API_ENDPOINTS.MAINTENANCE.BASE, payload)
       .then((r) => r.data),
 
-  // PUT dengan endDate → status resource otomatis kembali AVAILABLE
-  update: (id: number, payload: UpdateMaintenancePayload) =>
-    apiClient
-      .put<ApiResponse<MaintenanceRecord>>(
-        API_ENDPOINTS.MAINTENANCE.BY_ID(id),
-        payload,
-      )
-      .then((r) => r.data),
+  // PATCH complete + upload bukti → status resource kembali AVAILABLE (backend handle)
+  complete: (id: number, payload: CompleteMaintenancePayload) => {
+    const fd = new FormData()
+    fd.append('endDate', payload.endDate)
+    fd.append('cost', String(payload.cost))
+    if (payload.proofPhotos) payload.proofPhotos.forEach((p) => fd.append('proofPhotos[]', p))
+    if (payload.note) fd.append('note', payload.note)
+    return apiClient
+      .patch<ApiResponse<MaintenanceRecord>>(API_ENDPOINTS.MAINTENANCE.COMPLETE(id), fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then((r) => r.data)
+  },
 
   delete: (id: number) =>
     apiClient

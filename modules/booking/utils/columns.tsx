@@ -1,7 +1,7 @@
 'use client'
 
 import Link from "next/link";
-import { ArrowRightLeft, Building2, Car, Eye, GitMerge, X } from "lucide-react";
+import { ArrowRightLeft, Building2, Car, Eye, GitMerge, X, Zap } from "lucide-react";
 import { UserAvatar } from "@/components/shared/avatar/Avatar";
 import { BookingStatusBadge } from "@/components/shared/badge/StatusBadge";
 import {
@@ -125,6 +125,11 @@ export const bookingColumns: ColumnDef<Booking, unknown>[] = [
               {isMerged && (
                 <span className="inline-flex items-center gap-0.5 rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-semibold text-sky-600">
                   <GitMerge className="h-2.5 w-2.5" /> Digabungkan
+                </span>
+              )}
+              {booking.hasMergeSuggestion && (
+                <span className="inline-flex items-center gap-0.5 rounded-full bg-orange-50 px-1.5 py-0.5 text-[9px] font-semibold text-orange-600">
+                  <Zap className="h-2.5 w-2.5" /> Kandidat Merge
                 </span>
               )}
             </div>

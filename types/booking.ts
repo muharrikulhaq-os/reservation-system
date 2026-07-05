@@ -27,6 +27,8 @@ export interface Booking extends Timestamps {
   // Pengalihan resource oleh admin saat approve
   isReassigned?: boolean
   originalResource?: OriginalResource | null
+  // true jika driver yang dipilih sudah punya booking lain → kandidat merge
+  hasMergeSuggestion?: boolean
 }
 
 // --- Resource Substitution ---
@@ -181,6 +183,8 @@ export interface CreateBookingPayload {
   startDate: string // RFC3339
   endDate: string
   purpose: string
+  passengerCount?: number // jumlah penumpang (untuk hitung sisa kursi)
+  driverId?: number       // opsional, hanya untuk VEHICLE
 }
 
 export interface ApproveBookingPayload {

@@ -30,3 +30,24 @@ export const useUpsertSetting = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.MASTER_SETTINGS }),
   })
 }
+
+// ── Fuel prices ──────────────────────────
+
+export const useFuelPrices = () =>
+  useQuery({
+    queryKey: QUERY_KEYS.FUEL_PRICES,
+    queryFn:  () => settingService.getFuelPrices().then((r) => r.data),
+    staleTime: Infinity, // harga jarang berubah
+  })
+
+export const useUpsertFuelPrice = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ grade, price }: { grade: string; price: number }) =>
+      settingService.upsertFuelPrice(grade, price),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.FUEL_PRICES })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.MASTER_SETTINGS })
+    },
+  })
+}

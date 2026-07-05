@@ -8,6 +8,7 @@ import type {
   ApiResponse,
   MasterSetting,
   UpdateSettingPayload,
+  FuelPriceSetting,
 } from '@/types'
 
 export const settingService = {
@@ -27,6 +28,20 @@ export const settingService = {
       .put<ApiResponse<MasterSetting>>(
         API_ENDPOINTS.MASTER_SETTINGS.BY_KEY(key),
         payload,
+      )
+      .then((r) => r.data),
+
+  // --- Fuel prices (harga default per grade) ---
+  getFuelPrices: () =>
+    apiClient
+      .get<ApiResponse<FuelPriceSetting[]>>(API_ENDPOINTS.SETTINGS.FUEL_PRICES)
+      .then((r) => r.data),
+
+  upsertFuelPrice: (grade: string, price: number) =>
+    apiClient
+      .put<ApiResponse<MasterSetting>>(
+        API_ENDPOINTS.SETTINGS.BY_KEY(`fuel_price_${grade.toLowerCase()}`),
+        { value: String(price) },
       )
       .then((r) => r.data),
 }

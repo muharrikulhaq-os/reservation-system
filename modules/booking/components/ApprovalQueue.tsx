@@ -9,6 +9,7 @@ import {
   Clock,
   DoorOpen,
   XCircle,
+  Zap,
 } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
 import { UserAvatar } from '@/components/shared'
@@ -93,6 +94,9 @@ export const ApprovalQueue = () => {
   const processedList =
     processedTab === BOOKING_STATUS.APPROVED ? approved : rejected
 
+  // Booking PENDING dengan driver yang sudah punya booking lain → kandidat merge
+  const mergeCandidatesCount = pending.filter((b) => b.hasMergeSuggestion).length
+
   return (
     <div className="flex flex-col gap-6">
       {/* ── Stat cards ── */}
@@ -129,6 +133,22 @@ export const ApprovalQueue = () => {
           }
         />
       </div>
+
+      {/* ── Alert kandidat merge ── */}
+      {mergeCandidatesCount > 0 && (
+        <div className="flex items-start gap-3 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
+          <Zap className="mt-0.5 h-4 w-4 shrink-0 text-orange-600" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-orange-800">
+              {mergeCandidatesCount} booking kandidat merge
+            </p>
+            <p className="mt-0.5 text-xs text-orange-700">
+              Ada booking dengan driver yang sama. Tinjau untuk digabung atau tugaskan
+              terpisah.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── Antrean menunggu ── */}
       <Card>
@@ -263,6 +283,11 @@ const QueueRow = ({
             <span className="shrink-0 rounded-full bg-[var(--bg-subtle)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
               {isVehicle ? 'Kendaraan' : 'Ruangan'}
             </span>
+            {booking.hasMergeSuggestion && (
+              <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-orange-50 px-1.5 py-0.5 text-[9px] font-semibold text-orange-600">
+                <Zap className="h-2.5 w-2.5" /> Kandidat Merge
+              </span>
+            )}
           </div>
           <p className="truncate text-xs text-[var(--text-secondary)]">
             {formatDate(booking.startDate)} – {formatDate(booking.endDate)}

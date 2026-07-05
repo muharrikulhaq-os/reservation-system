@@ -88,9 +88,10 @@ export const API_ENDPOINTS = {
     ASSIGN:          (id: number) => `${API_PREFIX}/drivers/${id}/assign`,
     RELEASE:         (id: number) => `${API_PREFIX}/drivers/${id}/release`,
     ASSIGNMENTS:     (id: number) => `${API_PREFIX}/drivers/${id}/assignments`,
+    AVAILABILITY:    `${API_PREFIX}/drivers/availability`, // ?startDate=&endDate=
   },
 
-  // ── Fuel Expenses ───────────────────────
+  // ── Fuel Expenses (legacy BBM/LISTRIK terpisah) ──
   FUEL_EXPENSES: {
     BASE:            `${API_PREFIX}/fuel-expenses`,
     BBM:             `${API_PREFIX}/fuel-expenses/bbm`,
@@ -98,10 +99,17 @@ export const API_ENDPOINTS = {
     BY_ID:           (id: number) => `${API_PREFIX}/fuel-expenses/${id}`,
   },
 
+  // ── Fuel (unified — multipart, BBM + Listrik) ──
+  FUEL: {
+    BASE:            `${API_PREFIX}/fuel-expenses`,
+    BY_ID:           (id: number) => `${API_PREFIX}/fuel-expenses/${id}`,
+  },
+
   // ── Maintenance ─────────────────────────
   MAINTENANCE: {
     BASE:            `${API_PREFIX}/maintenance`,
     BY_ID:           (id: number) => `${API_PREFIX}/maintenance/${id}`,
+    COMPLETE:        (id: number) => `${API_PREFIX}/maintenance/${id}/complete`,
   },
 
   // ── Attachments ─────────────────────────
@@ -125,6 +133,13 @@ export const API_ENDPOINTS = {
   MASTER_SETTINGS: {
     BASE:            `${API_PREFIX}/master-settings`,
     BY_KEY:          (key: string) => `${API_PREFIX}/master-settings/${key}`,
+  },
+
+  // ── Settings (harga fuel, dsb.) ─────────
+  SETTINGS: {
+    BASE:            `${API_PREFIX}/settings`,
+    BY_KEY:          (key: string) => `${API_PREFIX}/settings/${key}`,
+    FUEL_PRICES:     `${API_PREFIX}/settings/fuel-prices`,
   },
 
   // ── Reports ─────────────────────────────

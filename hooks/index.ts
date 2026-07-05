@@ -7,8 +7,6 @@
 // ⚠ useVehicles / useRooms / useBookings / useDrivers / useUsers telah pindah ke modules/*/hooks
 // import dari module barrel: import { useUsers } from '@/modules/users'
 export * from './api/useAuth'
-export * from './api/useFuel'
-export * from './api/useMaintenance'
 export * from './api/useGuestBookings'
 export * from './api/useReports'
 export * from './api/useSettings'

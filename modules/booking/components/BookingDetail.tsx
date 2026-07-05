@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   AlertCircle,
   AlertTriangle,
@@ -12,6 +13,7 @@ import {
   DoorOpen,
   Download,
   FileCheck,
+  Fuel,
   GitMerge,
   Merge,
   Paperclip,
@@ -62,6 +64,7 @@ import { BookingAssignPanel } from "./BookingAssignPanel";
 import { BookingMergePanel } from "./BookingMergePanel";
 import { ReturnReportModal } from "./ReturnReportModal";
 import { ReturnReportCard } from "./ReturnReportCard";
+import { FuelInputModal } from "@/modules/fuel";
 
 // ─────────────────────────────────────────
 // BOOKING DETAIL
@@ -369,6 +372,17 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           )}
         </AdminOnly>
 
+        {/* Driver: catat pengisian BBM */}
+        {isDriver &&
+          booking.status === BOOKING_STATUS.ONGOING &&
+          booking.resource.type === RESOURCE_TYPE.VEHICLE && (
+            <DriverFuelCard
+              vehicleId={booking.assignedVehicle?.id}
+              bookingId={booking.id}
+              onSuccess={refetch}
+            />
+          )}
+
         {/* Driver: kirim laporan pengembalian */}
         {isDriver &&
           booking.status === BOOKING_STATUS.ONGOING &&
@@ -460,6 +474,42 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
         </Card>
       </div>
     </div>
+  );
+};
+
+// ─────────────────────────────────────────
+// DRIVER FUEL CARD (ONGOING + VEHICLE)
+// ─────────────────────────────────────────
+
+const DriverFuelCard = ({
+  vehicleId,
+  bookingId,
+  onSuccess,
+}: {
+  vehicleId?: number;
+  bookingId: number;
+  onSuccess?: () => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <Card>
+      <CardHeader title="Pengisian BBM" />
+      <AppButton
+        fullWidth
+        variant="secondary"
+        leftIcon={<Fuel className="h-4 w-4" />}
+        onClick={() => setOpen(true)}
+      >
+        Catat Pengisian BBM
+      </AppButton>
+      <FuelInputModal
+        open={open}
+        onOpenChange={setOpen}
+        presetVehicleId={vehicleId}
+        presetBookingId={bookingId}
+        onSuccess={onSuccess}
+      />
+    </Card>
   );
 };
 

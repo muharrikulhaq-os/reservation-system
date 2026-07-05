@@ -6,7 +6,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, AlertTriangle, Building2, Car, Clock, DoorOpen } from 'lucide-react'
 import { Card, CardHeader, CardSection } from '@/components/common'
-import { AppButton, InputTextArea } from '@/components/ui-custom'
+import { AppButton, InputTextArea, InputNumber } from '@/components/ui-custom'
+import { DriverSelector } from './DriverSelector'
 import {
   AvailabilityCalendar,
   ResourceStatusBadge,
@@ -55,6 +56,9 @@ export const BookingForm = () => {
   // Jadwal terpilih dari calendar (tanggal + jam, sudah dikonfirmasi)
   const [schedule, setSchedule] = useState<DateTimeRange | null>(null)
   const [conflicts, setConflicts] = useState<CalendarEvent[]>([])
+  // Pilihan driver (opsional, hanya VEHICLE) + jumlah penumpang
+  const [selectedDriverId, setSelectedDriverId] = useState<number | null>(null)
+  const [passengerCount, setPassengerCount] = useState<number | undefined>(undefined)
 
   const { data: vehicles, isLoading: loadingVehicles } = useVehicles({
     limit: 100,
@@ -101,6 +105,8 @@ export const BookingForm = () => {
     setValue('resourceId', resource.resourceId, { shouldValidate: true })
     setSchedule(null)
     setConflicts([])
+    setSelectedDriverId(null)
+    setPassengerCount(undefined)
     setValue('startDate', '', { shouldValidate: false })
     setValue('endDate', '', { shouldValidate: false })
   }
@@ -162,8 +168,18 @@ export const BookingForm = () => {
       ).toISOString()
     : null
 
+  const isVehicle = selected?.type === RESOURCE_TYPE.VEHICLE
+
   const onSubmit = (data: CreateBookingFormData) =>
-    mutate(data, { onSuccess: () => router.push('/booking') })
+    mutate(
+      {
+        ...data,
+        // Hanya kirim untuk VEHICLE
+        driverId: isVehicle ? selectedDriverId ?? undefined : undefined,
+        passengerCount: isVehicle ? passengerCount : undefined,
+      },
+      { onSuccess: () => router.push('/booking') },
+    )
 
   const TypeIcon = selected?.type === RESOURCE_TYPE.ROOM ? Building2 : Car
 
@@ -209,6 +225,8 @@ export const BookingForm = () => {
               setSelected(null)
               setSchedule(null)
               setConflicts([])
+              setSelectedDriverId(null)
+              setPassengerCount(undefined)
             }}
             className="mb-4"
           >
@@ -387,6 +405,34 @@ export const BookingForm = () => {
             showCount
             error={errors.purpose?.message}
             {...register('purpose')}
+          />
+        </Card>
+      )}
+
+      {/* ── c2. Pilih driver — opsional, hanya VEHICLE ── */}
+      {isVehicle && schedule && startISO && endISO && (
+        <Card>
+          <CardHeader
+            title="Pilih Driver (Opsional)"
+            description="Kosongkan jika ingin admin yang menugaskan driver"
+          />
+
+          {/* Jumlah penumpang — untuk hitung sisa kursi */}
+          <div className="mb-4 max-w-[220px]">
+            <InputNumber
+              label="Jumlah Penumpang"
+              min={1}
+              placeholder="mis. 3"
+              value={passengerCount ?? ''}
+              onChange={(v) => setPassengerCount(v)}
+            />
+          </div>
+
+          <DriverSelector
+            startDate={startISO}
+            endDate={endISO}
+            value={selectedDriverId}
+            onChange={setSelectedDriverId}
           />
         </Card>
       )}

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown, Eye, EyeOff, Upload, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -337,6 +337,16 @@ export const InputRupiah = React.forwardRef<HTMLInputElement, InputRupiahProps>(
     const [raw, setRaw] = useState(
       value !== undefined ? formatRupiah(value) : "",
     );
+
+    // Sinkronkan tampilan saat `value` diubah dari luar (mis. prefill async).
+    // Tidak memicu loop: saat user mengetik, value === angka saat ini.
+    useEffect(() => {
+      const current = parseRupiah(raw);
+      if (value !== current) {
+        setRaw(value !== undefined ? formatRupiah(value) : "");
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [value]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const numeric = parseRupiah(e.target.value);

@@ -10,94 +10,132 @@ import type { FuelType, ResourceStatus, ResourceType } from './enums'
 // FUEL EXPENSES
 // ─────────────────────────────────────────
 
+// Jenis BBM / sumber energi (grade). LISTRIK dipakai untuk kendaraan EV.
+export type FuelGrade =
+  | 'PERTALITE'
+  | 'PERTAMAX'
+  | 'PERTAMAX_TURBO'
+  | 'SOLAR'
+  | 'DEXLITE'
+  | 'PERTAMINA_DEX'
+  | 'LISTRIK'
+
 // Shape dari GET /fuel-expenses (list)
 // API menggabungkan BBM & LISTRIK dalam satu shape
-// field yang tidak relevan akan bernilai 0 atau null
+// field yang tidak relevan akan bernilai null
 export interface FuelExpense {
   id: number
+  vehicleId: number
+  vehicle: {
+    id: number
+    name: string
+    plateNumber: string
+  }
   driverId: number
   driverName: string
-  vehicleId: number
+  bookingId: number | null // null jika isi di luar booking
   fuelType: FuelType
+  fuelGrade: FuelGrade      // jenis BBM / LISTRIK
   // BBM fields
   liter: number | null
   pricePerLiter: number | null
-  odometerBefore: number | null
-  odometerAfter: number | null
-  // LISTRIK fields
+  // Listrik fields
   kwh: number | null
   pricePerKwh: number | null
-  batteryBefore: number | null
-  batteryAfter: number | null
   // Common
-  totalCost: number      // API pakai "totalCost", bukan "totalAmount"
+  totalCost: number        // API pakai "totalCost", bukan "totalAmount"
+  odometerBefore: number
+  odometerAfter: number
+  distanceKm: number       // dihitung: odometerAfter - odometerBefore
+  proofPhotoUrl: string | null // bukti wajib
   note: string | null
   createdAt: string
 }
 
-export interface CreateBbmExpensePayload {
+// Payload gabungan create fuel (multipart — proofPhoto WAJIB)
+export interface CreateFuelPayload {
   vehicleId: number
-  bookingId?: number
-  liter: number
-  pricePerLiter: number
+  bookingId?: number       // opsional
+  fuelType: FuelType
+  fuelGrade: FuelGrade
+  liter?: number           // untuk BBM
+  pricePerLiter?: number
+  kwh?: number             // untuk LISTRIK
+  pricePerKwh?: number
   odometerBefore: number
   odometerAfter: number
-  note?: string
-}
-
-export interface CreateListrikExpensePayload {
-  vehicleId: number
-  bookingId?: number
-  kwh: number
-  pricePerKwh: number
-  batteryBefore?: number
-  batteryAfter?: number
+  proofPhoto: File         // WAJIB
   note?: string
 }
 
 export interface FuelExpenseQueryParams {
   page?: number
   limit?: number
+  search?: string
   driverId?: number
   vehicleId?: number
   fuelType?: FuelType
+  fuelGrade?: FuelGrade
+  startDate?: string
+  endDate?: string
 }
 
 // ─────────────────────────────────────────
 // MAINTENANCE
 // ─────────────────────────────────────────
 
+export type MaintenanceStatus = 'ONGOING' | 'COMPLETED'
+export type MaintenanceType = 'RUTIN' | 'PERBAIKAN' | 'PENGGANTIAN' | 'BODY'
+
 export interface MaintenanceRecord {
   id: number
   resourceId: number
-  resourceName: string
-  resourceType: 'VEHICLE' | 'ROOM'
+  resource: {
+    id: number
+    name: string
+    type: 'VEHICLE' | 'ROOM'
+  }
+  type: MaintenanceType
   description: string
+  status: MaintenanceStatus
   startDate: string
   endDate: string | null  // null = masih dalam proses
-  cost: number | null
-  createdBy: string       // nama string
+  cost: number
+  vendor: string | null   // bengkel/vendor
+  odometer: number | null // untuk kendaraan
+  proofPhotos: string[]   // bukti saat selesai
+  completedAt: string | null
   createdAt: string
 }
 
 export interface CreateMaintenancePayload {
   resourceId: number
+  type: MaintenanceType
   description: string
   startDate: string
-  cost?: number
+  cost?: number           // bisa diisi belakangan (saat complete)
+  vendor?: string
+  odometer?: number
 }
 
-export interface UpdateMaintenancePayload {
-  description?: string
-  startDate?: string
-  endDate?: string        // mengisi endDate otomatis ubah status resource → AVAILABLE
-  cost?: number
+// Menyelesaikan maintenance (multipart — proofPhotos bukti pekerjaan)
+export interface CompleteMaintenancePayload {
+  endDate: string
+  cost: number
+  proofPhotos?: File[]
+  note?: string
 }
 
 export interface MaintenanceQueryParams {
   page?: number
   limit?: number
+  search?: string
   resourceId?: number
+  resourceType?: ResourceType
+  type?: MaintenanceType
+  status?: MaintenanceStatus
+  startDate?: string
+  endDate?: string
 }
 
 // ─────────────────────────────────────────
@@ -116,6 +154,14 @@ export interface UpdateSettingPayload {
   value: number
   unit?: string
   description?: string
+}
+
+// Harga bahan bakar per grade — default prefill saat input pengisian
+export interface FuelPriceSetting {
+  grade: FuelGrade
+  pricePerUnit: number // per liter atau per kWh
+  unit: 'LITER' | 'KWH'
+  updatedAt: string
 }
 
 // ─────────────────────────────────────────

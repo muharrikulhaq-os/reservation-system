@@ -7,6 +7,7 @@ import { QUERY_KEYS } from '@/constants'
 import { driverService } from '../api/driver.api'
 import type {
   DriverQueryParams,
+  DriverAvailabilityParams,
   CreateDriverPayload,
   UpdateDriverPayload,
   AssignDriverToVehiclePayload,
@@ -32,6 +33,17 @@ export const useDriverAssignmentHistory = (id: number) =>
     queryKey: [...QUERY_KEYS.DRIVERS, id, 'assignments'],
     queryFn:  () => driverService.getAssignmentHistory(id).then((r) => r.data),
     enabled:  !!id,
+  })
+
+// Ketersediaan driver — hanya fetch jika startDate & endDate ada
+export const useDriverAvailability = (params: Partial<DriverAvailabilityParams>) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.DRIVERS, 'availability', params],
+    queryFn:  () =>
+      driverService
+        .getAvailability(params as DriverAvailabilityParams)
+        .then((r) => r.data),
+    enabled: !!params.startDate && !!params.endDate,
   })
 
 // ── Mutations ────────────────────────────

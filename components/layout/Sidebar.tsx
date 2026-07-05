@@ -11,13 +11,16 @@ import {
   BarChart3,
   Users,
   Settings,
+  Fuel,
+  Wrench,
   LogOut,
   Grid2x2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth.store'
 import { useLogout } from '@/hooks'
-import { ROLE } from '@/constants'
+import { useBookings } from '@/modules/booking'
+import { ROLE, BOOKING_STATUS } from '@/constants'
 import type { RoleName } from '@/types'
 import { UserAvatar } from '@/components/shared/avatar/Avatar'
 
@@ -30,21 +33,26 @@ interface NavItem {
   href:  string
   icon:  React.ElementType
   badge?: number
+  /** Dot kecil (mis. penanda kandidat merge). */
+  dot?: boolean
   /** Role yang boleh melihat menu ini. Kosong = semua role. */
   roles?: RoleName[]
 }
 
 const MENU_NAV: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard',      icon: LayoutDashboard },
-  { label: 'Booking',   href: '/booking',    icon: CalendarCheck,  badge: 3 },
+  { label: 'Booking',   href: '/booking',    icon: CalendarCheck },
   { label: 'Vehicles',  href: '/vehicles',   icon: Car },
   { label: 'Meeting Rooms', href: '/rooms',  icon: Building2, roles: [ROLE.ADMIN, ROLE.EMPLOYEE] },
   { label: 'Driver',    href: '/drivers',    icon: UserRound, roles: [ROLE.ADMIN] },
+  { label: 'Bahan Bakar', href: '/fuel',     icon: Fuel, roles: [ROLE.ADMIN, ROLE.DRIVER] },
+  { label: 'Pemeliharaan', href: '/maintenance', icon: Wrench, roles: [ROLE.ADMIN, ROLE.ROOM_KEEPER] },
 ]
 
 const ADMIN_NAV: NavItem[] = [
   { label: 'Laporan',   href: '/reports',   icon: BarChart3 },
   { label: 'Pengguna',  href: '/users',     icon: Users },
+  { label: 'Pengaturan', href: '/settings', icon: Settings },
 ]
 
 // ─────────────────────────────────────────
@@ -77,8 +85,16 @@ const NavLink = ({ item, isActive }: { item: NavItem; isActive: boolean }) => {
       />
       <span className="flex-1 truncate">{item.label}</span>
 
+      {/* Dot penanda kandidat merge */}
+      {item.dot && (
+        <span
+          className="h-1.5 w-1.5 rounded-full bg-orange-500"
+          title="Ada kandidat merge"
+        />
+      )}
+
       {/* Badge */}
-      {item.badge && (
+      {!!item.badge && (
         <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--primary)] px-1.5 text-[10px] font-semibold text-white">
           {item.badge}
         </span>
@@ -144,7 +160,7 @@ const BottomUser = () => {
       {/* Action icons */}
       <div className="mt-1 flex gap-1 px-2">
         <Link
-          href="/dashboard/settings"
+          href="/settings"
           className="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]"
           aria-label="Pengaturan"
         >
@@ -171,9 +187,20 @@ export const Sidebar = () => {
   const isAdmin = useAuthStore((s) => s.isAdmin())
   const role = useAuthStore((s) => s.user?.role) as RoleName | undefined
 
-  // Saring menu sesuai role pengguna
+  // Badge booking PENDING + penanda kandidat merge
+  const pendingQ = useBookings({ status: BOOKING_STATUS.PENDING, limit: 100 })
+  const pendingCount = pendingQ.data?.pagination.total ?? 0
+  const mergeCandidateCount = (pendingQ.data?.data ?? []).filter(
+    (b) => b.hasMergeSuggestion,
+  ).length
+
+  // Saring menu sesuai role pengguna + inject badge dinamis
   const menuItems = MENU_NAV.filter(
     (item) => !item.roles || (role ? item.roles.includes(role) : false),
+  ).map((item) =>
+    item.href === '/booking'
+      ? { ...item, badge: pendingCount, dot: mergeCandidateCount > 0 }
+      : item,
   )
 
   return (
