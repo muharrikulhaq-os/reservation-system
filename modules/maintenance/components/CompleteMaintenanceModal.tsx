@@ -12,13 +12,13 @@ import {
   AppButton,
   InputDate,
   InputRupiah,
-  InputFile,
   InputTextArea,
+  InputFile,
 } from '@/components/ui-custom'
 import { getErrorMessage, formatDate } from '@/lib'
-import { MAINTENANCE_TYPE_CONFIG } from '@/constants'
+import { MAINTENANCE_STATUS } from '@/constants'
 import type { MaintenanceRecord } from '@/types'
-import { useCompleteMaintenance } from '../hooks/useMaintenance'
+import { useUpdateMaintenance, useCompleteMaintenance } from '../hooks/useMaintenance'
 
 interface CompleteMaintenanceModalProps {
   maintenance: MaintenanceRecord
@@ -41,31 +41,65 @@ export const CompleteMaintenanceModal = ({
   onSuccess,
 }: CompleteMaintenanceModalProps) => {
   const [endDate, setEndDate] = useState(todayYMD())
-  const [cost, setCost] = useState<number | undefined>(maintenance.cost || undefined)
+  const [cost, setCost] = useState<number | undefined>(
+    maintenance.totalCost ? Number(maintenance.totalCost) : undefined,
+  )
+  const [description, setDescription] = useState('')
   const [photos, setPhotos] = useState<File[]>([])
-  const [note, setNote] = useState('')
 
+  const update = useUpdateMaintenance(maintenance.id)
   const complete = useCompleteMaintenance(maintenance.id)
 
+  const isPending = update.isPending || complete.isPending
+  const error = update.error ?? complete.error
   const canSubmit = !!endDate && !!cost && photos.length > 0
+
+  // endDate WAJIB > startDate (CHECK chk_maintenance_dates). Pakai tanggal terpilih
+  // + jam sekarang; jika tetap <= startDate, dorong 1 menit setelah startDate.
+  const buildEndIso = () => {
+    const start = new Date(maintenance.startDate)
+    const now = new Date()
+    const [y, m, d] = endDate.split('-').map(Number)
+    let end = new Date(y, m - 1, d, now.getHours(), now.getMinutes(), now.getSeconds())
+    if (end.getTime() <= start.getTime()) {
+      end = new Date(start.getTime() + 60_000)
+    }
+    return end.toISOString()
+  }
 
   const handleSubmit = async () => {
     if (!canSubmit || !cost) return
     try {
-      await complete.mutateAsync({
-        endDate: new Date(endDate).toISOString(),
-        cost,
-        proofPhotos: photos,
-        note: note.trim() || undefined,
+      // 1. Set biaya final + endDate via PUT (status tetap pending agar /complete bisa jalan).
+      //    PUT butuh semua field wajib → ambil dari record yang ada.
+      await update.mutateAsync({
+        vehicleId: maintenance.vehicleId,
+        // Backend mengirim 0 saat NULL → jangan kirim balik (FK ke maintenance_types)
+        maintenanceTypeId:
+          maintenance.maintenanceTypeId && maintenance.maintenanceTypeId > 0
+            ? maintenance.maintenanceTypeId
+            : undefined,
+        type: maintenance.type,
+        status: MAINTENANCE_STATUS.PENDING,
+        description: description.trim() || maintenance.description,
+        odometer:
+          maintenance.odometer && maintenance.odometer > 0
+            ? maintenance.odometer
+            : undefined,
+        totalCost: cost,
+        vendorName: maintenance.vendorName ?? undefined,
+        location: maintenance.location,
+        startDate: maintenance.startDate,
+        endDate: buildEndIso(),
       })
+      // 2. Upload foto bukti + tandai selesai (status → completed, resource AVAILABLE)
+      await complete.mutateAsync({ photos })
       onOpenChange(false)
       onSuccess?.()
     } catch {
-      // ditampilkan via complete.error
+      // ditampilkan via error
     }
   }
-
-  const typeCfg = MAINTENANCE_TYPE_CONFIG[maintenance.type]
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -81,27 +115,21 @@ export const CompleteMaintenanceModal = ({
         </DialogHeader>
 
         <div className="mt-2 space-y-4">
-          {complete.error && (
+          {error && (
             <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{getErrorMessage(complete.error)}</span>
+              <span>{getErrorMessage(error)}</span>
             </div>
           )}
 
           {/* Info read-only */}
           <div className="rounded-lg border border-[var(--border-divider)] bg-[var(--bg-subtle)] px-4 py-3">
             <p className="text-sm font-semibold text-[var(--text-primary)]">
-              {maintenance.resource?.name}
+              {maintenance.vehicleName} · {maintenance.plateNumber}
             </p>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--text-secondary)]">
-              <span
-                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold"
-                style={{ backgroundColor: 'var(--bg-card)', color: typeCfg?.color }}
-              >
-                {typeCfg?.label}
-              </span>
-              <span>Mulai {formatDate(maintenance.startDate)}</span>
-            </div>
+            <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
+              Mulai {formatDate(maintenance.startDate)}
+            </p>
             <p className="mt-1.5 text-xs text-[var(--text-secondary)]">
               {maintenance.description}
             </p>
@@ -123,37 +151,37 @@ export const CompleteMaintenanceModal = ({
             />
           </div>
 
+          <InputTextArea
+            label="Deskripsi Hasil"
+            rows={3}
+            placeholder="Ringkasan pekerjaan yang dilakukan… (opsional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+
           <InputFile
             label="Bukti Pekerjaan"
             required
             accept="image/jpeg,image/png"
             multiple
             maxSizeMb={5}
-            hint="Foto hasil perbaikan, invoice bengkel, dll (min. 1)"
+            hint="Foto hasil perbaikan / invoice (min. 1)"
             onChange={setPhotos}
-          />
-
-          <InputTextArea
-            label="Catatan"
-            rows={3}
-            placeholder="Ringkasan pekerjaan yang dilakukan… (opsional)"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
           />
 
           <div className="flex gap-3 pt-1">
             <AppButton
               variant="secondary"
               fullWidth
-              disabled={complete.isPending}
+              disabled={isPending}
               onClick={() => onOpenChange(false)}
             >
               Batal
             </AppButton>
             <AppButton
               fullWidth
-              loading={complete.isPending}
-              disabled={!canSubmit || complete.isPending}
+              loading={isPending}
+              disabled={!canSubmit || isPending}
               onClick={handleSubmit}
             >
               Selesaikan

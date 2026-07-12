@@ -1,6 +1,7 @@
 // ─────────────────────────────────────────
 // SETTINGS MODULE — public API
-// import { Settings } from '@/modules/settings'
+// import { FuelTypeSettings } from '@/modules/settings'
 // ─────────────────────────────────────────
 
-export { Settings } from './Settings'
+export { FuelTypeSettings } from './components/FuelTypeSettings'
+export { FuelTypeFormModal } from './components/FuelTypeFormModal'

@@ -51,14 +51,14 @@ export const QUERY_KEYS = {
   DRIVERS: ["drivers"] as const,
 
   // Fuel
-  FUEL_EXPENSES: ["fuel-expenses"] as const,
+  FUEL: ["fuel-expenses"] as const,
+  FUEL_TYPES: ["fuel-types"] as const,
 
   // Maintenance
   MAINTENANCE: ["maintenance"] as const,
 
   // Settings
-  MASTER_SETTINGS: ["master-settings"] as const,
-  FUEL_PRICES: ["settings", "fuel-prices"] as const,
+  SETTINGS: ["master-settings"] as const,
 
   // Reports
   REPORTS: {
@@ -107,12 +107,5 @@ export const PAGINATION = {
 
 export const SETTING_KEYS = {
   BBM_PRICE_PER_LITER: "bbm_price_per_liter",
-  // Harga per grade BBM
-  FUEL_PRICE_PERTALITE: "fuel_price_pertalite",
-  FUEL_PRICE_PERTAMAX: "fuel_price_pertamax",
-  FUEL_PRICE_PERTAMAX_TURBO: "fuel_price_pertamax_turbo",
-  FUEL_PRICE_SOLAR: "fuel_price_solar",
-  FUEL_PRICE_DEXLITE: "fuel_price_dexlite",
-  FUEL_PRICE_PERTAMINA_DEX: "fuel_price_pertamina_dex",
   ELECTRICITY_PRICE_PER_KWH: "electricity_price_per_kwh",
 } as const;

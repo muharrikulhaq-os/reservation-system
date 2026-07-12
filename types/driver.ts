@@ -28,15 +28,18 @@ export interface DriverSummary {
 // --- Driver Availability (untuk pemilihan driver saat create booking) ---
 
 // Response dari GET /drivers/available
+// Supir "kosong" (belum pegang kendaraan) → vehicle* null; kapasitas & remainingSeats
+// mengikuti kendaraan yang dibooking (dihitung di FE).
 export interface AvailableDriver {
   driverId: number
   driverName: string
   employeeId: string
-  vehicleId: number
-  plateNumber: string
-  vehicleCapacity: number
+  vehicleId: number | null
+  plateNumber: string | null
+  vehicleCapacity: number | null
   overlappingPassengers: number // penumpang dari booking lain yang overlap
-  remainingSeats: number        // sisa kursi = capacity - overlappingPassengers
+  remainingSeats: number | null // sisa kursi (null jika supir kosong)
+  overlappingPurpose: string    // tujuan booking overlap (kosong jika tidak ada)
 }
 
 export interface AvailableDriverParams {
@@ -55,13 +58,21 @@ export interface DriverAssignment {
 
 // --- Driver Rating ---
 
+// Satu ulasan pada daftar rating driver (GET /bookings/drivers/:id/ratings)
 export interface DriverRating {
   id: number
-  bookingId: number
   rating: 1 | 2 | 3 | 4 | 5
   review: string | null
-  reviewerName: string
+  ratedBy: { id: number; name: string }
   createdAt: string
+}
+
+// Ringkasan + daftar ulasan seorang driver
+export interface DriverRatingsResult {
+  driverId: number
+  totalRatings: number
+  averageRating: number | null
+  ratings: DriverRating[]
 }
 
 // --- Query Params ---

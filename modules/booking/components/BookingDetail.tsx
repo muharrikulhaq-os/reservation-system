@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AlertCircle,
   AlertTriangle,
@@ -36,6 +36,7 @@ import {
   BookingStatusBadge,
   Badge,
   UserAvatar,
+  StarRating,
 } from "@/components/shared";
 import { AppButton, InputFile } from "@/components/ui-custom";
 import {
@@ -53,6 +54,7 @@ import {
   useBookingActivity,
   useBookingMergeInfo,
   useBookingAttachments,
+  useBookingDriverRating,
   useCancelBooking,
   useReturnReport,
   useStartBooking,
@@ -64,6 +66,9 @@ import { BookingAssignPanel } from "./BookingAssignPanel";
 import { BookingMergePanel } from "./BookingMergePanel";
 import { ReturnReportModal } from "./ReturnReportModal";
 import { ReturnReportCard } from "./ReturnReportCard";
+import { StartBookingModal } from "./StartBookingModal";
+import { RateDriverModal } from "./RateDriverModal";
+import { BookingFuelHistory } from "./BookingFuelHistory";
 import { FuelInputModal } from "@/modules/fuel";
 
 // ─────────────────────────────────────────
@@ -98,6 +103,7 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
 
   const isAdmin = useAuthStore((s) => s.isAdmin());
   const isDriver = useAuthStore((s) => s.isDriver());
+  const currentUserId = useAuthStore((s) => s.user?.id);
   const { mutate: cancelBooking, isPending: isCancelling } = useCancelBooking();
 
   if (isLoading) {
@@ -372,6 +378,17 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           )}
         </AdminOnly>
 
+        {/* Driver: mulai perjalanan (odometer + foto) */}
+        {isDriver &&
+          booking.status === BOOKING_STATUS.APPROVED &&
+          booking.resource.type === RESOURCE_TYPE.VEHICLE &&
+          !!booking.assignedDriver && (
+            <Card>
+              <CardHeader title="Mulai Perjalanan" />
+              <StartBookingModal bookingId={booking.id} onSuccess={refetch} />
+            </Card>
+          )}
+
         {/* Driver: catat pengisian BBM */}
         {isDriver &&
           booking.status === BOOKING_STATUS.ONGOING &&
@@ -379,6 +396,18 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
             <DriverFuelCard
               vehicleId={booking.assignedVehicle?.id}
               bookingId={booking.id}
+              onSuccess={refetch}
+            />
+          )}
+
+        {/* Pemilik booking: beri rating driver setelah selesai */}
+        {currentUserId === booking.user.id &&
+          booking.status === BOOKING_STATUS.COMPLETED &&
+          booking.resource.type === RESOURCE_TYPE.VEHICLE &&
+          !!booking.assignedDriver && (
+            <RatingCard
+              bookingId={booking.id}
+              driverName={booking.assignedDriver.name}
               onSuccess={refetch}
             />
           )}
@@ -392,6 +421,9 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
               <ReturnReportModal bookingId={booking.id} onSuccess={refetch} />
             </Card>
           )}
+
+        {/* Riwayat pengisian BBM (auto-sembunyi bila kosong) */}
+        {isVehicle && <BookingFuelHistory bookingId={booking.id} />}
 
         {/* Activity Timeline (dipindah dari kolom kiri) */}
         {activity && activity.length > 0 && (
@@ -490,23 +522,102 @@ const DriverFuelCard = ({
   bookingId: number;
   onSuccess?: () => void;
 }) => {
-  const [open, setOpen] = useState(false);
   return (
     <Card>
       <CardHeader title="Pengisian BBM" />
-      <AppButton
-        fullWidth
-        variant="secondary"
-        leftIcon={<Fuel className="h-4 w-4" />}
-        onClick={() => setOpen(true)}
-      >
-        Catat Pengisian BBM
-      </AppButton>
       <FuelInputModal
-        open={open}
-        onOpenChange={setOpen}
         presetVehicleId={vehicleId}
         presetBookingId={bookingId}
+        onSuccess={onSuccess}
+        trigger={
+          <AppButton
+            fullWidth
+            variant="secondary"
+            leftIcon={<Fuel className="h-4 w-4" />}
+          >
+            Catat Pengisian BBM
+          </AppButton>
+        }
+      />
+    </Card>
+  );
+};
+
+// ─────────────────────────────────────────
+// RATING CARD (COMPLETED — pemilik booking)
+// - Jika sudah dinilai → tampilkan rating (read-only).
+// - Jika belum → tombol "Beri Rating"; modal auto-open SEKALI saja
+//   (pertama kali pemilik membuka detail booking selesai).
+// ─────────────────────────────────────────
+
+const RatingCard = ({
+  bookingId,
+  driverName,
+  onSuccess,
+}: {
+  bookingId: number;
+  driverName?: string;
+  onSuccess?: () => void;
+}) => {
+  const { data: rating, isLoading, isError } = useBookingDriverRating(bookingId);
+  const alreadyRated = !!rating; // 404 → isError, rating undefined
+  const [open, setOpen] = useState(false);
+
+  // Auto-open sekali: hanya jika belum dinilai & belum pernah di-prompt.
+  useEffect(() => {
+    if (isLoading || alreadyRated) return;
+    const key = `booking-rating-prompted-${bookingId}`;
+    if (typeof window === "undefined") return;
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, "1");
+    setOpen(true);
+    // isError memastikan query 404 sudah selesai sebelum auto-open
+  }, [isLoading, alreadyRated, isError, bookingId]);
+
+  if (isLoading) return null;
+
+  // Sudah dinilai → kartu read-only
+  if (alreadyRated && rating) {
+    return (
+      <Card>
+        <CardHeader title="Rating Driver" />
+        <div className="flex items-center gap-3">
+          <StarRating value={rating.rating} size="h-5 w-5" />
+          <span className="text-sm font-semibold text-[var(--text-primary)]">
+            {rating.rating}/5
+          </span>
+        </div>
+        {rating.review && (
+          <p className="mt-3 rounded-lg bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--text-secondary)]">
+            “{rating.review}”
+          </p>
+        )}
+        <p className="mt-2 text-xs text-[var(--text-disabled)]">
+          Dinilai {formatDateTime(rating.createdAt)}
+        </p>
+      </Card>
+    );
+  }
+
+  // Belum dinilai → prompt
+  return (
+    <Card>
+      <CardHeader title="Rating Driver" />
+      <p className="mb-3 text-sm text-[var(--text-secondary)]">
+        Booking selesai. Beri penilaian untuk driver Anda.
+      </p>
+      <AppButton
+        fullWidth
+        leftIcon={<Star className="h-4 w-4" />}
+        onClick={() => setOpen(true)}
+      >
+        Beri Rating
+      </AppButton>
+      <RateDriverModal
+        bookingId={bookingId}
+        driverName={driverName}
+        open={open}
+        onOpenChange={setOpen}
         onSuccess={onSuccess}
       />
     </Card>

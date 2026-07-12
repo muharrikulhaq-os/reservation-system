@@ -111,7 +111,9 @@ export const AppButton = React.forwardRef<HTMLButtonElement, AppButtonProps>(
           'focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2',
           variantClass,
           sizeClass,
-          fullWidth && 'w-full',
+          // `min-w-0 shrink` (override base `shrink-0`) agar dua tombol fullWidth
+          // yang bersebelahan dalam flex row saling menyusut, tidak overflow keluar modal.
+          fullWidth && 'w-full min-w-0 shrink',
           className,
         )}
         {...props}

@@ -21,11 +21,11 @@ export const OverviewSection = ({ range }: { range: ReportDateParams }) => {
 
   const donutData = summary
     ? [
-        { name: BOOKING_STATUS_CONFIG.PENDING.label, value: summary.pendingCount, color: BOOKING_STATUS_CONFIG.PENDING.dotColor },
-        { name: BOOKING_STATUS_CONFIG.APPROVED.label, value: summary.approvedCount, color: BOOKING_STATUS_CONFIG.APPROVED.dotColor },
-        { name: BOOKING_STATUS_CONFIG.COMPLETED.label, value: summary.completedCount, color: BOOKING_STATUS_CONFIG.COMPLETED.dotColor },
-        { name: BOOKING_STATUS_CONFIG.CANCELLED.label, value: summary.cancelledCount, color: BOOKING_STATUS_CONFIG.CANCELLED.dotColor },
-        { name: BOOKING_STATUS_CONFIG.REJECTED.label, value: summary.rejectedCount, color: BOOKING_STATUS_CONFIG.REJECTED.dotColor },
+        { name: BOOKING_STATUS_CONFIG.PENDING.label, value: summary.pending, color: BOOKING_STATUS_CONFIG.PENDING.dotColor },
+        { name: BOOKING_STATUS_CONFIG.APPROVED.label, value: summary.approved, color: BOOKING_STATUS_CONFIG.APPROVED.dotColor },
+        { name: BOOKING_STATUS_CONFIG.COMPLETED.label, value: summary.completed, color: BOOKING_STATUS_CONFIG.COMPLETED.dotColor },
+        { name: BOOKING_STATUS_CONFIG.CANCELLED.label, value: summary.cancelled, color: BOOKING_STATUS_CONFIG.CANCELLED.dotColor },
+        { name: BOOKING_STATUS_CONFIG.REJECTED.label, value: summary.rejected, color: BOOKING_STATUS_CONFIG.REJECTED.dotColor },
       ].filter((d) => d.value > 0)
     : []
 
@@ -51,7 +51,7 @@ export const OverviewSection = ({ range }: { range: ReportDateParams }) => {
         />
         <ReportStatCard
           label="Avg Utilisasi"
-          value={overview ? `${overview.avgUtilization}%` : '—'}
+          value={overview ? `${overview.avgUtilization.toFixed(1)}%` : '—'}
           icon={<Activity className="h-5 w-5 text-[var(--success)]" />}
           iconBg="#DCFCE7"
           change={overview?.changePercent.utilization}
@@ -76,15 +76,16 @@ export const OverviewSection = ({ range }: { range: ReportDateParams }) => {
             xKey="period"
             formatX={formatPeriodShort}
             lines={[
-              { key: 'vehicle', label: 'Kendaraan', color: 'var(--primary)' },
-              { key: 'room', label: 'Ruangan', color: 'var(--info)' },
+              { key: 'count', label: 'Total', color: 'var(--primary)' },
+              { key: 'vehicle', label: 'Kendaraan', color: 'var(--info)' },
+              { key: 'room', label: 'Ruangan', color: 'var(--success)' },
             ]}
           />
         </Card>
 
         <Card>
           <CardHeader title="Distribusi Status" description="Periode terpilih" />
-          <DonutChart data={donutData} centerValue={summary?.totalBookings ?? 0} centerText="Booking" />
+          <DonutChart data={donutData} centerValue={summary?.total ?? 0} centerText="Booking" />
         </Card>
       </div>
     </div>

@@ -46,6 +46,8 @@ export const BOOKING_STATUS = {
   COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED',
   OVERDUE:   'OVERDUE',
+  EXPIRED:   'EXPIRED',
+  IGNORED:   'IGNORED',
 } as const satisfies Record<string, BookingStatus>
 
 // --- Approval Action ---
@@ -107,6 +109,18 @@ export const BOOKING_STATUS_CONFIG = {
     bg:         '#FEF3C7',
     text:       '#92400E',
     dotColor:   '#D97706',
+  },
+  EXPIRED: {
+    label:      'Kedaluwarsa',
+    bg:         '#F1F5F9',
+    text:       '#475569',
+    dotColor:   '#64748B',
+  },
+  IGNORED: {
+    label:      'Terabaikan',
+    bg:         '#FAFAF9',
+    text:       '#57534E',
+    dotColor:   '#A8A29E',
   },
 } as const satisfies Record<BookingStatus, {
   label: string

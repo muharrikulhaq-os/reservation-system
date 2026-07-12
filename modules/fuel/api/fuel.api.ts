@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// FUEL EXPENSE SERVICE (unified — multipart)
+// FUEL EXPENSE SERVICE (sesuai API contract)
 // ─────────────────────────────────────────
 
 import { apiClient } from '@/lib'
@@ -8,12 +8,12 @@ import type {
   ApiResponse,
   PaginatedResponse,
   FuelExpense,
-  FuelExpenseQueryParams,
+  FuelExpenseParams,
   CreateFuelPayload,
 } from '@/types'
 
 export const fuelApi = {
-  getAll: (params?: FuelExpenseQueryParams) =>
+  getAll: (params?: FuelExpenseParams) =>
     apiClient
       .get<PaginatedResponse<FuelExpense>>(API_ENDPOINTS.FUEL.BASE, { params })
       .then((r) => r.data),
@@ -27,16 +27,16 @@ export const fuelApi = {
     const fd = new FormData()
     fd.append('vehicleId', String(payload.vehicleId))
     if (payload.bookingId) fd.append('bookingId', String(payload.bookingId))
-    fd.append('fuelType', payload.fuelType)
-    fd.append('fuelGrade', payload.fuelGrade)
+    fd.append('fuelTypeId', String(payload.fuelTypeId))
+    if (payload.fuelGrade) fd.append('fuelGrade', payload.fuelGrade)
     if (payload.liter != null) fd.append('liter', String(payload.liter))
     if (payload.pricePerLiter != null) fd.append('pricePerLiter', String(payload.pricePerLiter))
     if (payload.kwh != null) fd.append('kwh', String(payload.kwh))
     if (payload.pricePerKwh != null) fd.append('pricePerKwh', String(payload.pricePerKwh))
-    fd.append('odometerBefore', String(payload.odometerBefore))
-    fd.append('odometerAfter', String(payload.odometerAfter))
-    fd.append('proofPhoto', payload.proofPhoto)
+    if (payload.odometerBefore != null) fd.append('odometerBefore', String(payload.odometerBefore))
+    if (payload.odometerAfter != null) fd.append('odometerAfter', String(payload.odometerAfter))
     if (payload.note) fd.append('note', payload.note)
+    fd.append('proofPhoto', payload.proofPhoto)
     return apiClient
       .post<ApiResponse<FuelExpense>>(API_ENDPOINTS.FUEL.BASE, fd, {
         headers: { 'Content-Type': 'multipart/form-data' },

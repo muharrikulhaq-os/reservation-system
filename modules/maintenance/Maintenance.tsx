@@ -1,24 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { Search, Wrench, CheckCircle2, Coins, Plus } from 'lucide-react'
+import { Wrench, CheckCircle2, Coins, Plus } from 'lucide-react'
 import { PageHeader, StatCard } from '@/components/shared'
 import { DataTable } from '@/components/shared/table/DataTable'
-import { AppButton, InputSelect, InputDate } from '@/components/ui-custom'
+import { AppButton, InputSelect } from '@/components/ui-custom'
 import { useTableFilter } from '@/hooks'
 import { formatCurrency } from '@/lib'
-import {
-  RESOURCE_TYPE,
-  MAINTENANCE_STATUS,
-  MAINTENANCE_TYPE_CONFIG,
-  MAINTENANCE_STATUS_CONFIG,
-} from '@/constants'
-import type {
-  MaintenanceStatus,
-  MaintenanceType,
-  ResourceType,
-  SelectOption,
-} from '@/types'
+import { isMaintenanceCompleted } from '@/constants'
+import type { MaintenanceRecord, SelectOption } from '@/types'
 import { useMaintenanceRecords } from './hooks/useMaintenance'
 import { maintenanceColumns } from './utils/columns'
 
@@ -29,43 +19,40 @@ const isThisMonth = (iso: string | null) => {
   return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
 }
 
+const isCompleted = (m: MaintenanceRecord) => isMaintenanceCompleted(m.status)
+const costOf = (m: MaintenanceRecord) => (m.totalCost ? Number(m.totalCost) || 0 : 0)
+
 export const Maintenance = () => {
-  const { search, setSearch, filters, setFilter, params, setPage } =
-    useTableFilter({
-      resourceType: undefined as ResourceType | undefined,
-      type: undefined as MaintenanceType | undefined,
-      status: undefined as MaintenanceStatus | undefined,
-      startDate: undefined as string | undefined,
-      endDate: undefined as string | undefined,
-    })
+  const { filters, setFilter, params, setPage } = useTableFilter({
+    status: undefined as 'ongoing' | 'completed' | undefined,
+  })
 
   const { data, isLoading } = useMaintenanceRecords(params)
-  const items = data?.data ?? []
+  const rawItems = data?.data ?? []
 
-  const ongoingCount = items.filter(
-    (m) => m.status === MAINTENANCE_STATUS.ONGOING,
-  ).length
-  const completedThisMonth = items.filter(
-    (m) => m.status === MAINTENANCE_STATUS.COMPLETED && isThisMonth(m.completedAt),
+  const items =
+    filters.status === undefined
+      ? rawItems
+      : rawItems.filter((m) =>
+          filters.status === 'completed' ? isCompleted(m) : !isCompleted(m),
+        )
+
+  const ongoingCount = rawItems.filter((m) => !isCompleted(m)).length
+  const completedThisMonth = rawItems.filter(
+    (m) => isCompleted(m) && isThisMonth(m.completedAt ?? m.endDate),
   )
-  const totalCostMonth = completedThisMonth.reduce((s, m) => s + (m.cost ?? 0), 0)
+  const totalCostMonth = completedThisMonth.reduce((s, m) => s + costOf(m), 0)
 
-  const resourceTypeOptions: SelectOption[] = [
-    { value: RESOURCE_TYPE.VEHICLE, label: 'Kendaraan' },
-    { value: RESOURCE_TYPE.ROOM, label: 'Ruangan' },
+  const statusOptions: SelectOption[] = [
+    { value: 'ongoing', label: 'Berlangsung' },
+    { value: 'completed', label: 'Selesai' },
   ]
-  const typeOptions: SelectOption[] = (
-    Object.keys(MAINTENANCE_TYPE_CONFIG) as MaintenanceType[]
-  ).map((t) => ({ value: t, label: MAINTENANCE_TYPE_CONFIG[t].label }))
-  const statusOptions: SelectOption[] = (
-    Object.keys(MAINTENANCE_STATUS_CONFIG) as MaintenanceStatus[]
-  ).map((s) => ({ value: s, label: MAINTENANCE_STATUS_CONFIG[s].label }))
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Pemeliharaan"
-        description="Servis & perbaikan kendaraan dan ruangan"
+        description="Servis & perbaikan kendaraan"
         actions={
           <Link href="/maintenance/new">
             <AppButton leftIcon={<Plus className="h-4 w-4" />}>
@@ -99,40 +86,7 @@ export const Maintenance = () => {
 
       {/* Filter */}
       <div className="flex flex-wrap items-end gap-3">
-        <div className="relative w-full max-w-xs">
-          <Search className="pointer-events-none absolute inset-y-0 left-3 my-auto h-4 w-4 text-[var(--text-disabled)]" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari resource / deskripsi…"
-            className="h-10 w-full rounded-lg border border-[var(--border-input)] bg-[var(--bg-card)] pl-9 pr-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-disabled)] focus:border-[var(--primary)] focus:outline-none"
-          />
-        </div>
-
-        <div className="w-full max-w-[150px]">
-          <InputSelect
-            placeholder="Semua Resource"
-            options={resourceTypeOptions}
-            value={filters.resourceType ?? ''}
-            onChange={(e) =>
-              setFilter(
-                'resourceType',
-                (e.target.value || undefined) as ResourceType | undefined,
-              )
-            }
-          />
-        </div>
-        <div className="w-full max-w-[160px]">
-          <InputSelect
-            placeholder="Semua Tipe"
-            options={typeOptions}
-            value={filters.type ?? ''}
-            onChange={(e) =>
-              setFilter('type', (e.target.value || undefined) as MaintenanceType | undefined)
-            }
-          />
-        </div>
-        <div className="w-full max-w-[150px]">
+        <div className="w-full max-w-[180px]">
           <InputSelect
             placeholder="Semua Status"
             options={statusOptions}
@@ -140,21 +94,9 @@ export const Maintenance = () => {
             onChange={(e) =>
               setFilter(
                 'status',
-                (e.target.value || undefined) as MaintenanceStatus | undefined,
+                (e.target.value || undefined) as 'ongoing' | 'completed' | undefined,
               )
             }
-          />
-        </div>
-        <div className="w-[150px]">
-          <InputDate
-            value={filters.startDate ?? ''}
-            onChange={(e) => setFilter('startDate', e.target.value || undefined)}
-          />
-        </div>
-        <div className="w-[150px]">
-          <InputDate
-            value={filters.endDate ?? ''}
-            onChange={(e) => setFilter('endDate', e.target.value || undefined)}
           />
         </div>
       </div>

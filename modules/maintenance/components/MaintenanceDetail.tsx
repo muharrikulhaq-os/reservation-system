@@ -1,16 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { Building2, Car, CheckCircle2 } from 'lucide-react'
+import { Car, CheckCircle2 } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
 import { PageHeader } from '@/components/shared'
 import { AppButton } from '@/components/ui-custom'
 import { formatDate, formatCurrency, formatNumber, resolveFileUrl } from '@/lib'
 import {
-  RESOURCE_TYPE,
-  MAINTENANCE_STATUS,
-  MAINTENANCE_TYPE_CONFIG,
-  MAINTENANCE_STATUS_CONFIG,
+  isMaintenanceCompleted,
+  maintenanceStatusCfg,
+  maintenanceTypeLabel,
 } from '@/constants'
 import { useMaintenanceRecord } from '../hooks/useMaintenance'
 import { CompleteMaintenanceModal } from './CompleteMaintenanceModal'
@@ -30,9 +29,7 @@ export const MaintenanceDetail = ({ id }: { id: number }) => {
 
   if (isLoading) {
     return (
-      <p className="py-16 text-center text-sm text-[var(--text-secondary)]">
-        Memuat…
-      </p>
+      <p className="py-16 text-center text-sm text-[var(--text-secondary)]">Memuat…</p>
     )
   }
 
@@ -44,10 +41,9 @@ export const MaintenanceDetail = ({ id }: { id: number }) => {
     )
   }
 
-  const isVehicle = data.resource?.type === RESOURCE_TYPE.VEHICLE
-  const typeCfg = MAINTENANCE_TYPE_CONFIG[data.type]
-  const statusCfg = MAINTENANCE_STATUS_CONFIG[data.status]
-  const isOngoing = data.status === MAINTENANCE_STATUS.ONGOING
+  const isOngoing = !isMaintenanceCompleted(data.status)
+  const statusCfg = maintenanceStatusCfg(data.status)
+  const costNum = data.totalCost ? Number(data.totalCost) : null
   const photos = (data.proofPhotos ?? [])
     .map((p) => resolveFileUrl(p))
     .filter((u): u is string => !!u)
@@ -71,59 +67,52 @@ export const MaintenanceDetail = ({ id }: { id: number }) => {
 
       <Card>
         <CardHeader
-          title={data.resource?.name ?? '-'}
+          title={`${data.vehicleName} · ${data.plateNumber}`}
           action={
             <span
               className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold"
-              style={{ backgroundColor: statusCfg?.bg, color: statusCfg?.text }}
+              style={{ backgroundColor: statusCfg.bg, color: statusCfg.text }}
             >
               <span
                 className="h-1.5 w-1.5 rounded-full"
-                style={{ backgroundColor: statusCfg?.dotColor }}
+                style={{ backgroundColor: statusCfg.dot }}
               />
-              {statusCfg?.label}
+              {statusCfg.label}
             </span>
           }
         />
 
         <div className="mb-4 flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
-            {isVehicle ? (
-              <Car className="h-5 w-5" />
-            ) : (
-              <Building2 className="h-5 w-5" />
-            )}
+            <Car className="h-5 w-5" />
           </span>
-          <span
-            className="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-subtle)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-primary)]"
-          >
-            <span
-              className="h-2 w-2 rounded-full"
-              style={{ backgroundColor: typeCfg?.color }}
-            />
-            {typeCfg?.label}
+          <span className="rounded-full bg-[var(--bg-subtle)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-primary)]">
+            {maintenanceTypeLabel(data.type)}
           </span>
         </div>
 
         <div className="divide-y divide-[var(--border-divider)]">
           <Row label="Deskripsi" value={data.description} />
+          <Row label="Lokasi" value={data.location || '—'} />
+          <Row label="Vendor" value={data.vendorName || '—'} />
           <Row label="Mulai" value={formatDate(data.startDate)} />
           <Row
             label="Selesai"
-            value={data.endDate ? formatDate(data.endDate) : '—'}
+            value={data.endDate ? formatDate(data.endDate) : 'Berjalan'}
           />
-          <Row label="Biaya" value={formatCurrency(data.cost ?? 0)} />
-          <Row label="Vendor" value={data.vendor ?? '—'} />
-          {isVehicle && (
-            <Row
-              label="Odometer"
-              value={data.odometer != null ? `${formatNumber(data.odometer)} km` : '—'}
-            />
-          )}
+          <Row
+            label="Odometer"
+            value={data.odometer ? `${formatNumber(data.odometer)} km` : '—'}
+          />
+          <Row
+            label="Biaya"
+            value={costNum != null && !Number.isNaN(costNum) ? formatCurrency(costNum) : '—'}
+          />
+          <Row label="Dicatat oleh" value={data.createdBy ?? '—'} />
         </div>
       </Card>
 
-      {/* Galeri bukti (jika sudah selesai) */}
+      {/* Galeri bukti */}
       {photos.length > 0 && (
         <Card>
           <CardHeader title="Bukti Pekerjaan" />

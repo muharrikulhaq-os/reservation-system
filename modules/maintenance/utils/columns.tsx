@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Building2, Car, CheckCircle2, Eye } from 'lucide-react'
+import { Car, CheckCircle2, Eye } from 'lucide-react'
 import {
   createColumnHelper,
   type ColumnDef,
@@ -10,21 +10,31 @@ import {
 import { AppButton } from '@/components/ui-custom'
 import { formatDate, formatCurrency } from '@/lib'
 import {
-  RESOURCE_TYPE,
-  MAINTENANCE_STATUS,
-  MAINTENANCE_TYPE_CONFIG,
-  MAINTENANCE_STATUS_CONFIG,
+  isMaintenanceCompleted,
+  maintenanceStatusCfg,
+  maintenanceTypeLabel,
 } from '@/constants'
 import { CompleteMaintenanceModal } from '../components/CompleteMaintenanceModal'
 import type { MaintenanceRecord } from '@/types'
 
 const ch = createColumnHelper<MaintenanceRecord>()
 
-// ── Row actions (detail + complete jika ONGOING) ──
+const StatusBadge = ({ status }: { status: string }) => {
+  const cfg = maintenanceStatusCfg(status)
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold"
+      style={{ backgroundColor: cfg.bg, color: cfg.text }}
+    >
+      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: cfg.dot }} />
+      {cfg.label}
+    </span>
+  )
+}
 
 const RowActions = ({ row }: { row: MaintenanceRecord }) => {
   const [open, setOpen] = useState(false)
-  const isOngoing = row.status === MAINTENANCE_STATUS.ONGOING
+  const isOngoing = !isMaintenanceCompleted(row.status)
 
   return (
     <div className="flex items-center justify-end gap-1">
@@ -57,54 +67,39 @@ const RowActions = ({ row }: { row: MaintenanceRecord }) => {
 }
 
 export const maintenanceColumns: ColumnDef<MaintenanceRecord, unknown>[] = [
-  ch.accessor('resource', {
-    header: 'Resource',
-    cell: ({ getValue }) => {
-      const r = getValue()
-      const isVehicle = r?.type === RESOURCE_TYPE.VEHICLE
-      return (
-        <div className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
-            {isVehicle ? (
-              <Car className="h-4 w-4" />
-            ) : (
-              <Building2 className="h-4 w-4" />
-            )}
-          </span>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-[var(--text-primary)]">
-              {r?.name ?? '-'}
-            </p>
-            <p className="text-xs text-[var(--text-secondary)]">
-              {isVehicle ? 'Kendaraan' : 'Ruangan'}
-            </p>
-          </div>
+  ch.accessor('vehicleName', {
+    header: 'Kendaraan',
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
+          <Car className="h-4 w-4" />
+        </span>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-[var(--text-primary)]">
+            {row.original.vehicleName}
+          </p>
+          <p className="text-xs text-[var(--text-secondary)]">
+            {row.original.plateNumber}
+          </p>
         </div>
-      )
-    },
+      </div>
+    ),
   }),
 
   ch.accessor('type', {
     header: 'Tipe',
-    size: 140,
-    cell: ({ getValue }) => {
-      const cfg = MAINTENANCE_TYPE_CONFIG[getValue()]
-      return (
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-subtle)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-primary)]">
-          <span
-            className="h-2 w-2 rounded-full"
-            style={{ backgroundColor: cfg?.color }}
-          />
-          {cfg?.label ?? getValue()}
-        </span>
-      )
-    },
+    size: 130,
+    cell: ({ getValue }) => (
+      <span className="rounded-full bg-[var(--bg-subtle)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-primary)]">
+        {maintenanceTypeLabel(getValue())}
+      </span>
+    ),
   }),
 
   ch.accessor('description', {
     header: 'Deskripsi',
     cell: ({ getValue }) => (
-      <span className="line-clamp-1 max-w-[240px] text-sm text-[var(--text-secondary)]">
+      <span className="line-clamp-1 max-w-[220px] text-sm text-[var(--text-secondary)]">
         {getValue()}
       </span>
     ),
@@ -113,21 +108,7 @@ export const maintenanceColumns: ColumnDef<MaintenanceRecord, unknown>[] = [
   ch.accessor('status', {
     header: 'Status',
     size: 130,
-    cell: ({ getValue }) => {
-      const cfg = MAINTENANCE_STATUS_CONFIG[getValue()]
-      return (
-        <span
-          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold"
-          style={{ backgroundColor: cfg?.bg, color: cfg?.text }}
-        >
-          <span
-            className="h-1.5 w-1.5 rounded-full"
-            style={{ backgroundColor: cfg?.dotColor }}
-          />
-          {cfg?.label ?? getValue()}
-        </span>
-      )
-    },
+    cell: ({ getValue }) => <StatusBadge status={getValue()} />,
   }),
 
   ch.accessor('startDate', {
@@ -140,23 +121,25 @@ export const maintenanceColumns: ColumnDef<MaintenanceRecord, unknown>[] = [
     ),
   }),
 
-  ch.accessor('endDate', {
-    header: 'Selesai',
-    size: 120,
-    cell: ({ getValue }) => (
-      <span className="text-sm text-[var(--text-secondary)]">
-        {getValue() ? formatDate(getValue()) : '—'}
-      </span>
-    ),
-  }),
-
-  ch.accessor('cost', {
+  ch.accessor('totalCost', {
     header: 'Biaya',
     size: 130,
+    cell: ({ getValue }) => {
+      const v = getValue()
+      const num = v != null && v !== '' ? Number(v) : null
+      return (
+        <span className="text-sm font-medium text-[var(--text-primary)]">
+          {num != null && !Number.isNaN(num) ? formatCurrency(num) : '—'}
+        </span>
+      )
+    },
+  }),
+
+  ch.accessor('createdBy', {
+    header: 'Dicatat',
+    size: 140,
     cell: ({ getValue }) => (
-      <span className="text-sm font-medium text-[var(--text-primary)]">
-        {formatCurrency(getValue() ?? 0)}
-      </span>
+      <span className="text-sm text-[var(--text-secondary)]">{getValue() ?? '-'}</span>
     ),
   }),
 

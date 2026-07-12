@@ -14,17 +14,21 @@ import { AppButton, InputSelect, InputTextArea } from '@/components/ui-custom'
 import { getErrorMessage } from '@/lib'
 import { BOOKING_STATUS, RESOURCE_STATUS, RESOURCE_TYPE } from '@/constants'
 import type { Booking, SelectOption } from '@/types'
+import { useDrivers } from '@/modules/drivers/hooks/useDrivers'
 import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
 import { useRooms } from '@/modules/rooms/hooks/useRooms'
 import {
   useApproveBooking,
   useRejectBooking,
   useSubstituteResource,
+  useAssignVehicle,
 } from '../hooks/useBookings'
 
 // ─────────────────────────────────────────
 // BOOKING APPROVAL PANEL (admin, status PENDING)
-// 3 aksi: Setujui · Alihkan & Setujui · Tolak
+// Aksi: Setujui · Alihkan & Setujui · Tolak
+// - VEHICLE: Alihkan = ganti Driver + Kendaraan (approve lalu assign-vehicle)
+// - ROOM:    Alihkan = ganti resource (substitute lalu approve)
 // ─────────────────────────────────────────
 
 interface Props {
@@ -33,38 +37,50 @@ interface Props {
 }
 
 export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
+  const isVehicle = booking.resource.type === RESOURCE_TYPE.VEHICLE
+  const ResourceIcon = isVehicle ? Car : DoorOpen
+
   const [substituteOpen, setSubstituteOpen] = useState(false)
-  const [substituteId, setSubstituteId] = useState('')
-  const [substituteReason, setSubstituteReason] = useState('')
   const [approveNote, setApproveNote] = useState('')
   const [rejectNote, setRejectNote] = useState('')
+  const [reason, setReason] = useState('')
+  // ROOM: resource pengganti
+  const [substituteId, setSubstituteId] = useState('')
+  // VEHICLE: driver + kendaraan pengganti
+  const [alihkanDriverId, setAlihkanDriverId] = useState('')
+  const [alihkanVehicleId, setAlihkanVehicleId] = useState('')
 
   const approve = useApproveBooking()
   const reject = useRejectBooking()
   const substitute = useSubstituteResource()
+  const assign = useAssignVehicle()
 
-  const isVehicle = booking.resource.type === RESOURCE_TYPE.VEHICLE
-  const ResourceIcon = isVehicle ? Car : DoorOpen
-
-  // Opsi resource pengganti (status AVAILABLE, exclude resource saat ini).
-  // value = resourceId (bukan vehicle/room id) sesuai payload substitute.
+  const { data: drivers } = useDrivers({ limit: 100 })
   const { data: vehicles } = useVehicles({ status: RESOURCE_STATUS.AVAILABLE, limit: 100 })
   const { data: rooms } = useRooms({ status: RESOURCE_STATUS.AVAILABLE, limit: 100 })
 
-  const substituteOptions: SelectOption[] = (
-    isVehicle
-      ? (vehicles ?? []).map((v) => ({ value: v.resourceId, label: `${v.name} (${v.plateNumber})` }))
-      : (rooms ?? []).map((r) => ({ value: r.resourceId, label: r.name }))
-  ).filter((opt) => opt.value !== booking.resource.id)
+  // ROOM: resource pengganti (value = resourceId, exclude resource saat ini)
+  const roomOptions: SelectOption[] = (rooms ?? [])
+    .map((r) => ({ value: r.resourceId, label: r.name }))
+    .filter((opt) => opt.value !== booking.resource.id)
 
-  const error = approve.error || reject.error || substitute.error
-  const isBusy = approve.isPending || reject.isPending || substitute.isPending
+  // VEHICLE: opsi driver + kendaraan (value = id entitas, bukan resourceId)
+  const driverOptions: SelectOption[] = (drivers ?? [])
+    .filter((d) => d.isActive)
+    .map((d) => ({ value: d.id, label: d.name }))
+  const vehicleOptions: SelectOption[] = (vehicles ?? []).map((v) => ({
+    value: v.id,
+    label: `${v.name} (${v.plateNumber})`,
+  }))
+
+  const error = approve.error || reject.error || substitute.error || assign.error
+  const isBusy =
+    approve.isPending || reject.isPending || substitute.isPending || assign.isPending
 
   if (booking.status !== BOOKING_STATUS.PENDING) return null
 
-  // Approve biasa: cukup klik "Setujui", TANPA pilih kendaraan.
-  // Assignment driver + kendaraan dilakukan terpisah di BookingAssignPanel
-  // setelah status APPROVED. Catatan bersifat opsional.
+  // Approve biasa: cukup klik "Setujui" — driver + kendaraan yang sudah
+  // ter-attach saat create tetap dipakai (booking siap digunakan).
   const handleApprove = () => {
     approve.mutate(
       {
@@ -75,25 +91,41 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
     )
   }
 
-  const handleSubstituteApprove = async () => {
+  const openAlihkan = () => {
+    setReason('')
+    setSubstituteId('')
+    // Pre-fill dengan driver/kendaraan saat ini (jika ada)
+    setAlihkanDriverId(booking.assignedDriver ? String(booking.assignedDriver.id) : '')
+    setAlihkanVehicleId(booking.assignedVehicle ? String(booking.assignedVehicle.id) : '')
+    setSubstituteOpen(true)
+  }
+
+  // Alihkan & Setujui — kondisional per tipe resource.
+  const handleAlihkanApprove = async () => {
     try {
-      await substitute.mutateAsync({
-        id: booking.id,
-        payload: {
-          resourceId: Number(substituteId),
-          note: substituteReason.trim() || undefined,
-        },
-      })
-      await approve.mutateAsync({
-        id: booking.id,
-        payload: substituteReason.trim() ? { note: substituteReason.trim() } : undefined,
-      })
+      const note = reason.trim() || undefined
+      if (isVehicle) {
+        // approve dulu (assign-vehicle butuh status APPROVED), lalu ganti driver+kendaraan
+        await approve.mutateAsync({ id: booking.id, payload: note ? { note } : undefined })
+        await assign.mutateAsync({
+          id: booking.id,
+          payload: {
+            driverId: Number(alihkanDriverId),
+            vehicleId: Number(alihkanVehicleId),
+          },
+        })
+      } else {
+        // ROOM: ganti resource lalu approve
+        await substitute.mutateAsync({
+          id: booking.id,
+          payload: { resourceId: Number(substituteId), note },
+        })
+        await approve.mutateAsync({ id: booking.id, payload: note ? { note } : undefined })
+      }
       setSubstituteOpen(false)
-      setSubstituteId('')
-      setSubstituteReason('')
       onActionComplete?.()
     } catch {
-      // error ditampilkan via `error` di bawah
+      // error ditampilkan via `error`
     }
   }
 
@@ -103,6 +135,10 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
       { onSuccess: () => onActionComplete?.() },
     )
   }
+
+  const canAlihkan = isVehicle
+    ? !!alihkanDriverId && !!alihkanVehicleId
+    : !!substituteId
 
   return (
     <Card>
@@ -131,7 +167,7 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
         />
         <AppButton
           fullWidth
-          loading={approve.isPending && !substitute.isPending}
+          loading={approve.isPending && !substitute.isPending && !assign.isPending}
           disabled={isBusy}
           leftIcon={<Check className="h-4 w-4" />}
           className="bg-[#16A34A] text-white hover:bg-green-700"
@@ -148,13 +184,14 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
         disabled={isBusy}
         leftIcon={<ArrowRightLeft className="h-4 w-4" />}
         className="mt-2"
-        onClick={() => setSubstituteOpen(true)}
+        onClick={openAlihkan}
       >
         Alihkan & Setujui
       </AppButton>
       <p className="mt-2 text-xs text-[var(--text-disabled)]">
-        Catatan: Employee akan menerima notifikasi pengalihan dan dapat
-        membatalkan booking jika tidak setuju.
+        {isVehicle
+          ? 'Ganti driver &/atau kendaraan lalu setujui. Peminjam menerima notifikasi pengalihan.'
+          : 'Ganti ruangan lalu setujui. Peminjam menerima notifikasi pengalihan.'}
       </p>
 
       {/* 3. Separator */}
@@ -164,7 +201,7 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
         <Separator className="flex-1 bg-[var(--border-divider)]" />
       </div>
 
-      {/* 4 + 5. Tolak */}
+      {/* 4. Tolak */}
       <InputTextArea
         label="Catatan Penolakan"
         required
@@ -193,7 +230,7 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
               className="text-lg font-bold text-[var(--text-primary)]"
               style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
             >
-              Alihkan Resource & Setujui
+              {isVehicle ? 'Alihkan Driver & Kendaraan' : 'Alihkan Ruangan'} & Setujui
             </DialogTitle>
           </DialogHeader>
 
@@ -201,33 +238,61 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
             {/* Resource saat ini */}
             <div>
               <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-secondary)]">
-                Resource Saat Ini
+                Booking Saat Ini
               </p>
               <CardSection className="flex items-center gap-2.5">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-card)] text-[var(--text-secondary)]">
                   <ResourceIcon className="h-4 w-4" />
                 </span>
-                <span className="text-sm font-semibold text-[var(--text-primary)]">
-                  {booking.resource.name}
-                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
+                    {booking.resource.name}
+                  </p>
+                  {isVehicle && booking.assignedDriver && (
+                    <p className="truncate text-xs text-[var(--text-secondary)]">
+                      Driver: {booking.assignedDriver.name}
+                    </p>
+                  )}
+                </div>
               </CardSection>
             </div>
 
-            <InputSelect
-              label="Resource Pengganti"
-              required
-              placeholder="Pilih resource pengganti"
-              options={substituteOptions}
-              value={substituteId}
-              onChange={(e) => setSubstituteId(e.target.value)}
-            />
+            {isVehicle ? (
+              <>
+                <InputSelect
+                  label="Driver"
+                  required
+                  placeholder="Pilih driver"
+                  options={driverOptions}
+                  value={alihkanDriverId}
+                  onChange={(e) => setAlihkanDriverId(e.target.value)}
+                />
+                <InputSelect
+                  label="Kendaraan"
+                  required
+                  placeholder="Pilih kendaraan"
+                  options={vehicleOptions}
+                  value={alihkanVehicleId}
+                  onChange={(e) => setAlihkanVehicleId(e.target.value)}
+                />
+              </>
+            ) : (
+              <InputSelect
+                label="Ruangan Pengganti"
+                required
+                placeholder="Pilih ruangan pengganti"
+                options={roomOptions}
+                value={substituteId}
+                onChange={(e) => setSubstituteId(e.target.value)}
+              />
+            )}
 
             <InputTextArea
-              label="Alasan Penggantian"
+              label="Alasan Pengalihan"
               rows={3}
-              placeholder="Alasan resource dialihkan…"
-              value={substituteReason}
-              onChange={(e) => setSubstituteReason(e.target.value)}
+              placeholder="Alasan booking dialihkan…"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
             />
 
             <div className="flex gap-3 pt-1">
@@ -241,9 +306,9 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
               </AppButton>
               <AppButton
                 fullWidth
-                loading={substitute.isPending || approve.isPending}
-                disabled={isBusy || !substituteId}
-                onClick={handleSubstituteApprove}
+                loading={isBusy}
+                disabled={isBusy || !canAlihkan}
+                onClick={handleAlihkanApprove}
               >
                 Alihkan & Setujui
               </AppButton>

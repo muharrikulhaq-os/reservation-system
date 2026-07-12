@@ -17,6 +17,8 @@ export type BookingStatus =
   | 'COMPLETED'
   | 'CANCELLED'
   | 'OVERDUE'
+  | 'EXPIRED'  // APPROVED tapi tidak pernah dimulai sampai endDate lewat
+  | 'IGNORED'  // PENDING tapi admin tidak merespons sampai endDate lewat
 
 export type ApprovalAction = 'APPROVED' | 'REJECTED'
 

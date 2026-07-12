@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// MAINTENANCE SERVICE
+// MAINTENANCE SERVICE (sesuai API contract)
 // ─────────────────────────────────────────
 
 import { apiClient } from '@/lib'
@@ -8,13 +8,14 @@ import type {
   ApiResponse,
   PaginatedResponse,
   MaintenanceRecord,
-  MaintenanceQueryParams,
+  MaintenanceParams,
   CreateMaintenancePayload,
+  UpdateMaintenancePayload,
   CompleteMaintenancePayload,
 } from '@/types'
 
 export const maintenanceApi = {
-  getAll: (params?: MaintenanceQueryParams) =>
+  getAll: (params?: MaintenanceParams) =>
     apiClient
       .get<PaginatedResponse<MaintenanceRecord>>(API_ENDPOINTS.MAINTENANCE.BASE, { params })
       .then((r) => r.data),
@@ -24,19 +25,22 @@ export const maintenanceApi = {
       .get<ApiResponse<MaintenanceRecord>>(API_ENDPOINTS.MAINTENANCE.BY_ID(id))
       .then((r) => r.data),
 
-  // POST otomatis ubah status resource → MAINTENANCE (backend handle)
+  // POST otomatis ubah status resource → MAINTENANCE (backend)
   create: (payload: CreateMaintenancePayload) =>
     apiClient
       .post<ApiResponse<MaintenanceRecord>>(API_ENDPOINTS.MAINTENANCE.BASE, payload)
       .then((r) => r.data),
 
-  // PATCH complete + upload bukti → status resource kembali AVAILABLE (backend handle)
+  // PUT — update (isi endDate → status resource kembali AVAILABLE)
+  update: (id: number, payload: UpdateMaintenancePayload) =>
+    apiClient
+      .put<ApiResponse<MaintenanceRecord>>(API_ENDPOINTS.MAINTENANCE.BY_ID(id), payload)
+      .then((r) => r.data),
+
+  // PATCH /:id/complete — multipart, upload foto bukti + set completedAt + AVAILABLE
   complete: (id: number, payload: CompleteMaintenancePayload) => {
     const fd = new FormData()
-    fd.append('endDate', payload.endDate)
-    fd.append('cost', String(payload.cost))
-    if (payload.proofPhotos) payload.proofPhotos.forEach((p) => fd.append('proofPhotos[]', p))
-    if (payload.note) fd.append('note', payload.note)
+    if (payload.photos) payload.photos.forEach((p) => fd.append('photos', p))
     return apiClient
       .patch<ApiResponse<MaintenanceRecord>>(API_ENDPOINTS.MAINTENANCE.COMPLETE(id), fd, {
         headers: { 'Content-Type': 'multipart/form-data' },

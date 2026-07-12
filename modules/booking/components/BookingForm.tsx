@@ -381,6 +381,10 @@ export const BookingForm = () => {
             startDate={startISO}
             endDate={endISO}
             passengerCount={passengerCount}
+            bookedVehicleCapacity={capacity ?? null}
+            bookedVehiclePlate={
+              isVehicle ? (selected as Vehicle).plateNumber : null
+            }
             value={selectedDriverId}
             onChange={setSelectedDriverId}
             onSuggestedChange={setSuggestedDriverId}

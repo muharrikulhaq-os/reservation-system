@@ -70,6 +70,7 @@ export const API_ENDPOINTS = {
     START:           (id: number) => `${API_PREFIX}/bookings/${id}/start`,
     COMPLETE:        (id: number) => `${API_PREFIX}/bookings/${id}/complete`,
     RATE_DRIVER:     (id: number) => `${API_PREFIX}/bookings/${id}/rate-driver`,
+    DRIVER_RATING_BY_BOOKING: (id: number) => `${API_PREFIX}/bookings/${id}/driver-rating`,
     DRIVER_RATINGS:  (driverId: number) => `${API_PREFIX}/bookings/drivers/${driverId}/ratings`,
     APPROVAL_LOG:    (id: number) => `${API_PREFIX}/bookings/${id}/approval-log`,
     ATTACHMENTS:     (id: number) => `${API_PREFIX}/bookings/${id}/attachments`,
@@ -91,18 +92,16 @@ export const API_ENDPOINTS = {
     AVAILABLE:       `${API_PREFIX}/drivers/available`, // ?startDate=&endDate=
   },
 
-  // ── Fuel Expenses (legacy BBM/LISTRIK terpisah) ──
-  FUEL_EXPENSES: {
-    BASE:            `${API_PREFIX}/fuel-expenses`,
-    BBM:             `${API_PREFIX}/fuel-expenses/bbm`,
-    LISTRIK:         `${API_PREFIX}/fuel-expenses/listrik`,
-    BY_ID:           (id: number) => `${API_PREFIX}/fuel-expenses/${id}`,
-  },
-
-  // ── Fuel (unified — multipart, BBM + Listrik) ──
+  // ── Fuel Expenses (multipart, BBM + Listrik) ──
   FUEL: {
     BASE:            `${API_PREFIX}/fuel-expenses`,
     BY_ID:           (id: number) => `${API_PREFIX}/fuel-expenses/${id}`,
+  },
+
+  // ── Fuel Types (master data harga acuan) ──
+  FUEL_TYPES: {
+    BASE:            `${API_PREFIX}/fuel-types`,
+    BY_ID:           (id: number) => `${API_PREFIX}/fuel-types/${id}`,
   },
 
   // ── Maintenance ─────────────────────────
@@ -130,27 +129,32 @@ export const API_ENDPOINTS = {
   },
 
   // ── Master Settings ─────────────────────
-  MASTER_SETTINGS: {
+  SETTINGS: {
     BASE:            `${API_PREFIX}/master-settings`,
     BY_KEY:          (key: string) => `${API_PREFIX}/master-settings/${key}`,
   },
 
-  // ── Settings (harga fuel, dsb.) ─────────
-  SETTINGS: {
-    BASE:            `${API_PREFIX}/settings`,
-    BY_KEY:          (key: string) => `${API_PREFIX}/settings/${key}`,
-    FUEL_PRICES:     `${API_PREFIX}/settings/fuel-prices`,
-  },
-
   // ── Reports ─────────────────────────────
   REPORTS: {
-    BOOKINGS:        `${API_PREFIX}/reports/bookings`,
-    RESOURCE_USAGE:  `${API_PREFIX}/reports/resource-usage`,
-    FUEL_EXPENSES:   `${API_PREFIX}/reports/fuel-expenses`,
-    MAINTENANCE_COST:`${API_PREFIX}/reports/maintenance-cost`,
-    DRIVER_RATINGS:  `${API_PREFIX}/reports/driver-ratings`,
-    DRIVER_ACTIVITY: `${API_PREFIX}/reports/driver-activity`,
-    OVERDUE_BOOKINGS:`${API_PREFIX}/reports/overdue-bookings`,
-    AUDIT_LOGS:      `${API_PREFIX}/reports/audit-logs`,
+    BOOKINGS:            `${API_PREFIX}/reports/bookings`,
+    RESOURCE_USAGE:      `${API_PREFIX}/reports/resource-usage`,
+    FUEL_EXPENSES:       `${API_PREFIX}/reports/fuel-expenses`,
+    MAINTENANCE_COST:    `${API_PREFIX}/reports/maintenance-cost`,
+    DRIVER_RATINGS:      `${API_PREFIX}/reports/driver-ratings`,
+    DRIVER_ACTIVITY:     `${API_PREFIX}/reports/driver-activity`,
+    OVERDUE_BOOKINGS:    `${API_PREFIX}/reports/overdue-bookings`,
+    AUDIT_LOGS:          `${API_PREFIX}/reports/audit-logs`,
+    // Extended
+    OVERVIEW:            `${API_PREFIX}/reports/overview`,
+    BOOKINGS_TREND:      `${API_PREFIX}/reports/bookings/trend`,
+    BOOKINGS_BY_DEPT:    `${API_PREFIX}/reports/bookings/by-department`,
+    BOOKINGS_BY_RESOURCE:`${API_PREFIX}/reports/bookings/by-resource`,
+    APPROVAL_PERF:       `${API_PREFIX}/reports/bookings/approval-performance`,
+    COST_SUMMARY:        `${API_PREFIX}/reports/cost-summary`,
+    COST_BY_VEHICLE:     `${API_PREFIX}/reports/cost/by-vehicle`,
+    COST_BY_DEPT:        `${API_PREFIX}/reports/cost/by-department`,
+    COST_TREND:          `${API_PREFIX}/reports/cost/trend`,
+    DRIVER_PERFORMANCE:  `${API_PREFIX}/reports/driver-performance`,
+    DEPT_SUMMARY:        `${API_PREFIX}/reports/department-summary`,
   },
 } as const

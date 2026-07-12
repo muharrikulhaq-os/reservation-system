@@ -62,24 +62,28 @@ export const BookingSection = ({ range }: { range: ReportDateParams }) => {
   const { data: byResource, isLoading: loadingResource } = useBookingByResource(range)
   const { data: trend } = useBookingTrend({ groupBy: 'monthly', periods: 12 })
 
+  // approval-performance = objek tunggal
+  const avgHoursToDecision = approval?.avgApprovalTimeHours ?? null
+  const totalDecisions = approval?.totalProcessed ?? 0
+
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <ReportStatCard
           label="Total Booking"
-          value={summary?.totalBookings ?? '—'}
+          value={summary?.total ?? '—'}
           icon={<CalendarCheck className="h-5 w-5 text-[var(--primary)]" />}
           iconBg="var(--primary-light)"
         />
         <ReportStatCard
           label="Avg Waktu Approval"
-          value={approval ? `${approval.avgApprovalTimeHours} jam` : '—'}
+          value={avgHoursToDecision != null ? `${avgHoursToDecision.toFixed(1)} jam` : '—'}
           icon={<Clock className="h-5 w-5 text-[var(--info)]" />}
           iconBg="#DBEAFE"
         />
         <ReportStatCard
-          label="Approved < 24 Jam"
-          value={approval ? `${approval.approvedWithin24h}%` : '—'}
+          label="Total Keputusan"
+          value={totalDecisions || '—'}
           icon={<CheckCircle2 className="h-5 w-5 text-[var(--success)]" />}
           iconBg="#DCFCE7"
         />

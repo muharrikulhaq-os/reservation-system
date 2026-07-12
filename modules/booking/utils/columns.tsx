@@ -98,9 +98,8 @@ export const bookingColumns: ColumnDef<Booking, unknown>[] = [
       const booking = row.original;
       const resource = booking.resource;
       const isReassigned = booking.isReassigned === true;
-      // TODO: ganti cast `any` setelah backend mengonfirmasi field `isMerged`
-      // ada di response list booking. Jika tidak, label hanya tampil di detail.
-      const isMerged = (booking as { isMerged?: boolean }).isMerged === true;
+      const mergedIntoId = booking.mergedIntoId ?? null; // digabung KE booking ini (sekunder)
+      const mergeCount = booking.mergeCount ?? 0; // punya gabungan (main/primary)
       const isVehicle = resource.type === RESOURCE_TYPE.VEHICLE;
 
       return (
@@ -118,13 +117,34 @@ export const bookingColumns: ColumnDef<Booking, unknown>[] = [
                 {resource.name}
               </span>
               {isReassigned && (
-                <span className="inline-flex items-center gap-0.5 rounded-full bg-purple-50 px-1.5 py-0.5 text-[9px] font-semibold text-purple-600">
-                  <ArrowRightLeft className="h-2.5 w-2.5" /> Dialihkan
+                <span
+                  className="inline-flex items-center gap-0.5 rounded-full bg-purple-50 px-1.5 py-0.5 text-[9px] font-semibold text-purple-600"
+                  title={
+                    booking.originalResource
+                      ? `Dialihkan dari ${booking.originalResource.name}`
+                      : "Dialihkan"
+                  }
+                >
+                  <ArrowRightLeft className="h-2.5 w-2.5" />
+                  {booking.originalResource
+                    ? `Dialihkan dari ${booking.originalResource.name}`
+                    : "Dialihkan"}
                 </span>
               )}
-              {isMerged && (
-                <span className="inline-flex items-center gap-0.5 rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-semibold text-sky-600">
-                  <GitMerge className="h-2.5 w-2.5" /> Digabungkan
+              {mergedIntoId != null && (
+                <span
+                  className="inline-flex items-center gap-0.5 rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-semibold text-sky-600"
+                  title={`Digabung ke booking #${mergedIntoId}`}
+                >
+                  <GitMerge className="h-2.5 w-2.5" /> Digabung ke #{mergedIntoId}
+                </span>
+              )}
+              {mergeCount > 0 && (
+                <span
+                  className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-600"
+                  title={`Booking utama · ${mergeCount} booking digabung ke sini`}
+                >
+                  <GitMerge className="h-2.5 w-2.5" /> Main · {mergeCount} gabungan
                 </span>
               )}
               {booking.hasMergeSuggestion && (

@@ -101,7 +101,7 @@ export const Reports = () => {
               { key: 'fuelCost', label: 'Biaya BBM' },
               { key: 'maintenanceCost', label: 'Biaya Maintenance' },
               { key: 'totalCost', label: 'Total Biaya' },
-              { key: 'topResource', label: 'Resource Terpopuler' },
+              { key: 'topResource', label: 'Resource Terbanyak' },
             ]}
             filename="ringkasan-departemen"
           />

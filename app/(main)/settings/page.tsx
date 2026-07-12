@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { AdminOnly } from '@/components/common'
-import { Settings } from '@/modules/settings'
+import { FuelTypeSettings } from '@/modules/settings'
 
 export const metadata: Metadata = {
   title: 'Pengaturan — Reservation System',
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <AdminOnly>
-      <Settings />
+      <FuelTypeSettings />
     </AdminOnly>
   )
 }

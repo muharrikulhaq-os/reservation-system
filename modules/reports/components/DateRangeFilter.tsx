@@ -1,15 +1,14 @@
 'use client'
 
 import { CardSection } from '@/components/common'
-import { InputDate } from '@/components/ui-custom'
-import { AppButton } from '@/components/ui-custom'
+import { InputDate, InputSelect } from '@/components/ui-custom'
 import { cn } from '@/lib/utils'
+import type { SelectOption } from '@/types'
 
 // ─────────────────────────────────────────
 // DATE RANGE FILTER
-// Filter periode persisten di atas setiap tab laporan.
-// startDate/endDate diharapkan ISO string; input date
-// hanya butuh bagian YYYY-MM-DD.
+// Dropdown preset rentang + input tanggal kustom.
+// startDate/endDate diharapkan ISO string.
 // ─────────────────────────────────────────
 
 type Preset = 'today' | '7d' | '30d' | '90d' | '12m'
@@ -24,12 +23,12 @@ export interface DateRangeFilterProps {
   className?: string
 }
 
-const PRESETS: Array<{ key: Preset; label: string }> = [
-  { key: 'today', label: 'Hari Ini' },
-  { key: '7d', label: '7 Hari' },
-  { key: '30d', label: '30 Hari' },
-  { key: '90d', label: '90 Hari' },
-  { key: '12m', label: '12 Bulan' },
+const PRESET_OPTIONS: SelectOption[] = [
+  { value: 'today', label: 'Hari Ini' },
+  { value: '7d', label: '7 Hari Terakhir' },
+  { value: '30d', label: '30 Hari Terakhir' },
+  { value: '90d', label: '90 Hari Terakhir' },
+  { value: '12m', label: '12 Bulan Terakhir' },
 ]
 
 // ISO → "YYYY-MM-DD" untuk <input type="date">
@@ -46,23 +45,20 @@ export const DateRangeFilter = ({
   activePreset,
   className,
 }: DateRangeFilterProps) => (
-  <CardSection
-    className={cn('flex flex-wrap items-end gap-3', className)}
-  >
-    <div className="flex flex-wrap items-center gap-1.5">
-      {PRESETS.map((p) => (
-        <AppButton
-          key={p.key}
-          size="sm"
-          variant={activePreset === p.key ? 'primary' : 'ghost'}
-          onClick={() => onPresetClick?.(p.key)}
-        >
-          {p.label}
-        </AppButton>
-      ))}
+  <CardSection className={cn('flex flex-wrap items-end gap-3', className)}>
+    <div className="w-48">
+      <InputSelect
+        label="RENTANG"
+        placeholder="Kustom"
+        options={PRESET_OPTIONS}
+        value={activePreset ?? ''}
+        onChange={(e) => {
+          if (e.target.value) onPresetClick?.(e.target.value as Preset)
+        }}
+      />
     </div>
 
-    <div className="h-8 w-px self-center bg-[var(--border-divider)]" />
+    <div className="h-10 w-px self-end bg-[var(--border-divider)]" />
 
     <div className="w-40">
       <InputDate

@@ -8,6 +8,7 @@ import {
   ExternalLink,
   GitMerge,
   UserRound,
+  Zap,
 } from 'lucide-react'
 import {
   Dialog,
@@ -23,7 +24,7 @@ import {
   InputTextArea,
   TimePicker,
 } from '@/components/ui-custom'
-import { getErrorMessage } from '@/lib'
+import { cn, getErrorMessage } from '@/lib'
 import { BOOKING_STATUS, RESOURCE_TYPE } from '@/constants'
 import type { Booking } from '@/types'
 import {
@@ -34,8 +35,8 @@ import {
 
 // ─────────────────────────────────────────
 // BOOKING MERGE PANEL (admin, VEHICLE, PENDING)
-// Menampilkan booking kendaraan milik USER LAIN yang sudah APPROVED
-// di tanggal yang sama. Admin memilih satu sebagai PRIMARY, lalu
+// Menampilkan booking kendaraan yang sudah APPROVED di tanggal yang sama
+// (siapa pun pemiliknya). Admin memilih satu sebagai PRIMARY/utama, lalu
 // booking ini (target) otomatis ikut disetujui + driver/resource primary.
 // ─────────────────────────────────────────
 
@@ -51,35 +52,46 @@ const formatTime = (iso: string) => {
   const d = new Date(iso)
   return `${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
-const startOfDayIso = (iso: string) => {
-  const d = new Date(iso)
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0).toISOString()
-}
-const endOfDayIso = (iso: string) => {
-  const d = new Date(iso)
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59).toISOString()
+// Dua ISO string di hari kalender LOKAL yang sama?
+const sameLocalDay = (a: string, b: string) => {
+  const x = new Date(a)
+  const y = new Date(b)
+  return (
+    x.getFullYear() === y.getFullYear() &&
+    x.getMonth() === y.getMonth() &&
+    x.getDate() === y.getDate()
+  )
 }
 
 export const BookingMergePanel = ({
   booking,
   onMergeComplete,
 }: BookingMergePanelProps) => {
-  // Booking VEHICLE yang sudah APPROVED di tanggal yang sama dengan booking ini
+  // Semua booking kendaraan yang sudah APPROVED (kandidat "booking utama").
+  // Sengaja TIDAK memfilter tanggal di server — backend memfilter dengan
+  // containment (startDate>=X AND endDate<=Y) yang rapuh terhadap timezone;
+  // penyaringan per-hari dilakukan di klien di bawah.
   const { data } = useBookings({
     resourceType: RESOURCE_TYPE.VEHICLE,
-    startDate: startOfDayIso(booking.startDate),
-    endDate: endOfDayIso(booking.startDate),
     status: BOOKING_STATUS.APPROVED,
-    limit: 50,
+    limit: 100,
   })
 
-  // Hanya booking APPROVED milik user lain (bukan peminjam booking ini)
-  const candidates = (data?.data ?? []).filter(
-    (b) =>
-      b.id !== booking.id &&
-      b.status === BOOKING_STATUS.APPROVED &&
-      b.user.id !== booking.user.id,
-  )
+  // Driver yang dipilih karyawan saat create (pemicu "kandidat merge")
+  const requestedDriverId = booking.assignedDriver?.id ?? null
+  const isRequested = (c: Booking) =>
+    requestedDriverId != null && c.assignedDriver?.id === requestedDriverId
+
+  // Kandidat = booking APPROVED lain di hari yang sama (boleh user yang sama),
+  // dengan kandidat "permintaan merge" (driver sama) di paling atas.
+  const candidates = (data?.data ?? [])
+    .filter(
+      (b) =>
+        b.id !== booking.id &&
+        b.status === BOOKING_STATUS.APPROVED &&
+        sameLocalDay(b.startDate, booking.startDate),
+    )
+    .sort((a, b) => Number(isRequested(b)) - Number(isRequested(a)))
 
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [mergeDate, setMergeDate] = useState('')
@@ -164,8 +176,20 @@ export const BookingMergePanel = ({
           {candidates.map((c) => (
             <div
               key={c.id}
-              className="rounded-xl border border-[var(--border-card)] p-4"
+              className={cn(
+                'rounded-xl border p-4',
+                isRequested(c)
+                  ? 'border-[1.5px] border-amber-300 bg-amber-50/40'
+                  : 'border-[var(--border-card)]',
+              )}
             >
+              {/* Badge: request merge dari karyawan */}
+              {isRequested(c) && (
+                <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                  <Zap className="h-2.5 w-2.5" /> Permintaan merge dari karyawan
+                </div>
+              )}
+
               {/* User info */}
               <div className="mb-2 flex items-center gap-2.5">
                 <UserAvatar name={c.user.name} size="sm" />

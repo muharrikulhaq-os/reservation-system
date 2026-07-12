@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────
 
 export { DriversPage } from './Drivers'
+export { DriverDetailModal } from './components/DriverDetailModal'
 export { driverColumns } from './utils/columns'
 export { driverService } from './api/driver.api'
 export * from './hooks/useDrivers'

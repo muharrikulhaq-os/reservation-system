@@ -3,6 +3,7 @@
 import { CalendarCheck, Car, Building2, Users } from "lucide-react";
 import { StatCard } from "./components/StatCard";
 import { RecentBookings } from "./components/RecentBookingTable";
+import { DriverListCard } from "./components/DriverListCard";
 import { useDashboardSummary } from "./hooks/useDashboard";
 import { useAuthStore } from "@/store/auth.store";
 
@@ -13,7 +14,6 @@ import { useAuthStore } from "@/store/auth.store";
 const StatCards = () => {
   const { data } = useDashboardSummary();
   const sum = data;
-  console.log(sum);
 
   const stats = [
     {
@@ -53,12 +53,14 @@ const StatCards = () => {
 export const DashboardPage = () => {
   const isAdmin = useAuthStore((s) => s.isAdmin());
   return (
-    <div>
-      <div className="flex flex-col gap-5">
-        {isAdmin && <StatCards />}
-        <RecentBookings />
+    <div className="flex flex-col gap-5">
+      {isAdmin && <StatCards />}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <RecentBookings />
+        </div>
+        <DriverListCard />
       </div>
-      ;
     </div>
   );
 };

@@ -95,12 +95,6 @@ export const useApprovalPerformance = (params?: ReportDateParams) =>
     queryFn: () => reportApi.getApprovalPerformance(params).then((r) => r.data),
   })
 
-export const useResourceAvailability = () =>
-  useQuery({
-    queryKey: QUERY_KEYS.REPORTS.RESOURCE_AVAIL,
-    queryFn: () => reportApi.getResourceAvailability().then((r) => r.data),
-  })
-
 export const useCostSummary = (params?: ReportDateParams) =>
   useQuery({
     queryKey: [...QUERY_KEYS.REPORTS.COST_SUMMARY, params],

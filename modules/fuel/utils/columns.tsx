@@ -1,46 +1,89 @@
 'use client'
 
-import { Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { Eye, Fuel, Trash2, Zap } from 'lucide-react'
 import {
   createColumnHelper,
   type ColumnDef,
 } from '@/components/shared/table/DataTable'
 import { AppButton } from '@/components/ui-custom'
-import {
-  formatDate,
-  formatCurrency,
-  formatLiter,
-  formatKwh,
-  formatNumber,
-  resolveFileUrl,
-} from '@/lib'
-import { FUEL_GRADE_CONFIG, FUEL_TYPE } from '@/constants'
+import { AdminOnly } from '@/components/common'
+import { formatDate, formatCurrency, formatNumber } from '@/lib'
+import { ENERGY_TYPE, ENERGY_TYPE_CONFIG } from '@/constants'
+import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
 import { useDeleteFuel } from '../hooks/useFuel'
+import { FuelDetailModal } from '../components/FuelDetailModal'
 import type { FuelExpense } from '@/types'
 
 const ch = createColumnHelper<FuelExpense>()
 
-// ── Row actions (delete) ─────────────────
+// Response fuel hanya punya vehicleId → lookup nama dari cache vehicles
+const VehicleCell = ({ vehicleId }: { vehicleId: number }) => {
+  const { data: vehicles } = useVehicles({ limit: 100 })
+  const v = (vehicles ?? []).find((x) => x.id === vehicleId)
+  return (
+    <div className="min-w-0">
+      <p className="truncate text-sm font-medium text-[var(--text-primary)]">
+        {v?.name ?? `#${vehicleId}`}
+      </p>
+      {v?.plateNumber && (
+        <p className="truncate text-xs text-[var(--text-secondary)]">{v.plateNumber}</p>
+      )}
+    </div>
+  )
+}
+
+const EnergyBadge = ({ energyType }: { energyType: FuelExpense['fuelType'] }) => {
+  const cfg = ENERGY_TYPE_CONFIG[energyType]
+  // Fallback jika API mengirim nilai di luar BBM/LISTRIK (atau null)
+  if (!cfg) {
+    return (
+      <span className="inline-flex items-center rounded-full bg-[var(--bg-subtle)] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-secondary)]">
+        {energyType ?? '-'}
+      </span>
+    )
+  }
+  const isBbm = energyType === ENERGY_TYPE.BBM
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+      style={{ backgroundColor: `${cfg.color}1A`, color: cfg.color }}
+    >
+      {isBbm ? <Fuel className="h-2.5 w-2.5" /> : <Zap className="h-2.5 w-2.5" />}
+      {cfg.label}
+    </span>
+  )
+}
 
 const RowActions = ({ row }: { row: FuelExpense }) => {
-  const { mutate, isPending } = useDeleteFuel()
-
+  const del = useDeleteFuel()
+  const [detailOpen, setDetailOpen] = useState(false)
   const handleDelete = () => {
-    if (window.confirm('Hapus catatan pengisian ini?')) mutate(row.id)
+    if (window.confirm('Hapus catatan pengisian ini?')) del.mutate(row.id)
   }
-
   return (
     <div className="flex items-center justify-end">
       <AppButton
         variant="ghost"
         size="icon-sm"
-        loading={isPending}
-        onClick={handleDelete}
-        aria-label="Hapus"
-        className="text-[var(--danger)] hover:text-[var(--danger)]"
+        onClick={() => setDetailOpen(true)}
+        aria-label="Lihat detail"
       >
-        <Trash2 className="h-4 w-4" />
+        <Eye className="h-4 w-4" />
       </AppButton>
+      <AdminOnly>
+        <AppButton
+          variant="ghost"
+          size="icon-sm"
+          loading={del.isPending}
+          onClick={handleDelete}
+          aria-label="Hapus"
+          className="text-[var(--danger)] hover:text-[var(--danger)]"
+        >
+          <Trash2 className="h-4 w-4" />
+        </AppButton>
+      </AdminOnly>
+      <FuelDetailModal fuel={row} open={detailOpen} onOpenChange={setDetailOpen} />
     </div>
   )
 }
@@ -56,21 +99,9 @@ export const fuelColumns: ColumnDef<FuelExpense, unknown>[] = [
     ),
   }),
 
-  ch.accessor('vehicle', {
+  ch.accessor('vehicleId', {
     header: 'Kendaraan',
-    cell: ({ getValue }) => {
-      const v = getValue()
-      return (
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-[var(--text-primary)]">
-            {v?.name ?? '-'}
-          </p>
-          <p className="truncate text-xs text-[var(--text-secondary)]">
-            {v?.plateNumber ?? '-'}
-          </p>
-        </div>
-      )
-    },
+    cell: ({ getValue }) => <VehicleCell vehicleId={getValue()} />,
   }),
 
   ch.accessor('driverName', {
@@ -81,41 +112,47 @@ export const fuelColumns: ColumnDef<FuelExpense, unknown>[] = [
     ),
   }),
 
-  ch.accessor('fuelGrade', {
+  ch.accessor('fuelType', {
     header: 'Jenis',
-    size: 150,
-    cell: ({ getValue }) => {
-      const grade = getValue()
-      const cfg = FUEL_GRADE_CONFIG[grade]
+    size: 110,
+    cell: ({ getValue }) => <EnergyBadge energyType={getValue()} />,
+  }),
+
+  ch.display({
+    id: 'jumlah',
+    header: 'Jumlah',
+    size: 100,
+    cell: ({ row }) => {
+      const f = row.original
+      // Tidak bergantung pada fuelType — pilih berdasarkan field yang terisi
+      const text =
+        f.liter != null
+          ? `${formatNumber(f.liter)} L`
+          : f.kwh != null
+            ? `${formatNumber(f.kwh)} kWh`
+            : '-'
+      return <span className="text-sm text-[var(--text-primary)]">{text}</span>
+    },
+  }),
+
+  ch.display({
+    id: 'harga',
+    header: 'Harga/Unit',
+    size: 120,
+    cell: ({ row }) => {
+      const f = row.original
+      const price = f.pricePerLiter ?? f.pricePerKwh
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-subtle)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-primary)]">
-          <span
-            className="h-2 w-2 rounded-full"
-            style={{ backgroundColor: cfg?.color }}
-          />
-          {cfg?.label ?? grade}
+        <span className="text-sm text-[var(--text-secondary)]">
+          {formatCurrency(price ?? 0)}
         </span>
       )
     },
   }),
 
-  ch.display({
-    id: 'amount',
-    header: 'Jumlah',
-    size: 110,
-    cell: ({ row }) => {
-      const f = row.original
-      const text =
-        f.fuelType === FUEL_TYPE.BBM
-          ? formatLiter(f.liter ?? 0)
-          : formatKwh(f.kwh ?? 0)
-      return <span className="text-sm text-[var(--text-primary)]">{text}</span>
-    },
-  }),
-
   ch.accessor('totalCost', {
     header: 'Total',
-    size: 130,
+    size: 120,
     cell: ({ getValue }) => (
       <span className="text-sm font-medium text-[var(--text-primary)]">
         {formatCurrency(getValue())}
@@ -123,33 +160,19 @@ export const fuelColumns: ColumnDef<FuelExpense, unknown>[] = [
     ),
   }),
 
-  ch.accessor('distanceKm', {
-    header: 'Jarak',
-    size: 100,
-    cell: ({ getValue }) => (
-      <span className="text-sm text-[var(--text-secondary)]">
-        {formatNumber(getValue() ?? 0)} km
-      </span>
-    ),
-  }),
-
-  ch.accessor('proofPhotoUrl', {
-    header: 'Bukti',
-    size: 80,
-    cell: ({ getValue }) => {
-      const url = resolveFileUrl(getValue())
-      if (!url)
+  ch.display({
+    id: 'odometer',
+    header: 'Odometer',
+    size: 140,
+    cell: ({ row }) => {
+      const f = row.original
+      if (f.odometerBefore == null && f.odometerAfter == null) {
         return <span className="text-xs text-[var(--text-disabled)]">—</span>
+      }
       return (
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block h-9 w-9 overflow-hidden rounded-lg border border-[var(--border-card)]"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={url} alt="Bukti" className="h-full w-full object-cover" />
-        </a>
+        <span className="text-xs text-[var(--text-secondary)]">
+          {formatNumber(f.odometerBefore ?? 0)} → {formatNumber(f.odometerAfter ?? 0)}
+        </span>
       )
     },
   }),

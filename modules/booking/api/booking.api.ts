@@ -12,7 +12,7 @@ import type {
   Attachment,
   BookingStatusResponse,
   DriverRatingResponse,
-  DriverRatingSummary,
+  DriverRatingsResult,
   BookingQueryParams,
   CreateBookingPayload,
   ApproveBookingPayload,
@@ -89,9 +89,17 @@ export const bookingService = {
       )
       .then((r) => r.data),
 
+  // Rating milik satu booking (404 bila belum dinilai)
+  getBookingRating: (bookingId: number) =>
+    apiClient
+      .get<ApiResponse<DriverRatingResponse>>(
+        API_ENDPOINTS.BOOKINGS.DRIVER_RATING_BY_BOOKING(bookingId),
+      )
+      .then((r) => r.data),
+
   getDriverRatings: (driverId: number) =>
     apiClient
-      .get<ApiResponse<DriverRatingSummary[]>>(
+      .get<ApiResponse<DriverRatingsResult>>(
         API_ENDPOINTS.BOOKINGS.DRIVER_RATINGS(driverId),
       )
       .then((r) => r.data),

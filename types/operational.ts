@@ -10,224 +10,246 @@ import type { FuelType, ResourceStatus, ResourceType } from './enums'
 // FUEL EXPENSES
 // ─────────────────────────────────────────
 
-// Jenis BBM / sumber energi (grade). LISTRIK dipakai untuk kendaraan EV.
-export type FuelGrade =
-  | 'PERTALITE'
-  | 'PERTAMAX'
-  | 'PERTAMAX_TURBO'
-  | 'SOLAR'
-  | 'DEXLITE'
-  | 'PERTAMINA_DEX'
-  | 'LISTRIK'
+// Sumber energi — BBM (satuan liter) atau LISTRIK (satuan kWh)
+export type EnergyType = 'BBM' | 'LISTRIK'
+export type FuelUnit = 'LITER' | 'KWH'
+
+// ── Master data jenis bahan bakar (/fuel-types) ──
+export interface FuelTypeMaster {
+  id: number
+  name: string          // mis. "Pertamax", "SPKLU PLN"
+  type: EnergyType      // BBM | LISTRIK
+  unit: FuelUnit        // LITER | KWH
+  defaultPrice: number  // harga acuan per unit
+  isActive: boolean
+}
+
+export interface CreateFuelTypePayload {
+  name: string
+  type: EnergyType
+  unit: FuelUnit
+  defaultPrice: number
+  isActive: boolean
+}
 
 // Shape dari GET /fuel-expenses (list)
-// API menggabungkan BBM & LISTRIK dalam satu shape
-// field yang tidak relevan akan bernilai null
 export interface FuelExpense {
   id: number
-  vehicleId: number
-  vehicle: {
-    id: number
-    name: string
-    plateNumber: string
-  }
   driverId: number
   driverName: string
-  bookingId: number | null // null jika isi di luar booking
-  fuelType: FuelType
-  fuelGrade: FuelGrade      // jenis BBM / LISTRIK
-  // BBM fields
+  vehicleId: number
+  fuelType: EnergyType // "BBM" | "LISTRIK"
+  // BBM fields (null jika LISTRIK)
   liter: number | null
   pricePerLiter: number | null
-  // Listrik fields
+  // LISTRIK fields (null jika BBM)
   kwh: number | null
   pricePerKwh: number | null
   // Common
-  totalCost: number        // API pakai "totalCost", bukan "totalAmount"
-  odometerBefore: number
-  odometerAfter: number
-  distanceKm: number       // dihitung: odometerAfter - odometerBefore
-  proofPhotoUrl: string | null // bukti wajib
+  bookingId: number | null
+  totalCost: number
+  odometerBefore: number | null
+  odometerAfter: number | null
   note: string | null
+  proofPhotoUrl: string | null // URL/path foto bukti pengisian
   createdAt: string
 }
 
-// Payload gabungan create fuel (multipart — proofPhoto WAJIB)
+// Payload create fuel (multipart — proofPhoto WAJIB)
 export interface CreateFuelPayload {
   vehicleId: number
-  bookingId?: number       // opsional
-  fuelType: FuelType
-  fuelGrade: FuelGrade
-  liter?: number           // untuk BBM
+  bookingId?: number
+  fuelTypeId: number   // WAJIB — referensi ke fuel-types
+  fuelGrade?: string   // RON/grade bebas (opsional)
+  // BBM
+  liter?: number
   pricePerLiter?: number
-  kwh?: number             // untuk LISTRIK
+  // LISTRIK
+  kwh?: number
   pricePerKwh?: number
-  odometerBefore: number
-  odometerAfter: number
-  proofPhoto: File         // WAJIB
+  // Common
+  odometerBefore?: number
+  odometerAfter?: number
   note?: string
+  proofPhoto: File // WAJIB
 }
 
-export interface FuelExpenseQueryParams {
+export interface FuelExpenseParams {
   page?: number
   limit?: number
-  search?: string
   driverId?: number
   vehicleId?: number
-  fuelType?: FuelType
-  fuelGrade?: FuelGrade
-  startDate?: string
-  endDate?: string
+  fuelType?: EnergyType
+  bookingId?: number
 }
 
 // ─────────────────────────────────────────
 // MAINTENANCE
 // ─────────────────────────────────────────
 
-export type MaintenanceStatus = 'ONGOING' | 'COMPLETED'
-export type MaintenanceType = 'RUTIN' | 'PERBAIKAN' | 'PENGGANTIAN' | 'BODY'
-
+// Shape dari GET /maintenance (list/detail) — VEHICLE only
 export interface MaintenanceRecord {
   id: number
-  resourceId: number
-  resource: {
-    id: number
-    name: string
-    type: 'VEHICLE' | 'ROOM'
-  }
-  type: MaintenanceType
+  vehicleId: number
+  vehicleName: string
+  plateNumber: string
+  maintenanceTypeId: number | null
+  type: string           // mis. "routine" | "repair"
+  status: string         // mis. "pending" | "completed"
   description: string
-  status: MaintenanceStatus
+  odometer: number | null
+  totalCost: string | null // API mengirim string
+  vendorName: string | null
+  location: string
   startDate: string
-  endDate: string | null  // null = masih dalam proses
-  cost: number
-  vendor: string | null   // bengkel/vendor
-  odometer: number | null // untuk kendaraan
-  proofPhotos: string[]   // bukti saat selesai
+  endDate: string | null
   completedAt: string | null
+  proofPhotos: string[]
+  createdBy: string
   createdAt: string
 }
 
+// POST /maintenance — JSON
 export interface CreateMaintenancePayload {
-  resourceId: number
-  type: MaintenanceType
-  description: string
-  startDate: string
-  cost?: number           // bisa diisi belakangan (saat complete)
-  vendor?: string
+  vehicleId: number
+  maintenanceTypeId?: number
+  type: string          // WAJIB
+  status: string        // WAJIB ("pending" saat create)
+  description: string   // WAJIB
   odometer?: number
+  totalCost?: number
+  vendorName?: string
+  location: string      // WAJIB
+  startDate: string     // WAJIB (RFC3339)
+  endDate?: string
 }
 
-// Menyelesaikan maintenance (multipart — proofPhotos bukti pekerjaan)
+// PUT /maintenance/:id — sama dengan create
+export type UpdateMaintenancePayload = CreateMaintenancePayload
+
+// PATCH /maintenance/:id/complete — multipart, upload foto bukti
 export interface CompleteMaintenancePayload {
-  endDate: string
-  cost: number
-  proofPhotos?: File[]
-  note?: string
+  photos?: File[]
 }
 
-export interface MaintenanceQueryParams {
+export interface MaintenanceParams {
+  vehicleId?: number
   page?: number
   limit?: number
-  search?: string
-  resourceId?: number
-  resourceType?: ResourceType
-  type?: MaintenanceType
-  status?: MaintenanceStatus
-  startDate?: string
-  endDate?: string
 }
 
 // ─────────────────────────────────────────
 // MASTER SETTINGS
 // ─────────────────────────────────────────
 
-// API mengembalikan value sebagai string
+// API mengembalikan value sebagai string (/master-settings)
 export interface MasterSetting {
   key: string
-  value: string           // string di response, parse ke number saat dipakai
+  value: string // string di response, parse ke number saat dipakai
   unit: string | null
   description: string | null
-}
-
-export interface UpdateSettingPayload {
-  value: number
-  unit?: string
-  description?: string
-}
-
-// Harga bahan bakar per grade — default prefill saat input pengisian
-export interface FuelPriceSetting {
-  grade: FuelGrade
-  pricePerUnit: number // per liter atau per kWh
-  unit: 'LITER' | 'KWH'
-  updatedAt: string
 }
 
 // ─────────────────────────────────────────
 // REPORTS
 // ─────────────────────────────────────────
 
+// Nilai numerik yang bisa dikirim backend sebagai number, string, atau null
+// (sqlc menserialisasi SUM/numeric secara tidak konsisten).
+export type Numeric = number | string | null
+
+// GET /reports/bookings — ReportBookingSummaryRow
 export interface BookingSummaryReport {
-  totalBookings: number
-  pendingCount: number
-  approvedCount: number
-  completedCount: number
-  cancelledCount: number
-  rejectedCount: number
-  vehicleBookings: number
-  roomBookings: number
+  total: number
+  completed: number
+  pending: number
+  approved: number
+  ongoing: number
+  cancelled: number
+  rejected: number
+  overdue: number
 }
 
+// GET /reports/resource-usage — v_vehicle_summary (VEHICLE saja)
 export interface ResourceUsageReport {
-  resourceId: number
-  resourceName: string
-  resourceType: 'VEHICLE' | 'ROOM'
-  totalBookings: number
-  totalHoursUsed: number
-  utilizationRate: number
-}
-
-export interface FuelExpenseReport {
-  vehicleId: number
+  id: number
+  vehicle_name: string
   plateNumber: string
-  vehicleName: string
-  totalLiter: number
-  totalKwh: number
-  totalCost: number
-  fuelType: FuelType
+  category: string
+  capacity: number
+  status: ResourceStatus
+  currentOdometer: number
+  total_bookings: number
+  completed_bookings: number
+  total_liter_bbm: Numeric
+  total_cost_bbm: Numeric
+  total_kwh_listrik: Numeric
+  total_cost_listrik: Numeric
+  total_fuel_cost: Numeric
 }
 
+// GET /reports/fuel-expenses — v_fuel_expense_summary
+export interface FuelExpenseReport {
+  vehicle_id: number
+  plateNumber: string
+  vehicle_name: string
+  category: string
+  bbm_entries: number
+  total_liter: Numeric
+  total_cost_bbm: Numeric
+  listrik_entries: number
+  total_kwh: Numeric
+  total_cost_listrik: Numeric
+  grand_total: Numeric
+}
+
+// GET /reports/maintenance-cost — ReportMaintenanceCostRow
 export interface MaintenanceCostReport {
-  resourceId: number
-  resourceName: string
-  resourceType: 'VEHICLE' | 'ROOM'
-  totalMaintenanceCount: number
-  totalCost: number
+  vehicleId: number
+  resource_name: string
+  resource_type: string
+  total_records: number
+  total_cost: Numeric
 }
 
+// GET /reports/driver-ratings — v_driver_ratings_summary
 export interface DriverRatingReport {
-  driverId: number
-  driverName: string
-  averageRating: number
-  totalReviews: number
+  driver_id: number
+  driver_name: string
+  employeeId: string
+  isActive: boolean
+  total_ratings: number
+  average_rating: string // API mengirim string
+  bintang_5: number
+  bintang_4: number
+  bintang_3: number
+  bintang_2: number
+  bintang_1: number
 }
 
+// GET /reports/driver-activity — ReportDriverActivityRow
 export interface DriverActivityReport {
-  driverId: number
-  driverName: string
-  totalTrips: number
-  totalFuelExpenses: number
+  driver_id: number
+  driver_name: string
+  employeeId: string
+  total_bookings: number
+  completed_bookings: number
+  total_fuel_expenses: Numeric
 }
 
+// GET /reports/overdue-bookings — ReportOverdueBookingsRow (flat)
 export interface OverdueBooking {
   id: number
-  status: 'ONGOING'
-  user: { id: number; name: string }
-  resource: { id: number; name: string; type: 'VEHICLE' | 'ROOM' }
+  userId: number
+  resourceId: number
   startDate: string
   endDate: string
-  overdueHours: number
+  purpose: string
+  status: string
+  user_name: string
+  employeeId: string
+  resource_name: string
+  resource_type: ResourceType
 }
 
 export interface ReportDateParams {
@@ -298,15 +320,13 @@ export interface ReportOverview {
   }
 }
 
-// [DUMMY]
 export interface BookingTrend {
-  period: string // "2025-W22" atau "2025-06"
+  period: string
   count: number
   vehicle: number
   room: number
 }
 
-// [DUMMY]
 export interface BookingByDepartment {
   departmentId: number
   departmentName: string
@@ -318,7 +338,6 @@ export interface BookingByDepartment {
   rejected: number
 }
 
-// [DUMMY]
 export interface BookingByResource {
   resourceId: number
   resourceName: string
@@ -327,22 +346,11 @@ export interface BookingByResource {
   totalHours: number
 }
 
-// [DUMMY]
+// Objek tunggal (BUKAN array)
 export interface ApprovalPerformance {
   avgApprovalTimeHours: number
-  approvedWithin24h: number // persentase
+  approvedWithin24h: number
   totalProcessed: number
-}
-
-// [DUMMY]
-export interface ResourceAvailability {
-  resourceId: number
-  name: string
-  type: ResourceType
-  status: ResourceStatus
-  currentBooking: { id: number; user: string; endDate: string } | null
-  nextBooking: { id: number; user: string; startDate: string } | null
-  idleHoursThisMonth: number
 }
 
 // [DUMMY]
@@ -362,7 +370,6 @@ export interface CostSummary {
   }
 }
 
-// [DUMMY]
 export interface CostByVehicle {
   vehicleId: number
   name: string
@@ -374,7 +381,6 @@ export interface CostByVehicle {
   avgCostPerKm: number
 }
 
-// [DUMMY]
 export interface CostByDepartment {
   departmentId: number
   departmentName: string
@@ -384,7 +390,6 @@ export interface CostByDepartment {
   totalCost: number
 }
 
-// [DUMMY]
 export interface CostTrend {
   period: string
   fuelCost: number
@@ -392,7 +397,6 @@ export interface CostTrend {
   totalCost: number
 }
 
-// [DUMMY]
 export interface DriverPerformance {
   driverId: number
   driverName: string
@@ -402,11 +406,10 @@ export interface DriverPerformance {
   avgCostPerKm: number
   avgRating: number
   totalReviews: number
-  onTimeRate: number // persentase
+  onTimeRate: number
   lateCount: number
 }
 
-// [DUMMY]
 export interface DepartmentSummary {
   departmentId: number
   departmentName: string

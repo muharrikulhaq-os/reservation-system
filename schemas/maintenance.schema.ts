@@ -1,22 +1,21 @@
 import { z } from 'zod'
 
 // ─────────────────────────────────────────
-// MAINTENANCE SCHEMAS
+// MAINTENANCE SCHEMAS (VEHICLE only)
 // ─────────────────────────────────────────
 
 export const createMaintenanceSchema = z.object({
-  resourceId: z
-    .number({ error: 'Resource wajib dipilih' })
+  vehicleId: z
+    .number({ error: 'Kendaraan wajib dipilih' })
     .int()
-    .positive('Resource wajib dipilih'),
-  type: z.enum(['RUTIN', 'PERBAIKAN', 'PENGGANTIAN', 'BODY'], {
-    error: 'Tipe maintenance wajib dipilih',
-  }),
+    .positive('Kendaraan wajib dipilih'),
+  type: z.string().min(1, 'Tipe wajib dipilih'),
   description: z.string().min(5, 'Deskripsi minimal 5 karakter'),
+  location: z.string().min(1, 'Lokasi wajib diisi'),
   startDate: z.string().min(1, 'Tanggal mulai wajib diisi'),
-  vendor: z.string().optional(),
+  vendorName: z.string().optional(),
   odometer: z.number().optional(),
-  cost: z.number().optional(),
+  totalCost: z.number().optional(),
 })
 
 export type CreateMaintenanceFormData = z.infer<typeof createMaintenanceSchema>

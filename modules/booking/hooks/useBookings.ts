@@ -70,6 +70,15 @@ export const useDriverRatings = (driverId: number) =>
     enabled:  !!driverId,
   })
 
+// Rating milik satu booking — 404 = belum dinilai (jangan retry)
+export const useBookingDriverRating = (bookingId: number, enabled = true) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.BOOKINGS, bookingId, 'driver-rating'],
+    queryFn:  () => bookingService.getBookingRating(bookingId).then((r) => r.data),
+    enabled:  !!bookingId && enabled,
+    retry:    false,
+  })
+
 export const useBookingAttachments = (bookingId: number) =>
   useQuery({
     queryKey: [...QUERY_KEYS.BOOKINGS, bookingId, 'attachments'],

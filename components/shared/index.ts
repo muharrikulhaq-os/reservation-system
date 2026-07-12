@@ -14,6 +14,8 @@ export { PageHeader } from './page-header/PageHeader'
 
 export { StatCard } from './stat-card/StatCard'
 
+export { StarRating } from './rating/StarRating'
+
 export { AvailabilityCalendar } from './calendar/AvailabilityCalendar'
 export type {
   AvailabilityCalendarProps,

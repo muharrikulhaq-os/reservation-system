@@ -29,6 +29,10 @@ export interface Booking extends Timestamps {
   originalResource?: OriginalResource | null
   // true jika driver yang dipilih sudah punya booking lain → kandidat merge
   hasMergeSuggestion?: boolean
+  // Info penggabungan (dari list booking):
+  isMerged?: boolean
+  mergedIntoId?: number | null // booking ini digabung KE booking mana (sekunder)
+  mergeCount?: number          // jumlah booking yang digabung ke booking ini (main/primary)
 }
 
 // --- Resource Substitution ---
