@@ -73,6 +73,10 @@ jobs:
     environment: production
     env:
       DEPLOY_DIR: "C:\\deploy\\booking-system\\frontend"
+      # Next.js pings telemetry.nextjs.org on build by default; on this
+      # server's network that call can hang instead of timing out cleanly,
+      # stalling the whole job. Disable it for CI builds.
+      NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - shell: pwsh
