@@ -1,5 +1,5 @@
 # CI/CD for reservation-system (Next.js 16 / React 19, pnpm) — native Windows
-# Server deploy via PM2.
+# Server deploy via NSSM (Windows Service "NextFrontend"), not PM2.
 #
 # Same trust split as booking-system-api: install/typecheck on PRs and
 # pushes run on ubuntu-latest (free, isolated, 1x minute rate — never
@@ -84,13 +84,7 @@ jobs:
           pnpm build
           New-Item -ItemType Directory -Force -Path "$env:DEPLOY_DIR" | Out-Null
           Copy-Item -Path .\* -Destination "$env:DEPLOY_DIR" -Recurse -Force -Exclude .env.production.local
-          pm2 describe NextFrontend > $null 2>&1
-          if ($LASTEXITCODE -eq 0) {
-            pm2 restart NextFrontend --update-env
-          } else {
-            pm2 start "pnpm run start" --name NextFrontend --cwd "$env:DEPLOY_DIR"
-          }
-          pm2 save
+          Restart-Service -Name NextFrontend
           Start-Sleep -Seconds 3
           $resp = Invoke-WebRequest -Uri http://localhost:3000/ -UseBasicParsing -TimeoutSec 5
           if ($resp.StatusCode -ge 500) { throw "health check failed after deploy: $($resp.StatusCode)" }
