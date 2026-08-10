@@ -109,10 +109,13 @@ jobs:
           # serves neither on its own.
           Copy-Item -Path .next\static -Destination .next\standalone\.next\static -Recurse -Force
           if (Test-Path public) { Copy-Item -Path public -Destination .next\standalone\public -Recurse -Force }
+          # NextFrontend serves on :80 (moved from :3000) - set explicitly so
+          # --update-env can't drop it if PORT isn't in this shell already.
+          $env:PORT = "80"
           pm2 restart NextFrontend --update-env
           pm2 save
           Start-Sleep -Seconds 3
-          $resp = Invoke-WebRequest -Uri http://localhost:3000/ -UseBasicParsing -TimeoutSec 5
+          $resp = Invoke-WebRequest -Uri http://localhost:80/ -UseBasicParsing -TimeoutSec 5
           if ($resp.StatusCode -ge 500) { throw "health check failed after deploy: $($resp.StatusCode)" }
 # deploy verification 20260808-120424
 # retry 20260808-121228
