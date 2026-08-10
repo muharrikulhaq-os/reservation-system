@@ -1,5 +1,13 @@
 # CI/CD for reservation-system (Next.js 16 / React 19, pnpm) — native Windows
-# Server deploy via NSSM (Windows Service "NextFrontend"), not PM2.
+# Server deploy via PM2 (process "NextFrontend"), not NSSM.
+#
+# next.config.ts has output: "standalone" — the build produces a
+# self-contained .next/standalone/server.js with its own pruned,
+# non-symlinked node_modules (unlike pnpm's normal virtual-store symlinks,
+# which do NOT survive a raw file copy — that's what broke the old
+# NSSM-based deploy). Because standalone output has no symlinks, it's safe
+# to build in the runner's own checkout and Copy-Item the result into
+# DEPLOY_DIR, instead of having to install/build in place there.
 #
 # Same trust split as booking-system-api: install/typecheck on PRs and
 # pushes run on ubuntu-latest (free, isolated, 1x minute rate — never
@@ -86,11 +94,17 @@ jobs:
           Copy-Item -Force "$env:DEPLOY_DIR\.env" .\.env.production.local -ErrorAction SilentlyContinue
           pnpm install --frozen-lockfile
           pnpm build
-          New-Item -ItemType Directory -Force -Path "$env:DEPLOY_DIR" | Out-Null
-          Copy-Item -Path .\* -Destination "$env:DEPLOY_DIR" -Recurse -Force -Exclude .env.production.local
-          Restart-Service -Name NextFrontend
+          Copy-Item -Path .next\static -Destination .next\standalone\.next\static -Recurse -Force
+          if (Test-Path public) { Copy-Item -Path public -Destination .next\standalone\public -Recurse -Force }
+          pm2 stop NextFrontend -ErrorAction SilentlyContinue
+          Remove-Item "$env:DEPLOY_DIR\.next\standalone" -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path "$env:DEPLOY_DIR\.next" | Out-Null
+          Copy-Item -Path .next\standalone -Destination "$env:DEPLOY_DIR\.next\standalone" -Recurse -Force
+          pm2 restart NextFrontend --update-env
+          pm2 save
           Start-Sleep -Seconds 3
           $resp = Invoke-WebRequest -Uri http://localhost:3000/ -UseBasicParsing -TimeoutSec 5
           if ($resp.StatusCode -ge 500) { throw "health check failed after deploy: $($resp.StatusCode)" }
 # deploy verification 20260808-120424
 # retry 20260808-121228
+# migrated NSSM -> PM2, output: standalone 20260810
