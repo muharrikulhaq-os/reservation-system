@@ -1,13 +1,16 @@
 # CI/CD for reservation-system (Next.js 16 / React 19, pnpm) — native Windows
 # Server deploy via PM2 (process "NextFrontend"), not NSSM.
 #
-# next.config.ts has output: "standalone" — the build produces a
-# self-contained .next/standalone/server.js with its own pruned,
-# non-symlinked node_modules (unlike pnpm's normal virtual-store symlinks,
-# which do NOT survive a raw file copy — that's what broke the old
-# NSSM-based deploy). Because standalone output has no symlinks, it's safe
-# to build in the runner's own checkout and Copy-Item the result into
-# DEPLOY_DIR, instead of having to install/build in place there.
+# next.config.ts has output: "standalone". Build happens IN PLACE inside
+# DEPLOY_DIR, not in the runner's own ephemeral checkout: a from-scratch
+# pnpm install in the runner's _work checkout produced 33
+# Module-not-found errors resolving radix-ui's re-exported @radix-ui/*
+# subpackages (build succeeds fine in DEPLOY_DIR's long-lived
+# node_modules). Rather than chase that down further, this mirrors the
+# NSSM-era lesson (raw-copying a pnpm-managed node_modules is unsafe) one
+# step further: robocopy only the SOURCE files into DEPLOY_DIR (excluding
+# node_modules/.next/.git), then install/build there directly, so
+# node_modules is always installed and linked in the same place it runs.
 #
 # Same trust split as booking-system-api: install/typecheck on PRs and
 # pushes run on ubuntu-latest (free, isolated, 1x minute rate — never
@@ -89,17 +92,14 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - shell: pwsh
         run: |
+          robocopy $env:GITHUB_WORKSPACE $env:DEPLOY_DIR /E /XD node_modules .next .git /XF .env .env.production.local /NFL /NDL /NJH /NJS
+          if ($LASTEXITCODE -ge 8) { throw "robocopy sync into DEPLOY_DIR failed with code $LASTEXITCODE" }
+          Set-Location $env:DEPLOY_DIR
           corepack enable
           corepack prepare pnpm@9 --activate
-          Copy-Item -Force "$env:DEPLOY_DIR\.env" .\.env.production.local -ErrorAction SilentlyContinue
+          Copy-Item -Force ".env" ".env.production.local"
           pnpm install --frozen-lockfile
           pnpm build
-          Copy-Item -Path .next\static -Destination .next\standalone\.next\static -Recurse -Force
-          if (Test-Path public) { Copy-Item -Path public -Destination .next\standalone\public -Recurse -Force }
-          pm2 stop NextFrontend -ErrorAction SilentlyContinue
-          Remove-Item "$env:DEPLOY_DIR\.next\standalone" -Recurse -Force -ErrorAction SilentlyContinue
-          New-Item -ItemType Directory -Force -Path "$env:DEPLOY_DIR\.next" | Out-Null
-          Copy-Item -Path .next\standalone -Destination "$env:DEPLOY_DIR\.next\standalone" -Recurse -Force
           pm2 restart NextFrontend --update-env
           pm2 save
           Start-Sleep -Seconds 3
@@ -109,3 +109,4 @@ jobs:
 # retry 20260808-121228
 # migrated NSSM -> PM2, output: standalone 20260810
 # retry: fix pm2 PATH on runner + enable Windows long-path support 20260810
+# retry: build in place in DEPLOY_DIR instead of runner workspace 20260810
