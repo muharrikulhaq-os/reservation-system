@@ -104,6 +104,11 @@ jobs:
           pm2 stop NextFrontend
           pnpm install --frozen-lockfile
           pnpm build
+          # output: standalone does NOT include static assets or public/ -
+          # both must always be copied in manually, standalone server.js
+          # serves neither on its own.
+          Copy-Item -Path .next\static -Destination .next\standalone\.next\static -Recurse -Force
+          if (Test-Path public) { Copy-Item -Path public -Destination .next\standalone\public -Recurse -Force }
           pm2 restart NextFrontend --update-env
           pm2 save
           Start-Sleep -Seconds 3
