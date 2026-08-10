@@ -108,3 +108,4 @@ jobs:
 # deploy verification 20260808-120424
 # retry 20260808-121228
 # migrated NSSM -> PM2, output: standalone 20260810
+# retry: fix pm2 PATH on runner + enable Windows long-path support 20260810
