@@ -98,6 +98,10 @@ jobs:
           corepack enable
           corepack prepare pnpm@9 --activate
           Copy-Item -Force ".env" ".env.production.local"
+          # Stop first: the running process holds .next/standalone open on
+          # Windows, and `next build` fails with EBUSY trying to replace it
+          # while still running.
+          pm2 stop NextFrontend
           pnpm install --frozen-lockfile
           pnpm build
           pm2 restart NextFrontend --update-env
