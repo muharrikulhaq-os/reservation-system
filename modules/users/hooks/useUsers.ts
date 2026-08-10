@@ -79,6 +79,31 @@ export const useDeleteUser = () => {
   })
 }
 
+// Unduh template Excel lalu picu download di browser.
+// Dibuat sebagai mutation agar punya isPending / error untuk UI.
+export const useDownloadUserBulkTemplate = () =>
+  useMutation({
+    mutationFn: async () => {
+      const { blob, filename } = await userApi.downloadBulkTemplate()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    },
+  })
+
+export const useBulkImportUsers = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (file: File) => userApi.bulkImport(file).then((r) => r.data),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: QUERY_KEYS.USERS }),
+  })
+}
+
 export const useUpdateUserPhoto = () => {
   const qc = useQueryClient()
   return useMutation({

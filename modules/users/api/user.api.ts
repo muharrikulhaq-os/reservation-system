@@ -3,6 +3,7 @@
 // Semua endpoint sudah tersedia di backend — tidak ada dummy.
 // ─────────────────────────────────────────
 
+import { isAxiosError } from 'axios'
 import { apiClient } from '@/lib'
 import { API_ENDPOINTS } from '@/constants'
 import type {
@@ -16,7 +17,33 @@ import type {
   UpdateUserPayload,
   ToggleActiveResponse,
   UpdateProfilePhotoResponse,
+  BulkImportResult,
 } from '@/types'
+
+// ── Helper: download biner ────────────────
+
+// Ambil nama file dari header Content-Disposition (RFC 5987 & bentuk polos).
+const filenameFromDisposition = (value?: string): string | undefined => {
+  if (!value) return undefined
+  const utf8 = /filename\*=UTF-8''([^;]+)/i.exec(value)
+  if (utf8) return decodeURIComponent(utf8[1])
+  const plain = /filename="?([^";]+)"?/i.exec(value)
+  return plain ? plain[1] : undefined
+}
+
+// Saat responseType='blob', body error dari API juga berupa Blob —
+// ubah kembali ke JSON agar getErrorMessage() bisa membaca pesannya.
+const normalizeBlobError = async (error: unknown): Promise<unknown> => {
+  if (isAxiosError(error) && error.response?.data instanceof Blob) {
+    try {
+      const text = await error.response.data.text()
+      error.response.data = JSON.parse(text)
+    } catch {
+      // Body bukan JSON — biarkan apa adanya, fallback getErrorMessage yang dipakai.
+    }
+  }
+  return error
+}
 
 export const userApi = {
   // ── List & Detail ─────────────────────
@@ -64,6 +91,33 @@ export const userApi = {
         form,
         { headers: { 'Content-Type': 'multipart/form-data' } },
       )
+      .then((r) => r.data)
+  },
+
+  // ── Bulk Import (Excel) ────────────────
+
+  // Template .xlsx berisi sheet "Users" + sheet "Referensi"
+  // (daftar role & departemen valid). Dikirim sebagai binary.
+  downloadBulkTemplate: () =>
+    apiClient
+      .get<Blob>(API_ENDPOINTS.USERS.BULK_TEMPLATE, { responseType: 'blob' })
+      .then((r) => ({
+        blob: r.data,
+        filename:
+          filenameFromDisposition(r.headers['content-disposition']) ??
+          'template-import-users.xlsx',
+      }))
+      .catch(async (error: unknown) => {
+        throw await normalizeBlobError(error)
+      }),
+
+  bulkImport: (file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return apiClient
+      .post<ApiResponse<BulkImportResult>>(API_ENDPOINTS.USERS.BULK_IMPORT, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
       .then((r) => r.data)
   },
 

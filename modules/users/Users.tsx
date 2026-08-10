@@ -2,7 +2,14 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Search, UserPlus, Users as UsersIcon, ShieldCheck, Car } from 'lucide-react'
+import {
+  Search,
+  UserPlus,
+  Users as UsersIcon,
+  ShieldCheck,
+  Car,
+  FileSpreadsheet,
+} from 'lucide-react'
 import { DataTable, PageHeader, StatCard } from '@/components/shared'
 import { AppButton, InputSelect } from '@/components/ui-custom'
 import { AdminOnly } from '@/components/common'
@@ -23,6 +30,7 @@ import {
   useToggleUserActive,
 } from './hooks/useUsers'
 import { userColumns } from './utils/columns'
+import { UserBulkImportDialog } from './components/UserBulkImportDialog'
 
 // ─────────────────────────────────────────
 // USERS PAGE — daftar pengguna
@@ -42,6 +50,7 @@ export const Users = () => {
   const toggle = useToggleUserActive()
 
   const [pendingToggleUser, setPendingToggleUser] = useState<User | null>(null)
+  const [bulkImportOpen, setBulkImportOpen] = useState(false)
 
   const columns = useMemo(
     () => userColumns({ onToggleActive: setPendingToggleUser }),
@@ -72,11 +81,20 @@ export const Users = () => {
         description="Kelola akun pengguna sistem"
         actions={
           <AdminOnly>
-            <Link href="/users/new">
-              <AppButton variant="primary" leftIcon={<UserPlus className="h-4 w-4" />}>
-                Tambah Pengguna
+            <div className="flex flex-wrap items-center gap-3">
+              <AppButton
+                variant="secondary"
+                leftIcon={<FileSpreadsheet className="h-4 w-4" />}
+                onClick={() => setBulkImportOpen(true)}
+              >
+                Import Excel
               </AppButton>
-            </Link>
+              <Link href="/users/new">
+                <AppButton variant="primary" leftIcon={<UserPlus className="h-4 w-4" />}>
+                  Tambah Pengguna
+                </AppButton>
+              </Link>
+            </div>
           </AdminOnly>
         }
       />
@@ -164,6 +182,12 @@ export const Users = () => {
         onPageChange={setPage}
         enableSorting
         emptyMessage="Belum ada pengguna"
+      />
+
+      {/* Bulk import Excel */}
+      <UserBulkImportDialog
+        open={bulkImportOpen}
+        onOpenChange={setBulkImportOpen}
       />
 
       {/* Confirm toggle active */}

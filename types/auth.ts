@@ -146,6 +146,26 @@ export interface UpdateProfilePhotoResponse {
   profilePhoto: string
 }
 
+// --- Bulk Import (Excel) ---
+
+// Hasil per baris file Excel — backend tidak membatalkan baris lain
+// saat satu baris gagal, jadi tiap baris punya status sendiri.
+export interface BulkImportRowResult {
+  row: number          // nomor baris di file Excel (header = baris 1)
+  employeeId: string
+  name: string
+  email: string
+  success: boolean
+  error?: string
+}
+
+export interface BulkImportResult {
+  total: number
+  successCount: number
+  failedCount: number
+  results: BulkImportRowResult[]
+}
+
 // --- User Query Params ---
 
 export interface UserQueryParams {
