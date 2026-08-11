@@ -2,7 +2,12 @@
 // VEHICLE HOOKS
 // ─────────────────────────────────────────
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from '@tanstack/react-query'
 import { QUERY_KEYS } from '@/constants'
 import { vehicleService } from '../api/vehicle.api'
 import type {
@@ -31,6 +36,9 @@ export const useVehiclesPaginated = (
     queryKey: [...QUERY_KEYS.VEHICLES, 'paginated', params],
     queryFn:  () => vehicleService.getAll(params),
     enabled:  options?.enabled ?? true,
+    // Tahan data halaman sebelumnya saat pindah halaman —
+    // tanpa ini pager ikut hilang tiap kali refetch.
+    placeholderData: keepPreviousData,
   })
 
 export const useVehicle = (id: number) =>

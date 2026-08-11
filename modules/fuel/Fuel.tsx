@@ -20,7 +20,7 @@ const isThisMonth = (iso: string) => {
 }
 
 export const Fuel = () => {
-  const { filters, setFilter, params, setPage } = useTableFilter({
+  const { filters, setFilter, params, setPage, setLimit } = useTableFilter({
     vehicleId: undefined as number | undefined,
     fuelType: undefined as EnergyType | undefined,
   })
@@ -124,6 +124,7 @@ export const Fuel = () => {
         isLoading={isLoading}
         pagination={data?.pagination}
         onPageChange={setPage}
+        onLimitChange={setLimit}
         emptyMessage="Belum ada catatan pengisian"
       />
     </div>

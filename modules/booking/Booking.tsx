@@ -29,7 +29,7 @@ const RESOURCE_TABS = [
 ] as const;
 
 export const BookingPage = () => {
-  const { search, setSearch, filters, setFilter, setPage, params } =
+  const { search, setSearch, filters, setFilter, setPage, setLimit, params } =
     useTableFilter({
       status: undefined as BookingStatus | undefined,
       resourceType: undefined as ResourceType | undefined,
@@ -119,6 +119,7 @@ export const BookingPage = () => {
           isLoading={isLoading}
           pagination={data?.pagination}
           onPageChange={setPage}
+          onLimitChange={setLimit}
           emptyMessage="Belum ada booking"
         />
       </div>

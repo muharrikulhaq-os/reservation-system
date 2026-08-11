@@ -10,8 +10,8 @@ import {
   type TableOptions,
   type SortingState,
 } from '@tanstack/react-table'
-import { useState }        from 'react'
-import { ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp, ChevronDown } from 'lucide-react'
+import { useState } from 'react'
+import { ChevronsUpDown, ChevronUp, ChevronDown } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -21,8 +21,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Skeleton }   from '@/components/ui/skeleton'
-import { Button }     from '@/components/ui/button'
-import { AppButton }  from '@/components/ui-custom/Appbutton'
+import { Pagination } from '../pagination/Pagination'
 import { cn }         from '@/lib/utils'
 import type { PaginationMeta } from '@/types'
 
@@ -63,6 +62,7 @@ interface DataTableProps<TData> {
   isLoading?:     boolean
   pagination?:    PaginationMeta
   onPageChange?:  (page: number) => void
+  onLimitChange?: (limit: number) => void
   emptyMessage?:  string
   enableSorting?: boolean
   className?:     string
@@ -79,6 +79,7 @@ export const DataTable = <TData,>({
   isLoading,
   pagination,
   onPageChange,
+  onLimitChange,
   emptyMessage   = 'Tidak ada data',
   enableSorting  = false,
   className,
@@ -185,60 +186,11 @@ export const DataTable = <TData,>({
 
       {/* Pagination */}
       {pagination && onPageChange && (
-        <div className="flex items-center justify-between pt-3">
-          <p className="text-xs text-[var(--text-secondary)]">
-            Menampilkan{' '}
-            <span className="font-medium text-[var(--text-primary)]">
-              {(pagination.page - 1) * pagination.limit + 1}–
-              {Math.min(pagination.page * pagination.limit, pagination.total)}
-            </span>
-            {' '}dari{' '}
-            <span className="font-medium text-[var(--text-primary)]">
-              {pagination.total}
-            </span>
-            {' '}data
-          </p>
-
-          <div className="flex items-center gap-1">
-            <AppButton
-              variant="secondary"
-              size="icon-sm"
-              onClick={() => onPageChange(pagination.page - 1)}
-              disabled={pagination.page <= 1}
-              aria-label="Halaman sebelumnya"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </AppButton>
-
-            {Array.from({ length: Math.min(pagination.totalPages, 5) }, (_, i) => {
-              const p = i + 1
-              return (
-                <button
-                  key={p}
-                  onClick={() => onPageChange(p)}
-                  className={cn(
-                    'flex h-7 min-w-7 items-center justify-center rounded-lg px-2 text-xs font-medium transition-colors',
-                    p === pagination.page
-                      ? 'bg-[var(--primary)] text-white'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]',
-                  )}
-                >
-                  {p}
-                </button>
-              )
-            })}
-
-            <AppButton
-              variant="secondary"
-              size="icon-sm"
-              onClick={() => onPageChange(pagination.page + 1)}
-              disabled={pagination.page >= pagination.totalPages}
-              aria-label="Halaman berikutnya"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </AppButton>
-          </div>
-        </div>
+        <Pagination
+          pagination={pagination}
+          onPageChange={onPageChange}
+          onLimitChange={onLimitChange}
+        />
       )}
     </div>
   )

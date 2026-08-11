@@ -6,6 +6,7 @@ import { Card, CardHeader } from '@/components/common'
 import { DataTable, createColumnHelper, type ColumnDef, Badge } from '@/components/shared'
 import { InputSelect } from '@/components/ui-custom'
 import { useDebounce } from '@/hooks'
+import { PAGINATION } from '@/constants'
 import { formatDateTime } from '@/lib'
 import type { AuditLog } from '@/types'
 import { useAuditLogs } from '../../hooks/useReports'
@@ -65,15 +66,22 @@ const auditColumns: ColumnDef<AuditLog, unknown>[] = [
 ] as ColumnDef<AuditLog, unknown>[]
 
 export const AuditSection = () => {
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useState<number>(PAGINATION.DEFAULT_PAGE)
+  const [limit, setLimitState] = useState<number>(PAGINATION.DEFAULT_LIMIT)
   const [entityType, setEntityType] = useState('')
   const [userSearch, setUserSearch] = useState('')
   const userSearchDebounced = useDebounce(userSearch)
 
   const userId = Number(userSearchDebounced.trim())
+  // Ganti jumlah per halaman selalu kembali ke halaman 1
+  const setLimit = (next: number) => {
+    setLimitState(next)
+    setPage(PAGINATION.DEFAULT_PAGE)
+  }
+
   const { data, isLoading } = useAuditLogs({
     page,
-    limit: 20,
+    limit,
     entityType: entityType || undefined,
     userId: Number.isFinite(userId) && userId > 0 ? userId : undefined,
   })
@@ -120,6 +128,7 @@ export const AuditSection = () => {
         isLoading={isLoading}
         pagination={data?.pagination}
         onPageChange={setPage}
+        onLimitChange={setLimit}
         emptyMessage="Belum ada audit log"
       />
     </Card>

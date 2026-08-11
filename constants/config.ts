@@ -7,7 +7,7 @@
 export const APP_CONFIG = {
   API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080",
   REQUEST_TIMEOUT: 15_000, // 15 detik
-  DEFAULT_PAGE_SIZE: 20,
+  DEFAULT_PAGE_SIZE: 10,
   MAX_FILE_SIZE_MB: 10,
   ACCEPTED_IMAGE_TYPES: ["image/jpeg", "image/png", "image/webp"],
   ACCEPTED_DOC_TYPES: ["application/pdf", "image/jpeg", "image/png"],
@@ -18,6 +18,15 @@ export const APP_CONFIG = {
 export const TOKEN_CONFIG = {
   ACCESS_TOKEN_KEY: "access_token",
   REFRESH_TOKEN_KEY: "refresh_token",
+} as const;
+
+// --- UI Preference Keys ---
+// Key penyimpanan preferensi tampilan (bukan data).
+// Dipakai lewat usePersistedState — jangan akses storage langsung.
+
+export const STORAGE_KEYS = {
+  VEHICLES_VIEW_MODE: "vehicles:view-mode",
+  ROOMS_VIEW_MODE: "rooms:view-mode",
 } as const;
 
 // --- Query Keys ---
@@ -100,6 +109,8 @@ export const QUERY_CONFIG = {
 export const PAGINATION = {
   DEFAULT_PAGE: 1,
   DEFAULT_LIMIT: APP_CONFIG.DEFAULT_PAGE_SIZE,
+  // Pilihan jumlah data per halaman di dropdown pager
+  LIMIT_OPTIONS: [5, 10, 20, 50, 100] as readonly number[],
 } as const;
 
 // --- Master Setting Keys ---

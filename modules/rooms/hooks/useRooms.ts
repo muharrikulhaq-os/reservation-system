@@ -2,7 +2,12 @@
 // ROOM HOOKS
 // ─────────────────────────────────────────
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from '@tanstack/react-query'
 import { QUERY_KEYS } from '@/constants'
 import { roomService } from '../api/room.api'
 import type {
@@ -30,6 +35,9 @@ export const useRoomsPaginated = (
     queryKey: [...QUERY_KEYS.ROOMS, 'paginated', params],
     queryFn:  () => roomService.getAll(params),
     enabled:  options?.enabled ?? true,
+    // Tahan data halaman sebelumnya saat pindah halaman —
+    // tanpa ini pager ikut hilang tiap kali refetch.
+    placeholderData: keepPreviousData,
   })
 
 export const useRoom = (id: number) =>

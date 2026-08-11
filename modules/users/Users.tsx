@@ -37,7 +37,7 @@ import { UserBulkImportDialog } from './components/UserBulkImportDialog'
 // ─────────────────────────────────────────
 
 export const Users = () => {
-  const { search, setSearch, filters, setFilter, page, setPage, params } =
+  const { search, setSearch, filters, setFilter, page, setPage, setLimit, params } =
     useTableFilter({
       roleId: undefined as number | undefined,
       departmentId: undefined as number | undefined,
@@ -180,6 +180,7 @@ export const Users = () => {
         isLoading={isLoading}
         pagination={data?.pagination}
         onPageChange={setPage}
+        onLimitChange={setLimit}
         enableSorting
         emptyMessage="Belum ada pengguna"
       />

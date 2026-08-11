@@ -21,6 +21,7 @@ interface CardGridProps<TData> {
   isLoading?:     boolean
   pagination?:    PaginationMeta
   onPageChange?:  (page: number) => void
+  onLimitChange?: (limit: number) => void
   emptyMessage?:  string
   skeletonCount?: number
   className?:     string
@@ -35,6 +36,7 @@ export const CardGrid = <TData,>({
   isLoading,
   pagination,
   onPageChange,
+  onLimitChange,
   emptyMessage  = 'Tidak ada data',
   skeletonCount = 8,
   className,
@@ -76,7 +78,11 @@ export const CardGrid = <TData,>({
     <div className="flex flex-col gap-0">
       {content}
       {pagination && onPageChange && (
-        <Pagination pagination={pagination} onPageChange={onPageChange} />
+        <Pagination
+          pagination={pagination}
+          onPageChange={onPageChange}
+          onLimitChange={onLimitChange}
+        />
       )}
     </div>
   )

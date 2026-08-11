@@ -2,7 +2,12 @@
 // DRIVER HOOKS
 // ─────────────────────────────────────────
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from '@tanstack/react-query'
 import { QUERY_KEYS } from '@/constants'
 import { driverService } from '../api/driver.api'
 import type {
@@ -19,6 +24,16 @@ export const useDrivers = (params?: DriverQueryParams) =>
   useQuery({
     queryKey: [...QUERY_KEYS.DRIVERS, params],
     queryFn:  () => driverService.getAll(params).then((r) => r.data),
+  })
+
+// Varian dengan PaginatedResponse penuh (data + pagination) untuk halaman list
+export const useDriversPaginated = (params?: DriverQueryParams) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.DRIVERS, 'paginated', params],
+    queryFn:  () => driverService.getAll(params),
+    // Tahan data halaman sebelumnya saat pindah halaman —
+    // tanpa ini pager ikut hilang tiap kali refetch.
+    placeholderData: keepPreviousData,
   })
 
 export const useDriver = (id: number) =>
