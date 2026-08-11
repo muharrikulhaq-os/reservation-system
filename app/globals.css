@@ -14,9 +14,9 @@
     --bg-subtle: #F8F9FB;
 
     /* ── Brand ────────────────────────────── */
-    --primary:       #2D2CE8;
-    --primary-dark:  #1A19B5;
-    --primary-light: #E8E8FC;
+    --primary:       #2e77b8; /* KCE Medium Blue */
+    --primary-dark:  #253f7a; /* KCE Navy Blue */
+    --primary-light: #eaf4fa; /* KCE Light Tint */
 
     /* ── Semantic ─────────────────────────── */
     --success: #16A34A;
@@ -145,8 +145,7 @@
   --card-foreground:   oklch(0.145 0 0);
   --popover:   oklch(1 0 0);
   --popover-foreground:   oklch(0.145 0 0);
-  --primary:   oklch(0.205 0 0);
-  --primary-foreground:   oklch(0.985 0 0);
+  --primary-foreground: #ffffff;
   --secondary:   oklch(0.97 0 0);
   --secondary-foreground:   oklch(0.205 0 0);
   --muted:   oklch(0.97 0 0);
@@ -180,8 +179,8 @@
   --card-foreground:   oklch(0.985 0 0);
   --popover:   oklch(0.205 0 0);
   --popover-foreground:   oklch(0.985 0 0);
-  --primary:   oklch(0.922 0 0);
-  --primary-foreground:   oklch(0.205 0 0);
+  /* --primary:   oklch(0.922 0 0);
+  --primary-foreground:   oklch(0.205 0 0); */
   --secondary:   oklch(0.269 0 0);
   --secondary-foreground:   oklch(0.985 0 0);
   --muted:   oklch(0.269 0 0);

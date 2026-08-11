@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { VehicleEdit } from '@/modules/vehicles'
 
 export const metadata: Metadata = {
-  title: 'Edit Kendaraan — Reservation System',
+  title: 'Edit Kendaraan — Sistem Reservasi',
 }
 
 export default async function Page({
