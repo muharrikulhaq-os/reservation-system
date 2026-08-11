@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { RoomEdit } from '@/modules/rooms'
 
 export const metadata: Metadata = {
-  title: 'Edit Ruangan — Reservation System',
+  title: 'Edit Ruangan — Sistem Reservasi',
 }
 
 export default async function Page({

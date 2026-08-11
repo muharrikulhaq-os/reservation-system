@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { MaintenanceDetail } from '@/modules/maintenance'
 
 export const metadata: Metadata = {
-  title: 'Detail Maintenance — Reservation System',
+  title: 'Detail Maintenance — Sistem Reservasi',
 }
 
 export default async function Page({

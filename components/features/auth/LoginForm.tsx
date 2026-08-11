@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+import logoLogin from '@/img/kce-menu.png'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Mail } from 'lucide-react'
@@ -12,15 +14,6 @@ import { Alert, Button, InputField, PasswordInput } from '@/components/common'
 // LOGIN PAGE — self-contained
 // Dipanggil di app/(auth)/login/page.tsx → <LoginPage />
 // ─────────────────────────────────────────
-
-// Brand mark — kalender (inline SVG, tanpa dependency)
-const CalendarIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-    <rect x="3" y="4" width="18" height="16" rx="2" stroke="white" strokeWidth="1.8" />
-    <path d="M8 2v4M16 2v4M3 10h18" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-    <path d="M8 14h2M11 14h5M8 17h3" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-)
 
 // ── Form ──────────────────────────────────
 const LoginForm = () => {
@@ -75,17 +68,14 @@ export const LoginPage = () => (
     <div className="w-full max-w-[420px]">
       {/* Brand */}
       <header className="mb-8 flex flex-col items-center text-center">
-        <div
-          className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl shadow-[0_6px_16px_rgba(45,44,232,0.30)]"
-          style={{ backgroundColor: 'var(--primary)' }}
-        >
-          <CalendarIcon />
+        <div className="mb-4 flex items-center justify-center">
+          <Image src={logoLogin} alt="KCE Logo" width={80} height={80} className="object-contain" />
         </div>
         <h1
           className="text-[26px] font-bold leading-tight tracking-tight text-[var(--text-primary)]"
           style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
         >
-          Reservation System
+          Sistem Reservasi
         </h1>
         <p className="mt-1.5 text-sm text-[var(--text-secondary)]">Masuk untuk melanjutkan</p>
       </header>
@@ -99,7 +89,7 @@ export const LoginPage = () => (
 
       {/* Footer */}
       <p className="mt-6 text-center text-xs text-[var(--text-disabled)]">
-        © {new Date().getFullYear()} Reservation System
+        © {new Date().getFullYear()} Sistem Reservasi
       </p>
     </div>
   </main>

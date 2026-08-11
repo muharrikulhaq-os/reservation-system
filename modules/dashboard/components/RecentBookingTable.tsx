@@ -9,8 +9,8 @@ import { recentBookingColumns } from '../utils/columns'
 // RECENT BOOKINGS
 // ─────────────────────────────────────────
 
-export const RecentBookings = () => {
-  const { data, isLoading } = useBookings({ limit: 5, page: 1 })
+export const AvailableBookings = () => {
+  const { data, isLoading } = useBookings({ limit: 5, page: 1, status: 'PENDING' })
 
   return (
     <div className="rounded-xl border border-[var(--border-card)] bg-[var(--bg-card)] p-5 shadow-[var(--shadow-card)]">
@@ -19,7 +19,7 @@ export const RecentBookings = () => {
           className="text-base font-bold text-[var(--text-primary)]"
           style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
         >
-          Booking Terbaru
+          Booking Tersedia
         </h2>
         <Link
           href="/booking"

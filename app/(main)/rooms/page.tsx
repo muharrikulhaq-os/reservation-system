@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { RoomsPage } from '@/modules/rooms'
 
 export const metadata: Metadata = {
-  title: 'Ruangan — Reservation System',
+  title: 'Ruangan — Sistem Reservasi',
 }
 
 export default function Page() {

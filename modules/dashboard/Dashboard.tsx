@@ -2,8 +2,10 @@
 
 import { CalendarCheck, Car, Building2, Users } from "lucide-react";
 import { StatCard } from "./components/StatCard";
-import { RecentBookings } from "./components/RecentBookingTable";
+import { AvailableBookings } from "./components/RecentBookingTable";
 import { DriverListCard } from "./components/DriverListCard";
+import { AvailableVehicleTable } from "./components/AvailableVehicleTable";
+import { AvailableRoomTable } from "./components/AvailableRoomTable";
 import { useDashboardSummary } from "./hooks/useDashboard";
 import { useAuthStore } from "@/store/auth.store";
 
@@ -55,10 +57,12 @@ export const DashboardPage = () => {
   return (
     <div className="flex flex-col gap-5">
       {isAdmin && <StatCards />}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <RecentBookings />
-        </div>
+      
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <AvailableBookings />
+        <AvailableVehicleTable />
+        <AvailableRoomTable />
         <DriverListCard />
       </div>
     </div>

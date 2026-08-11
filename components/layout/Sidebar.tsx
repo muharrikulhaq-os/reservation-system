@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
+import logoMenu from '@/img/kce-menu.png'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
@@ -208,14 +210,14 @@ export const Sidebar = () => {
 
       {/* Logo */}
       <div className="flex h-[56px] shrink-0 items-center gap-2.5 border-b border-[var(--border-divider)] px-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--primary)]">
-          <Grid2x2 className="h-4 w-4 text-white" />
+        <div className="flex items-center justify-center">
+          <Image src={logoMenu} alt="KCE Logo" width={32} height={32} className="object-contain" />
         </div>
         <span
           className="text-[15px] font-bold text-[var(--text-primary)]"
           style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
         >
-          ReserveSystem
+          Sistem Reservasi
         </span>
       </div>
 

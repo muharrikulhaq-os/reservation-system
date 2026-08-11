@@ -83,13 +83,13 @@ export const Navbar = () => {
       </h1>
 
       {/* Search — center */}
-      <div className="relative w-full max-w-xs">
+      {/* <div className="relative w-full max-w-xs">
         <Search className="pointer-events-none absolute inset-y-0 left-3 my-auto h-4 w-4 text-[var(--text-disabled)]" />
         <Input
           placeholder="Search reservations..."
           className="h-9 rounded-xl border-[var(--border-input)] bg-[var(--bg-subtle)] pl-9 text-sm placeholder:text-[var(--text-disabled)] focus-visible:ring-0 focus-visible:border-[var(--primary)]"
         />
-      </div>
+      </div> */}
 
       {/* Right icons */}
       <div className="flex items-center gap-1 shrink-0">

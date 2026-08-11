@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { BookingCreate } from '@/modules/booking'
 
 export const metadata: Metadata = {
-  title: 'Buat Booking — Reservation System',
+  title: 'Buat Booking — Sistem Reservasi',
 }
 
 export default function Page() {

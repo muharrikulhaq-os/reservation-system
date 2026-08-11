@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
-  title: 'Reservation System',
+  title: 'Sistem Reservasi',
   description: 'Platform peminjaman kendaraan dan ruang rapat',
 }
 
