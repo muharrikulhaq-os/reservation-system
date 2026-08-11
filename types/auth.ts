@@ -29,6 +29,8 @@ export interface User extends Timestamps {
   isActive: boolean
   role: Role
   department: Department
+  licenseNumber?: string
+  phoneNumber?: string
 }
 
 // Subset untuk nested relasi di booking, approval, dll
@@ -135,6 +137,8 @@ export interface UpdateUserPayload {
   email?: string
   roleId?: number
   departmentId?: number
+  licenseNumber?: string
+  phoneNumber?: string
 }
 
 export interface ToggleActiveResponse {

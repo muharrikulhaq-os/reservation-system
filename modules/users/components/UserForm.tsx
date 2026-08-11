@@ -44,6 +44,7 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
     register,
     control,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<CreateUserFormData>({
     // Resolver dipilih sesuai mode; field ekstra (password/employeeId)
@@ -58,6 +59,8 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
           email: initialData.email,
           roleId: initialData.role.id,
           departmentId: initialData.department.id,
+          licenseNumber: initialData.licenseNumber || '',
+          phoneNumber: initialData.phoneNumber || '',
         }
       : undefined,
   })
@@ -71,6 +74,11 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
     label: d.name,
   }))
 
+  const selectedRoleId = watch('roleId')
+  // Hapus pengecekan `!isEdit` agar field tetap muncul saat edit
+  const isDriver = roles?.find((r) => r.id === selectedRoleId)?.name === 'DRIVER'
+
+
   const onSubmit = (data: CreateUserFormData) => {
     if (isEdit) {
       updateMutation.mutate(
@@ -79,6 +87,8 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
           email: data.email,
           roleId: data.roleId,
           departmentId: data.departmentId,
+          licenseNumber: data.licenseNumber,
+          phoneNumber: data.phoneNumber,
         },
         {
           onSuccess: () => {
@@ -183,6 +193,24 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
               />
             )}
           />
+          {isDriver && (
+            <>
+              <InputText
+                label="Nomor SIM"
+                required
+                placeholder="cth. SIM-A-123456"
+                error={errors.licenseNumber?.message}
+                {...register('licenseNumber')}
+              />
+              <InputText
+                label="Nomor Telepon"
+                required
+                placeholder="cth. +628123456789"
+                error={errors.phoneNumber?.message}
+                {...register('phoneNumber')}
+              />
+            </>
+          )}
         </div>
       </Card>
 

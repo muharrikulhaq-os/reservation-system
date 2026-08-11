@@ -48,7 +48,10 @@ export const useCreateUser = () => {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (payload: CreateUserPayload) => userApi.create(payload),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: QUERY_KEYS.USERS }),
+    onSuccess:  () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.USERS })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.DRIVERS })
+    },
   })
 }
 
@@ -59,6 +62,7 @@ export const useUpdateUser = (id: number) => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.USERS })
       qc.invalidateQueries({ queryKey: [...QUERY_KEYS.USERS, id] })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.DRIVERS })
     },
   })
 }

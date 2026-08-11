@@ -18,6 +18,8 @@ export const createUserSchema = z.object({
     .number({ error: 'Pilih departemen' })
     .int()
     .positive('Pilih departemen'),
+  licenseNumber: z.string().optional(),
+  phoneNumber: z.string().optional(),
 })
 
 // --- Update User (tanpa password & employeeId) ---
@@ -30,6 +32,8 @@ export const updateUserSchema = z.object({
     .number({ error: 'Pilih departemen' })
     .int()
     .positive('Pilih departemen'),
+  licenseNumber: z.string().optional(),
+  phoneNumber: z.string().optional(),
 })
 
 // --- Inferred Types ---
