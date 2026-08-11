@@ -6,6 +6,13 @@
 export { DataTable, createColumnHelper } from './table/DataTable'
 export type { ColumnDef } from './table/DataTable'
 
+export { CardGrid } from './card-grid/CardGrid'
+
+export { Pagination } from './pagination/Pagination'
+
+export { ViewToggle } from './view-toggle/ViewToggle'
+export type { ViewMode } from './view-toggle/ViewToggle'
+
 export { UserAvatar } from './avatar/Avatar'
 
 export { BookingStatusBadge, ResourceStatusBadge, Badge } from './badge/StatusBadge'
