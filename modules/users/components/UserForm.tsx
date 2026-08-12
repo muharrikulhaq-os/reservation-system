@@ -45,6 +45,7 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
     control,
     handleSubmit,
     watch,
+    setError,
     formState: { errors },
   } = useForm<CreateUserFormData>({
     // Resolver dipilih sesuai mode; field ekstra (password/employeeId)
@@ -80,6 +81,19 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
 
 
   const onSubmit = (data: CreateUserFormData) => {
+    if (isDriver) {
+      let hasError = false
+      if (!data.licenseNumber?.trim()) {
+        setError('licenseNumber', { type: 'manual', message: 'Nomor SIM wajib diisi untuk driver' })
+        hasError = true
+      }
+      if (!data.phoneNumber?.trim()) {
+        setError('phoneNumber', { type: 'manual', message: 'Nomor Telepon wajib diisi untuk driver' })
+        hasError = true
+      }
+      if (hasError) return
+    }
+
     if (isEdit) {
       updateMutation.mutate(
         {
