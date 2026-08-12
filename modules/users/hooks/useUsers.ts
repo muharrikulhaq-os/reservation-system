@@ -28,6 +28,13 @@ export const useUser = (id: number) =>
     enabled:  !!id,
   })
 
+// Ringkasan jumlah user (total, per role, per departemen) untuk stat card
+export const useUserSummary = () =>
+  useQuery({
+    queryKey: QUERY_KEYS.USER_SUMMARY,
+    queryFn:  () => userApi.getSummary().then((r) => r.data),
+  })
+
 export const useUserRoles = () =>
   useQuery({
     queryKey: QUERY_KEYS.USER_ROLES,

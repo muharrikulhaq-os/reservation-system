@@ -22,9 +22,10 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { useTableFilter } from '@/hooks'
 import { ROLE } from '@/constants'
-import type { SelectOption, User } from '@/types'
+import type { RoleName, SelectOption, User } from '@/types'
 import {
   useUsers,
+  useUserSummary,
   useUserRoles,
   useUserDepartments,
   useToggleUserActive,
@@ -45,6 +46,7 @@ export const Users = () => {
     })
 
   const { data, isLoading } = useUsers(params)
+  const { data: summary } = useUserSummary()
   const { data: roles } = useUserRoles()
   const { data: departments } = useUserDepartments()
   const toggle = useToggleUserActive()
@@ -66,11 +68,12 @@ export const Users = () => {
     label: d.name,
   }))
 
-  // Stat dari halaman yang termuat (backend belum punya endpoint khusus)
   const list = data?.data ?? []
-  const total = data?.pagination?.total ?? list.length
-  const countByRole = (role: string) =>
-    list.filter((u) => u.role.name === role).length
+
+  // Stat dihitung backend atas seluruh data (GET /users/summary),
+  // jadi tidak ikut berubah saat filter atau halaman berganti.
+  // Role yang belum punya user sama sekali tidak muncul di roleCount.
+  const countByRole = (role: RoleName) => summary?.roleCount[role] ?? 0
 
   const showInactive = filters.isActive === undefined
 
@@ -103,7 +106,7 @@ export const Users = () => {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Total"
-          value={total}
+          value={summary?.totals.total ?? 0}
           icon={<UsersIcon className="h-5 w-5 text-[#2563EB]" />}
           iconBg="#DBEAFE"
         />

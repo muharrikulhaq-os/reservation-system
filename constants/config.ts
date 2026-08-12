@@ -42,6 +42,7 @@ export const QUERY_KEYS = {
 
   // Users
   USERS: ["users"] as const,
+  USER_SUMMARY: ["users", "summary"] as const,
   USER_ROLES: ["users", "roles"] as const,
   USER_DEPARTMENTS: ["users", "departments"] as const,
 

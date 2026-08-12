@@ -10,6 +10,7 @@ import type {
   ApiResponse,
   PaginatedResponse,
   User,
+  UserSummary,
   Role,
   Department,
   UserQueryParams,
@@ -122,6 +123,13 @@ export const userApi = {
   },
 
   // ── Lookup (dropdown) ──────────────────
+
+  // Agregat untuk stat card — dihitung backend atas seluruh data,
+  // bukan hanya halaman yang sedang tampil.
+  getSummary: () =>
+    apiClient
+      .get<ApiResponse<UserSummary>>(API_ENDPOINTS.USERS.SUMMARY)
+      .then((r) => r.data),
 
   getRoles: () =>
     apiClient

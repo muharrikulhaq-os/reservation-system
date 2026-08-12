@@ -31,6 +31,7 @@ export const API_ENDPOINTS = {
   USERS: {
     BASE:            `${API_PREFIX}/users`,
     ME:              `${API_PREFIX}/users/me`,
+    SUMMARY:         `${API_PREFIX}/users/summary`,
     ROLES:           `${API_PREFIX}/users/roles`,
     DEPARTMENTS:     `${API_PREFIX}/users/departments`,
     BY_ID:           (id: number) => `${API_PREFIX}/users/${id}`,

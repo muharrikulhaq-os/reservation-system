@@ -170,6 +170,60 @@ export interface BulkImportResult {
   results: BulkImportRowResult[]
 }
 
+// --- User Summary (GET /users/summary) ---
+
+export interface UserSummaryTotals {
+  total: number
+  active: number
+  inactive: number
+  withProfilePhoto: number
+  newThisMonth: number
+  newLast30Days: number
+  totalRoles: number
+  totalDepartments: number
+}
+
+export interface UserSummaryByRole {
+  roleId: number
+  role: RoleName
+  total: number
+  active: number
+  inactive: number
+  percentage: number
+}
+
+export interface UserSummaryByDepartment {
+  departmentId: number
+  department: string
+  total: number
+  active: number
+  inactive: number
+  percentage: number
+}
+
+export interface UserSummaryDepartmentBreakdown {
+  departmentId: number
+  department: string
+  total: number
+  active: number
+  inactive: number
+}
+
+export interface UserSummaryByRoleDepartment {
+  roleId: number
+  role: RoleName
+  departments: UserSummaryDepartmentBreakdown[]
+}
+
+export interface UserSummary {
+  totals: UserSummaryTotals
+  // Role tanpa user sama sekali tidak muncul di objek ini — perlakukan sebagai 0.
+  roleCount: Partial<Record<RoleName, number>>
+  byRole: UserSummaryByRole[]
+  byDepartment: UserSummaryByDepartment[]
+  byRoleDepartment: UserSummaryByRoleDepartment[]
+}
+
 // --- User Query Params ---
 
 export interface UserQueryParams {
