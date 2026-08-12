@@ -77,12 +77,14 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
 
   const selectedRoleId = watch('roleId')
   // Hapus pengecekan `!isEdit` agar field tetap muncul saat edit
-  const isDriver = roles?.find((r) => r.id === selectedRoleId)?.name === 'DRIVER'
-
+  const selectedRoleName = roles?.find((r) => r.id === selectedRoleId)?.name
+  const isDriver = selectedRoleName === 'DRIVER'
+  const isRoomKeeper = selectedRoleName === 'ROOM_KEEPER'
 
   const onSubmit = (data: CreateUserFormData) => {
+    let hasError = false
+
     if (isDriver) {
-      let hasError = false
       if (!data.licenseNumber?.trim()) {
         setError('licenseNumber', { type: 'manual', message: 'Nomor SIM wajib diisi untuk driver' })
         hasError = true
@@ -91,8 +93,14 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
         setError('phoneNumber', { type: 'manual', message: 'Nomor Telepon wajib diisi untuk driver' })
         hasError = true
       }
-      if (hasError) return
+    } else if (isRoomKeeper) {
+      if (!data.phoneNumber?.trim()) {
+        setError('phoneNumber', { type: 'manual', message: 'Nomor Telepon wajib diisi untuk Room Keeper' })
+        hasError = true
+      }
     }
+
+    if (hasError) return
 
     if (isEdit) {
       updateMutation.mutate(
@@ -208,22 +216,22 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
             )}
           />
           {isDriver && (
-            <>
-              <InputText
-                label="Nomor SIM"
-                required
-                placeholder="cth. SIM-A-123456"
-                error={errors.licenseNumber?.message}
-                {...register('licenseNumber')}
-              />
-              <InputText
-                label="Nomor Telepon"
-                required
-                placeholder="cth. +628123456789"
-                error={errors.phoneNumber?.message}
-                {...register('phoneNumber')}
-              />
-            </>
+            <InputText
+              label="Nomor SIM"
+              required
+              placeholder="cth. SIM-A-123456"
+              error={errors.licenseNumber?.message}
+              {...register('licenseNumber')}
+            />
+          )}
+          {(isDriver || isRoomKeeper) && (
+            <InputText
+              label="Nomor Telepon"
+              required
+              placeholder="cth. +628123456789"
+              error={errors.phoneNumber?.message}
+              {...register('phoneNumber')}
+            />
           )}
         </div>
       </Card>

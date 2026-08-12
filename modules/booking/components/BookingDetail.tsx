@@ -103,6 +103,7 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
 
   const isAdmin = useAuthStore((s) => s.isAdmin());
   const isDriver = useAuthStore((s) => s.isDriver());
+  const isRoomKeeper = useAuthStore((s) => s.isRoomKeeper());
   const currentUserId = useAuthStore((s) => s.user?.id);
   const { mutate: cancelBooking, isPending: isCancelling } = useCancelBooking();
 
@@ -362,21 +363,26 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
             !booking.assignedDriver && (
               <BookingAssignPanel booking={booking} onActionComplete={refetch} />
             )}
+        </AdminOnly>
 
-          {booking.status === BOOKING_STATUS.APPROVED &&
-            !(
-              booking.resource.type === RESOURCE_TYPE.VEHICLE &&
-              !booking.assignedDriver
-            ) && <StartPanel bookingId={booking.id} onActionComplete={refetch} />}
+        {/* StartPanel: Bisa dilihat oleh Admin, atau Room Keeper (hanya untuk ruangan) */}
+        {(isAdmin || (isRoomKeeper && !isVehicle)) &&
+          booking.status === BOOKING_STATUS.APPROVED &&
+          !(
+            booking.resource.type === RESOURCE_TYPE.VEHICLE &&
+            !booking.assignedDriver
+          ) && <StartPanel bookingId={booking.id} onActionComplete={refetch} />}
 
-          {booking.status === BOOKING_STATUS.ONGOING && (
+        {/* CompletePanel: Bisa dilihat oleh Admin, atau Room Keeper (hanya untuk ruangan) */}
+        {(isAdmin || (isRoomKeeper && !isVehicle)) &&
+          booking.status === BOOKING_STATUS.ONGOING && (
             <CompletePanel
               bookingId={booking.id}
               hasReturnReport={!!returnReport}
+              isVehicle={isVehicle}
               onActionComplete={refetch}
             />
           )}
-        </AdminOnly>
 
         {/* Driver: mulai perjalanan (odometer + foto) */}
         {isDriver &&
@@ -661,10 +667,12 @@ const StartPanel = ({
 const CompletePanel = ({
   bookingId,
   hasReturnReport,
+  isVehicle = true,
   onActionComplete,
 }: {
   bookingId: number;
   hasReturnReport?: boolean;
+  isVehicle?: boolean;
   onActionComplete?: () => void;
 }) => {
   const complete = useCompleteBooking();
@@ -673,20 +681,22 @@ const CompletePanel = ({
       <CardHeader title="Selesaikan" />
       {complete.error && <PanelError error={complete.error} />}
 
-      {hasReturnReport ? (
-        <div className="mb-3 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2">
-          <CheckCircle className="h-4 w-4 shrink-0 text-green-600" />
-          <span className="text-xs text-green-700">
-            Laporan pengembalian sudah diterima
-          </span>
-        </div>
-      ) : (
-        <div className="mb-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
-          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
-          <span className="text-xs text-amber-700">
-            Driver belum mengirim laporan pengembalian
-          </span>
-        </div>
+      {isVehicle && (
+        hasReturnReport ? (
+          <div className="mb-3 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2">
+            <CheckCircle className="h-4 w-4 shrink-0 text-green-600" />
+            <span className="text-xs text-green-700">
+              Laporan pengembalian sudah diterima
+            </span>
+          </div>
+        ) : (
+          <div className="mb-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
+            <span className="text-xs text-amber-700">
+              Driver belum mengirim laporan pengembalian
+            </span>
+          </div>
+        )
       )}
 
       <AppButton
@@ -697,7 +707,9 @@ const CompletePanel = ({
           complete.mutate(bookingId, { onSuccess: () => onActionComplete?.() })
         }
       >
-        {hasReturnReport ? "Selesaikan Booking" : "Selesaikan Tanpa Laporan"}
+        {isVehicle 
+          ? (hasReturnReport ? "Selesaikan Booking" : "Selesaikan Tanpa Laporan")
+          : "Selesaikan Booking"}
       </AppButton>
     </Card>
   );

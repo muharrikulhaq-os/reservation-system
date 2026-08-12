@@ -124,3 +124,37 @@ export const useUpdateUserPhoto = () => {
       qc.invalidateQueries({ queryKey: [...QUERY_KEYS.USERS, id] }),
   })
 }
+
+export const useCreateDepartment = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (name: string) => userApi.createDepartment(name),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.USER_DEPARTMENTS })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.USER_SUMMARY })
+    },
+  })
+}
+
+export const useUpdateDepartment = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, name }: { id: number; name: string }) =>
+      userApi.updateDepartment(id, name),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.USER_DEPARTMENTS })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.USER_SUMMARY })
+    },
+  })
+}
+
+export const useDeleteDepartment = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => userApi.deleteDepartment(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.USER_DEPARTMENTS })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.USER_SUMMARY })
+    },
+  })
+}

@@ -9,6 +9,8 @@ import {
   ShieldCheck,
   Car,
   FileSpreadsheet,
+  DoorOpen,
+  Building2,
 } from 'lucide-react'
 import { DataTable, PageHeader, StatCard } from '@/components/shared'
 import { AppButton, InputSelect } from '@/components/ui-custom'
@@ -32,6 +34,7 @@ import {
 } from './hooks/useUsers'
 import { userColumns } from './utils/columns'
 import { UserBulkImportDialog } from './components/UserBulkImportDialog'
+import { DepartmentManageModal } from './components/DepartmentManageModal'
 
 // ─────────────────────────────────────────
 // USERS PAGE — daftar pengguna
@@ -53,6 +56,7 @@ export const Users = () => {
 
   const [pendingToggleUser, setPendingToggleUser] = useState<User | null>(null)
   const [bulkImportOpen, setBulkImportOpen] = useState(false)
+  const [deptModalOpen, setDeptModalOpen] = useState(false)
 
   const columns = useMemo(
     () => userColumns({ onToggleActive: setPendingToggleUser }),
@@ -87,6 +91,13 @@ export const Users = () => {
             <div className="flex flex-wrap items-center gap-3">
               <AppButton
                 variant="secondary"
+                leftIcon={<Building2 className="h-4 w-4" />}
+                onClick={() => setDeptModalOpen(true)}
+              >
+                Kelola Departemen
+              </AppButton>
+              <AppButton
+                variant="secondary"
                 leftIcon={<FileSpreadsheet className="h-4 w-4" />}
                 onClick={() => setBulkImportOpen(true)}
               >
@@ -103,7 +114,7 @@ export const Users = () => {
       />
 
       {/* Stat cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard
           label="Total"
           value={summary?.totals.total ?? 0}
@@ -121,6 +132,12 @@ export const Users = () => {
           value={countByRole(ROLE.DRIVER)}
           icon={<Car className="h-5 w-5 text-[#16A34A]" />}
           iconBg="#DCFCE7"
+        />
+        <StatCard
+          label="Room Keeper"
+          value={countByRole(ROLE.ROOM_KEEPER)}
+          icon={<DoorOpen className="h-5 w-5 text-[#EAB308]" />}
+          iconBg="#FEF9C3"
         />
         <StatCard
           label="Employee"
@@ -192,6 +209,12 @@ export const Users = () => {
       <UserBulkImportDialog
         open={bulkImportOpen}
         onOpenChange={setBulkImportOpen}
+      />
+
+      {/* Kelola Departemen */}
+      <DepartmentManageModal
+        open={deptModalOpen}
+        onOpenChange={setDeptModalOpen}
       />
 
       {/* Confirm toggle active */}

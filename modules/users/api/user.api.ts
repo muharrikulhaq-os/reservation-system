@@ -140,4 +140,19 @@ export const userApi = {
     apiClient
       .get<ApiResponse<Department[]>>(API_ENDPOINTS.USERS.DEPARTMENTS)
       .then((r) => r.data),
+
+  createDepartment: (name: string) =>
+    apiClient
+      .post<ApiResponse<Department>>(API_ENDPOINTS.USERS.DEPARTMENTS, { name })
+      .then((r) => r.data),
+
+  updateDepartment: (id: number, name: string) =>
+    apiClient
+      .put<ApiResponse<Department>>(`${API_ENDPOINTS.USERS.DEPARTMENTS}/${id}`, { name })
+      .then((r) => r.data),
+
+  deleteDepartment: (id: number) =>
+    apiClient
+      .delete<ApiResponse<null>>(`${API_ENDPOINTS.USERS.DEPARTMENTS}/${id}`)
+      .then((r) => r.data),
 }
