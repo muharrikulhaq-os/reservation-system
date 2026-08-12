@@ -4,22 +4,28 @@ import Link from 'next/link'
 import { useBookings } from '@/modules/booking'
 import { DataTable } from '@/components/shared/table/DataTable'
 import { recentBookingColumns } from '../utils/columns'
+import { useAuthStore } from '@/store/auth.store'
 
 // ─────────────────────────────────────────
 // RECENT BOOKINGS
 // ─────────────────────────────────────────
 
 export const AvailableBookings = () => {
-  const { data, isLoading } = useBookings({ limit: 5, page: 1, status: 'PENDING' })
+  const isAdmin = useAuthStore((s) => s.isAdmin())
+  const { data, isLoading } = useBookings({
+    limit: 5,
+    page: 1,
+    status: isAdmin ? 'PENDING' : undefined,
+  })
 
   return (
     <div className="rounded-xl border border-[var(--border-card)] bg-[var(--bg-card)] p-5 shadow-[var(--shadow-card)]">
       <div className="mb-4 flex items-center justify-between">
         <h2
-          className="text-base font-bold text-[var(--text-primary)]"
-          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+          className="text-base font-bold text-[var(--text-primary)] font-display"
+          style={{ fontFamily: "'Poppins', sans-serif" }}
         >
-          Booking Tersedia
+          {isAdmin ? 'Booking Tersedia' : 'Booking Terbaru'}
         </h2>
         <Link
           href="/booking"
