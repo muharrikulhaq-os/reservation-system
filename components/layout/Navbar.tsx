@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 import { UserAvatar } from "@/components/shared/avatar/Avatar";
+import { InstallPWA } from "@/components/shared/pwa/InstallPWA";
 
 // ─────────────────────────────────────────
 // PAGE TITLE MAP
@@ -76,8 +77,8 @@ export const Navbar = () => {
     <header className="flex h-[56px] shrink-0 items-center justify-between gap-4 border-b border-[var(--border-card)] bg-[var(--bg-card)] px-5">
       {/* Page title */}
       <h1
-        className="text-lg font-bold text-[var(--primary)] shrink-0"
-        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        className="text-lg font-bold text-[var(--primary)] shrink-0 font-display"
+        style={{ fontFamily: "'Poppins', sans-serif" }}
       >
         {title}
       </h1>
@@ -93,6 +94,7 @@ export const Navbar = () => {
 
       {/* Right icons */}
       <div className="flex items-center gap-1 shrink-0">
+        <InstallPWA />
         <NavIconBtn icon={Bell} label="Notifikasi" badge />
         <NavIconBtn icon={HelpCircle} label="Bantuan" />
 

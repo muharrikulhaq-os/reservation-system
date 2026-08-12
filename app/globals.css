@@ -9,9 +9,9 @@
 @layer base {
   :root {
     /* ── Background Layers ─────────────────── */
-    --bg-page:   #F5F6FA;
+    --bg-page:   #f8fafb;
     --bg-card:   #FFFFFF;
-    --bg-subtle: #F8F9FB;
+    --bg-subtle: #f9fafb;
 
     /* ── Brand ────────────────────────────── */
     --primary:       #2e77b8; /* KCE Medium Blue */
@@ -30,19 +30,19 @@
     --text-disabled:  #9CA3AF;
 
     /* ── Border ───────────────────────────── */
-    --border-card:    #E8EAED;
-    --border-input:   #DDE1E7;
-    --border-divider: #F0F2F5;
+    --border-card:    rgba(0, 0, 0, 0.04);
+    --border-input:   #e2e8f0;
+    --border-divider: #f1f5f9;
 
     /* ── Shadow ───────────────────────────── */
-    --shadow-card:     0 1px 4px rgba(0, 0, 0, 0.06);
-    --shadow-dropdown: 0 4px 16px rgba(0, 0, 0, 0.10);
-    --shadow-modal:    0 8px 32px rgba(0, 0, 0, 0.12);
+    --shadow-card:     0 4px 24px -4px rgba(0, 0, 0, 0.04);
+    --shadow-dropdown: 0 10px 30px -4px rgba(0, 0, 0, 0.08);
+    --shadow-modal:    0 20px 40px -8px rgba(0, 0, 0, 0.12);
 
     /* ── Radius ───────────────────────────── */
-    --radius-card:  12px;
-    --radius-input: 8px;
-    --radius-badge: 20px;
+    --radius-card:  16px;
+    --radius-input: 10px;
+    --radius-badge: 9999px;
 
     /* ── Spacing ──────────────────────────── */
     --card-padding: 24px;
@@ -59,7 +59,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Poppins', sans-serif;
     font-weight: 700;
   }
   * {
@@ -72,7 +72,7 @@
 
 @layer utilities {
   .font-display {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Poppins', sans-serif;
   }
 
   .font-body {

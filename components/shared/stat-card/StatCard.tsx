@@ -29,7 +29,7 @@ export const StatCard = ({ label, value, icon, iconBg, className }: StatCardProp
       </p>
       <p
         className="mt-0.5 text-2xl font-bold text-[var(--text-primary)]"
-        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        style={{ fontFamily: "'Poppins', sans-serif" }}
       >
         {value}
       </p>

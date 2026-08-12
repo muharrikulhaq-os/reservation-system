@@ -55,15 +55,28 @@ const StatCards = () => {
 export const DashboardPage = () => {
   const isAdmin = useAuthStore((s) => s.isAdmin());
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       {isAdmin && <StatCards />}
       
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <AvailableBookings />
-        <AvailableVehicleTable />
-        <AvailableRoomTable />
-        <DriverListCard />
+      {/* Financial-Dashboard Style Asymmetric Grid */}
+      <div className="flex flex-col xl:flex-row gap-6">
+        
+        {/* Main Content Area (wider) */}
+        <div className="flex flex-col gap-6 flex-grow xl:w-2/3">
+          <AvailableBookings />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <AvailableVehicleTable />
+            <AvailableRoomTable />
+          </div>
+        </div>
+
+        {/* Sidebar Area (narrower) */}
+        <div className="xl:w-1/3 flex flex-col gap-6">
+          <DriverListCard />
+          {/* We can place other sidebar items here in the future like a quick calendar or small charts */}
+        </div>
+        
       </div>
     </div>
   );
