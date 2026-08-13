@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 import { UserAvatar } from "@/components/shared/avatar/Avatar";
+import { ReleaseNotesModal, useReleaseNotes } from "@/components/shared/ReleaseNotesModal";
 
 // ─────────────────────────────────────────
 // PAGE TITLE MAP
@@ -42,11 +43,13 @@ const NavIconBtn = ({
   label,
   badge,
   className,
+  onClick,
 }: {
   icon: React.ElementType;
   label: string;
   badge?: boolean;
   className?: string;
+  onClick?: () => void;
 }) => (
   <button
     aria-label={label}
@@ -54,8 +57,9 @@ const NavIconBtn = ({
       "relative flex h-9 w-9 items-center justify-center rounded-lg",
       "text-[var(--text-secondary)] transition-colors",
       "hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]",
-      className,
+      className
     )}
+    onClick={onClick}
   >
     <Icon className="h-[18px] w-[18px]" />
     {badge && (
@@ -71,6 +75,7 @@ const NavIconBtn = ({
 export const Navbar = () => {
   const title = usePageTitle();
   const user = useAuthStore((s) => s.user);
+  const { showModal, setShowModal } = useReleaseNotes();
 
   return (
     <header className="flex h-[56px] shrink-0 items-center justify-between gap-4 border-b border-[var(--border-card)] bg-[var(--bg-card)] px-5">
@@ -94,7 +99,7 @@ export const Navbar = () => {
       {/* Right icons */}
       <div className="flex items-center gap-1 shrink-0">
         <NavIconBtn icon={Bell} label="Notifikasi" badge />
-        <NavIconBtn icon={HelpCircle} label="Bantuan" />
+        <NavIconBtn icon={HelpCircle} label="Bantuan" onClick={() => setShowModal(true)} />
 
         {/* Avatar */}
         {user && (
@@ -103,6 +108,8 @@ export const Navbar = () => {
           </button>
         )}
       </div>
+      
+      <ReleaseNotesModal open={showModal} onOpenChange={setShowModal} />
     </header>
   );
 };
