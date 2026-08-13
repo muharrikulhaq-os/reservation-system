@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { AlertCircle, Trash2 } from 'lucide-react'
+import { AlertCircle, KeyRound, Trash2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,7 @@ import {
   useToggleUserActive,
   useDeleteUser,
 } from '../hooks/useUsers'
+import { ResetPasswordModal } from './ResetPasswordModal'
 
 // ─────────────────────────────────────────
 // USER DETAIL
@@ -50,6 +51,7 @@ export const UserDetail = ({ userId }: UserDetailProps) => {
   const remove = useDeleteUser()
 
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [resetOpen, setResetOpen] = useState(false)
   const [confirmName, setConfirmName] = useState('')
 
   // Riwayat booking ringkas milik user ini
@@ -208,6 +210,23 @@ export const UserDetail = ({ userId }: UserDetailProps) => {
 
               <Separator className="bg-[var(--border-divider)]" />
 
+              {/* Reset password — langsung, tanpa OTP (hak admin) */}
+              <div>
+                <AppButton
+                  variant="secondary"
+                  fullWidth
+                  leftIcon={<KeyRound className="h-4 w-4" />}
+                  onClick={() => setResetOpen(true)}
+                >
+                  Reset Password
+                </AppButton>
+                <p className="mt-1.5 text-xs text-[var(--text-secondary)]">
+                  Setel password baru tanpa verifikasi OTP.
+                </p>
+              </div>
+
+              <Separator className="bg-[var(--border-divider)]" />
+
               {/* Hapus */}
               <AppButton
                 variant="secondary"
@@ -238,6 +257,14 @@ export const UserDetail = ({ userId }: UserDetailProps) => {
           </Card>
         )}
       </div>
+
+      {/* ── Reset password (admin, tanpa OTP) ── */}
+      <ResetPasswordModal
+        userId={user.id}
+        userName={user.name}
+        open={resetOpen}
+        onOpenChange={setResetOpen}
+      />
 
       {/* ── Dialog hapus (ketik nama untuk konfirmasi) ── */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>

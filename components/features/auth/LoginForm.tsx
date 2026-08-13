@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import logoLogin from '@/img/kce-menu.png'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -48,6 +49,15 @@ const LoginForm = () => {
         error={errors.password?.message}
         {...register('password')}
       />
+
+      <div className="-mt-2 text-right">
+        <Link
+          href="/forgot-password"
+          className="text-xs font-medium text-[var(--primary)] hover:underline"
+        >
+          Lupa password?
+        </Link>
+      </div>
 
       <Button type="submit" variant="primary" size="lg" fullWidth loading={isPending} className="mt-1">
         Masuk

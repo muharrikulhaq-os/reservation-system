@@ -8,7 +8,13 @@ import { QUERY_KEYS } from '@/constants'
 import { authService } from '@/services'
 import { tokenStorage, syncTokensToCookies, clearTokenCookies } from '@/lib'
 import { useAuthStore } from '@/store/auth.store'
-import type { LoginPayload, ChangePasswordPayload } from '@/types'
+import type {
+  LoginPayload,
+  ChangePasswordPayload,
+  ForgotPasswordPayload,
+  VerifyOtpPayload,
+  ResetPasswordPayload,
+} from '@/types'
 
 // ── Queries ──────────────────────────────
 
@@ -61,6 +67,28 @@ export const useChangePassword = () =>
   useMutation({
     mutationFn: (payload: ChangePasswordPayload) =>
       authService.changePassword(payload),
+  })
+
+// ── Lupa password (user, 3 langkah: email → OTP → password baru) ──
+
+// Backend sengaja SELALU sukses walau email tak terdaftar (anti user-enumeration).
+export const useForgotPassword = () =>
+  useMutation({
+    mutationFn: (payload: ForgotPasswordPayload) =>
+      authService.forgotPassword(payload),
+  })
+
+// Mengembalikan resetToken yang dipakai di langkah reset.
+export const useVerifyOtp = () =>
+  useMutation({
+    mutationFn: (payload: VerifyOtpPayload) =>
+      authService.verifyOtp(payload).then((r) => r.data),
+  })
+
+export const useResetPassword = () =>
+  useMutation({
+    mutationFn: (payload: ResetPasswordPayload) =>
+      authService.resetPassword(payload),
   })
 
 export const useUpdateProfilePhoto = () => {

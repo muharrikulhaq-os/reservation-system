@@ -85,11 +85,19 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const original = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
-    const is401             = error.response?.status === 401
-    const alreadyRetried    = original._retry
-    const isRefreshEndpoint = original.url?.includes(API_ENDPOINTS.AUTH.REFRESH)
+    const is401          = error.response?.status === 401
+    const alreadyRetried = original._retry
 
-    if (!is401 || alreadyRetried || isRefreshEndpoint) {
+    // 401 dari endpoint auth BUKAN sesi kedaluwarsa:
+    // - /auth/login  → kredensial salah, error harus sampai ke form
+    // - /auth/refresh → refresh-nya sendiri yang gagal
+    // Kalau ikut alur refresh, keduanya berujung handleLogout() →
+    // reload halaman dan pesan errornya hilang sebelum sempat terbaca.
+    const isAuthEndpoint =
+      original.url?.includes(API_ENDPOINTS.AUTH.LOGIN) ||
+      original.url?.includes(API_ENDPOINTS.AUTH.REFRESH)
+
+    if (!is401 || alreadyRetried || isAuthEndpoint) {
       return Promise.reject(error)
     }
 
@@ -140,5 +148,9 @@ apiClient.interceptors.response.use(
 const handleLogout = (): void => {
   tokenStorage.clearAll()
   clearTokenCookies()
-  if (typeof window !== 'undefined') window.location.href = '/login'
+  if (typeof window === 'undefined') return
+  // Sudah di halaman login — redirect hanya akan me-reload halaman
+  // dan menghapus pesan error yang sedang tampil.
+  if (window.location.pathname === '/login') return
+  window.location.href = '/login'
 }

@@ -76,6 +76,12 @@ export const userApi = {
       .patch<ApiResponse<ToggleActiveResponse>>(API_ENDPOINTS.USERS.TOGGLE_ACTIVE(id))
       .then((r) => r.data),
 
+  // Reset password oleh ADMIN — langsung, tanpa OTP.
+  resetPassword: (id: number, newPassword: string) =>
+    apiClient
+      .patch<ApiResponse<null>>(API_ENDPOINTS.USERS.RESET_PASSWORD(id), { newPassword })
+      .then((r) => r.data),
+
   delete: (id: number) =>
     apiClient
       .delete<ApiResponse<null>>(API_ENDPOINTS.USERS.BY_ID(id))

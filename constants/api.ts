@@ -36,6 +36,7 @@ export const API_ENDPOINTS = {
     DEPARTMENTS:     `${API_PREFIX}/users/departments`,
     BY_ID:           (id: number) => `${API_PREFIX}/users/${id}`,
     TOGGLE_ACTIVE:   (id: number) => `${API_PREFIX}/users/${id}/toggle-active`,
+    RESET_PASSWORD:  (id: number) => `${API_PREFIX}/users/${id}/reset-password`,
     ME_PHOTO:        `${API_PREFIX}/users/me/profile-photo`,
     PHOTO_BY_ID:     (id: number) => `${API_PREFIX}/users/${id}/profile-photo`,
     BULK_TEMPLATE:   `${API_PREFIX}/users/bulk-template`,

@@ -82,6 +82,13 @@ export const useToggleUserActive = () => {
   })
 }
 
+// Reset password oleh admin (langsung, tanpa OTP).
+export const useResetUserPassword = () =>
+  useMutation({
+    mutationFn: ({ id, newPassword }: { id: number; newPassword: string }) =>
+      userApi.resetPassword(id, newPassword),
+  })
+
 export const useDeleteUser = () => {
   const qc = useQueryClient()
   return useMutation({
