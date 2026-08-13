@@ -54,16 +54,22 @@ const StatCards = () => {
 };
 export const DashboardPage = () => {
   const isAdmin = useAuthStore((s) => s.isAdmin());
+  const isDriver = useAuthStore((s) => s.isDriver());
+
   return (
     <div className="flex flex-col gap-5">
       {isAdmin && <StatCards />}
       
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+      <div className={`grid grid-cols-1 gap-5 ${isDriver ? "" : "lg:grid-cols-2"}`}>
         <AvailableBookings />
-        <AvailableVehicleTable />
-        <AvailableRoomTable />
-        <DriverListCard />
+        {!isDriver && (
+          <>
+            <AvailableVehicleTable />
+            <AvailableRoomTable />
+            <DriverListCard />
+          </>
+        )}
       </div>
     </div>
   );
