@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────
 // TOKEN MANAGEMENT
-// Abstraksi atas storage — jangan akses
+// Abstraksi atas storage - jangan akses
 // localStorage langsung di luar file ini
 // ─────────────────────────────────────────
 

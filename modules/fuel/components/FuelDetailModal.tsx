@@ -79,17 +79,17 @@ export const FuelDetailModal = ({ fuel, open, onOpenChange }: Props) => {
                   : `#${fuel.vehicleId}`
               }
             />
-            <Row label="Driver" value={fuel.driverName || '—'} />
+            <Row label="Driver" value={fuel.driverName || '-'} />
             {isBbm ? (
               <>
                 <Row
                   label="Liter"
-                  value={fuel.liter != null ? `${formatNumber(fuel.liter)} L` : '—'}
+                  value={fuel.liter != null ? `${formatNumber(fuel.liter)} L` : '-'}
                 />
                 <Row
                   label="Harga / Liter"
                   value={
-                    fuel.pricePerLiter != null ? formatCurrency(fuel.pricePerLiter) : '—'
+                    fuel.pricePerLiter != null ? formatCurrency(fuel.pricePerLiter) : '-'
                   }
                 />
               </>
@@ -97,11 +97,11 @@ export const FuelDetailModal = ({ fuel, open, onOpenChange }: Props) => {
               <>
                 <Row
                   label="kWh"
-                  value={fuel.kwh != null ? `${formatNumber(fuel.kwh)} kWh` : '—'}
+                  value={fuel.kwh != null ? `${formatNumber(fuel.kwh)} kWh` : '-'}
                 />
                 <Row
                   label="Harga / kWh"
-                  value={fuel.pricePerKwh != null ? formatCurrency(fuel.pricePerKwh) : '—'}
+                  value={fuel.pricePerKwh != null ? formatCurrency(fuel.pricePerKwh) : '-'}
                 />
               </>
             )}
@@ -110,13 +110,13 @@ export const FuelDetailModal = ({ fuel, open, onOpenChange }: Props) => {
               label="Odometer"
               value={
                 fuel.odometerBefore == null && fuel.odometerAfter == null
-                  ? '—'
+                  ? '-'
                   : `${formatNumber(fuel.odometerBefore ?? 0)} → ${formatNumber(
                       fuel.odometerAfter ?? 0,
                     )} km`
               }
             />
-            <Row label="Catatan" value={fuel.note || '—'} />
+            <Row label="Catatan" value={fuel.note || '-'} />
             <Row label="Tanggal" value={formatDate(fuel.createdAt)} />
           </div>
 

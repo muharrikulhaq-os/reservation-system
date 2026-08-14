@@ -13,7 +13,7 @@ import type {
 
 // ── Queries ──────────────────────────────
 
-// Public — untuk halaman track status tamu
+// Public - untuk halaman track status tamu
 export const useGuestBookingByToken = (token: string) =>
   useQuery({
     queryKey: [...QUERY_KEYS.GUEST_BOOKINGS, token],

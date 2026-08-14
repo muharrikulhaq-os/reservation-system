@@ -93,8 +93,8 @@ export const MaintenanceDetail = ({ id }: { id: number }) => {
 
         <div className="divide-y divide-[var(--border-divider)]">
           <Row label="Deskripsi" value={data.description} />
-          <Row label="Lokasi" value={data.location || '—'} />
-          <Row label="Vendor" value={data.vendorName || '—'} />
+          <Row label="Lokasi" value={data.location || '-'} />
+          <Row label="Vendor" value={data.vendorName || '-'} />
           <Row label="Mulai" value={formatDate(data.startDate)} />
           <Row
             label="Selesai"
@@ -102,13 +102,13 @@ export const MaintenanceDetail = ({ id }: { id: number }) => {
           />
           <Row
             label="Odometer"
-            value={data.odometer ? `${formatNumber(data.odometer)} km` : '—'}
+            value={data.odometer ? `${formatNumber(data.odometer)} km` : '-'}
           />
           <Row
             label="Biaya"
-            value={costNum != null && !Number.isNaN(costNum) ? formatCurrency(costNum) : '—'}
+            value={costNum != null && !Number.isNaN(costNum) ? formatCurrency(costNum) : '-'}
           />
-          <Row label="Dicatat oleh" value={data.createdBy ?? '—'} />
+          <Row label="Dicatat oleh" value={data.createdBy ?? '-'} />
         </div>
       </Card>
 

@@ -68,7 +68,7 @@ export const BookingMergePanel = ({
   onMergeComplete,
 }: BookingMergePanelProps) => {
   // Semua booking kendaraan yang sudah APPROVED (kandidat "booking utama").
-  // Sengaja TIDAK memfilter tanggal di server — backend memfilter dengan
+  // Sengaja TIDAK memfilter tanggal di server - backend memfilter dengan
   // containment (startDate>=X AND endDate<=Y) yang rapuh terhadap timezone;
   // penyaringan per-hari dilakukan di klien di bawah.
   const { data } = useBookings({
@@ -204,7 +204,7 @@ export const BookingMergePanel = ({
                 <BookingStatusBadge status={c.status} />
               </div>
 
-              {/* Resource + Driver — dari booking yang sudah approved */}
+              {/* Resource + Driver - dari booking yang sudah approved */}
               <div className="mb-2 rounded-lg bg-[var(--bg-subtle)] p-2.5 text-xs">
                 <div className="flex items-center gap-2 text-[var(--text-primary)]">
                   <Car className="h-3.5 w-3.5 text-[var(--text-secondary)]" />

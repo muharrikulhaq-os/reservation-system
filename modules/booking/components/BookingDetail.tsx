@@ -132,7 +132,7 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[3fr_2fr]">
       {/* ══ KOLOM KIRI ══ */}
       <div className="flex flex-col gap-5">
-        {/* Banner pengalihan — hanya untuk employee pemilik booking */}
+        {/* Banner pengalihan - hanya untuk employee pemilik booking */}
         {!isAdmin &&
           booking.isReassigned &&
           booking.originalResource &&
@@ -255,7 +255,7 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
             <div className="grid grid-cols-2 gap-4">
               <InfoBlock label="Awalnya">
                 <p className="truncate text-sm font-medium text-[var(--text-secondary)] line-through opacity-60">
-                  {booking.originalResource?.name ?? "—"}
+                  {booking.originalResource?.name ?? "-"}
                 </p>
               </InfoBlock>
               <InfoBlock label="Diganti Ke">
@@ -308,7 +308,7 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           </Card>
         )}
 
-        {/* Merge panel — admin pilih booking APPROVED lain untuk digabung.
+        {/* Merge panel - admin pilih booking APPROVED lain untuk digabung.
             Hanya saat booking ini PENDING + VEHICLE (hilang setelah merged → APPROVED). */}
         <AdminOnly>
           {isVehicle && booking.status === BOOKING_STATUS.PENDING && (
@@ -335,7 +335,7 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           </Card>
         )}
 
-        {/* Return report — review (tampil saat ONGOING/COMPLETED & sudah ada) */}
+        {/* Return report - review (tampil saat ONGOING/COMPLETED & sudah ada) */}
         {(booking.status === BOOKING_STATUS.ONGOING ||
           booking.status === BOOKING_STATUS.COMPLETED) && (
           <ReturnReportCard bookingId={booking.id} />
@@ -550,7 +550,7 @@ const DriverFuelCard = ({
 };
 
 // ─────────────────────────────────────────
-// RATING CARD (COMPLETED — pemilik booking)
+// RATING CARD (COMPLETED - pemilik booking)
 // - Jika sudah dinilai → tampilkan rating (read-only).
 // - Jika belum → tombol "Beri Rating"; modal auto-open SEKALI saja
 //   (pertama kali pemilik membuka detail booking selesai).

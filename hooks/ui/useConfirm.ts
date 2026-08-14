@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────
 // useConfirm
-// State untuk confirm dialog — delete,
+// State untuk confirm dialog - delete,
 // toggle active, reject booking, dll
 // ─────────────────────────────────────────
 

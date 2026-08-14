@@ -129,7 +129,7 @@ export const maintenanceColumns: ColumnDef<MaintenanceRecord, unknown>[] = [
       const num = v != null && v !== '' ? Number(v) : null
       return (
         <span className="text-sm font-medium text-[var(--text-primary)]">
-          {num != null && !Number.isNaN(num) ? formatCurrency(num) : '—'}
+          {num != null && !Number.isNaN(num) ? formatCurrency(num) : '-'}
         </span>
       )
     },

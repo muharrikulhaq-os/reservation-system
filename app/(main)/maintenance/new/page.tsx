@@ -3,7 +3,7 @@ import { PageHeader } from '@/components/shared'
 import { MaintenanceForm } from '@/modules/maintenance'
 
 export const metadata: Metadata = {
-  title: 'Buat Maintenance — Sistem Reservasi',
+  title: 'Buat Maintenance - Sistem Reservasi',
 }
 
 export default function Page() {

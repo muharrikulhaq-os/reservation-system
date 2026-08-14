@@ -207,7 +207,7 @@ export const FuelInputModal = ({
             }
           />
 
-          {/* Tipe energi — menentukan daftar jenis bahan bakar */}
+          {/* Tipe energi - menentukan daftar jenis bahan bakar */}
           <div>
             <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-secondary)]">
               Tipe Energi <span className="text-[var(--danger)]">*</span>
@@ -329,7 +329,7 @@ export const FuelInputModal = ({
             </p>
           </div>
 
-          {/* Bukti — WAJIB */}
+          {/* Bukti - WAJIB */}
           <InputFile
             label="Bukti Foto (struk/nota)"
             required

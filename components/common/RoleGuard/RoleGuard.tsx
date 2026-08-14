@@ -6,7 +6,7 @@ import type { RoleName } from '@/types'
 // ─────────────────────────────────────────
 // ROLE GUARD
 // Render children hanya jika user punya role
-// yang sesuai. Untuk proteksi UI — proteksi
+// yang sesuai. Untuk proteksi UI - proteksi
 // route sesungguhnya ada di middleware.ts
 // ─────────────────────────────────────────
 

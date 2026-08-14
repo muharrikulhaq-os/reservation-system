@@ -31,7 +31,7 @@ export interface CalendarEvent {
   status?: BookingStatus | ResourceStatus
   startTime: string // "08:00"
   endTime: string // "18:00"
-  startDate: string // ISO full — untuk cek overlap
+  startDate: string // ISO full - untuk cek overlap
   endDate: string // ISO full
 }
 
@@ -68,7 +68,7 @@ export interface AvailabilityCalendarProps {
 }
 
 // ─────────────────────────────────────────
-// TIME OPTIONS — 00:00 s/d 23:30, interval 30 menit
+// TIME OPTIONS - 00:00 s/d 23:30, interval 30 menit
 // ─────────────────────────────────────────
 
 const TIME_OPTIONS: string[] = []
@@ -81,7 +81,7 @@ for (let h = 0; h < 24; h++) {
 }
 
 // ─────────────────────────────────────────
-// DATE HELPERS (native Date — tanpa library)
+// DATE HELPERS (native Date - tanpa library)
 // ─────────────────────────────────────────
 
 const WEEKDAYS = ['MIN', 'SEN', 'SEL', 'RAB', 'KAM', 'JUM', 'SAB'] as const
@@ -104,7 +104,7 @@ const formatYMD = toKey
 const addDays = (d: Date, n: number) =>
   new Date(d.getFullYear(), d.getMonth(), d.getDate() + n)
 
-/** Tanggal tanpa jam — untuk komparasi hari */
+/** Tanggal tanpa jam - untuk komparasi hari */
 const startOfDay = (d: Date) =>
   new Date(d.getFullYear(), d.getMonth(), d.getDate())
 
@@ -177,7 +177,7 @@ const getStatusColor = (status: string) =>
 const getStatusLabel = (status: string) =>
   BOOKING_STATUS_CONFIG[status as BookingStatus]?.label ?? status
 
-/** Label jam untuk chip — maintenance tanpa jam → "Seharian" */
+/** Label jam untuk chip - maintenance tanpa jam → "Seharian" */
 const timeLabel = (event: CalendarEvent) =>
   event.type === 'maintenance' && !event.startTime
     ? 'Seharian'
@@ -202,7 +202,7 @@ export const AvailabilityCalendar = ({
 }: AvailabilityCalendarProps) => {
   const today = startOfDay(new Date())
 
-  // Waktu sekarang — untuk men-disable jam/tanggal yang sudah lewat
+  // Waktu sekarang - untuk men-disable jam/tanggal yang sudah lewat
   const now = new Date()
   const todayStr = toKey(now)
   const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(
@@ -221,7 +221,7 @@ export const AvailabilityCalendar = ({
   const [startTime, setStartTime] = useState('08:00')
   const [endTime, setEndTime] = useState('17:00')
 
-  // Tanggal yang bentrok — untuk highlight merah
+  // Tanggal yang bentrok - untuk highlight merah
   const [conflictKeys, setConflictKeys] = useState<Set<string>>(new Set())
 
   // ── Fetch internal jika resourceId ada tanpa data ──
@@ -429,11 +429,11 @@ export const AvailabilityCalendar = ({
 
   // ── Kalkulasi durasi ──
   const calculatedDuration = useMemo(() => {
-    if (!selectedStart || !selectedEnd || !startTime || !endTime) return '—'
+    if (!selectedStart || !selectedEnd || !startTime || !endTime) return '-'
     const start = new Date(`${formatYMD(selectedStart)}T${startTime}:00`)
     const end = new Date(`${formatYMD(selectedEnd)}T${endTime}:00`)
     const ms = end.getTime() - start.getTime()
-    if (ms <= 0) return '—'
+    if (ms <= 0) return '-'
     const hours = Math.floor(ms / 3_600_000)
     const minutes = Math.floor((ms % 3_600_000) / 60_000)
     if (hours >= 24) {
@@ -577,7 +577,7 @@ export const AvailabilityCalendar = ({
             isRangeBetween && 'bg-[var(--primary-light)] opacity-60',
           )
 
-          // Conflict overlay — prioritas paling tinggi
+          // Conflict overlay - prioritas paling tinggi
           const conflictCls = isConflict
             ? 'bg-red-50 border-[var(--danger)]'
             : ''
@@ -628,7 +628,7 @@ export const AvailabilityCalendar = ({
                 )}
               </div>
 
-              {/* Event chips — dengan jam */}
+              {/* Event chips - dengan jam */}
               {visibleEvents.map((ev, idx) => (
                 <span
                   key={`${ev.type}-${ev.id}-${idx}`}
@@ -732,7 +732,7 @@ export const AvailabilityCalendar = ({
                   ))}
                 </div>
 
-                {/* Footer — hanya di mode non-view & tanggal available */}
+                {/* Footer - hanya di mode non-view & tanggal available */}
                 {mode !== 'view' && dayData?.isAvailable && isInteractive && (
                   <>
                     <Separator className="bg-[var(--border-divider)]" />
@@ -752,7 +752,7 @@ export const AvailabilityCalendar = ({
         })}
       </div>
 
-      {/* ── TIME PICKER — muncul setelah start + end terpilih ── */}
+      {/* ── TIME PICKER - muncul setelah start + end terpilih ── */}
       {mode === 'range' && selectedStart && selectedEnd && (
         <div className="mt-4 rounded-xl border border-[var(--border-card)] bg-[var(--bg-subtle)] p-4">
           {/* Info tanggal terpilih */}
@@ -761,7 +761,7 @@ export const AvailabilityCalendar = ({
             <span className="font-medium text-[var(--text-primary)]">
               {isSameDay
                 ? formatFullDate(selectedStart)
-                : `${formatShortDate(selectedStart)} — ${formatShortDate(selectedEnd)}`}
+                : `${formatShortDate(selectedStart)} - ${formatShortDate(selectedEnd)}`}
             </span>
           </div>
 

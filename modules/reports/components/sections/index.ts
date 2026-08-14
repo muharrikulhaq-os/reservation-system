@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// REPORT SECTIONS — BARREL EXPORT
+// REPORT SECTIONS - BARREL EXPORT
 // ─────────────────────────────────────────
 
 export { OverviewSection } from './OverviewSection'

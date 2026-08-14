@@ -25,6 +25,7 @@ export interface BarChartHorizontalProps {
   height?: number
   formatValue?: (value: number) => string
   className?: string
+  domain?: [number, number]
 }
 
 interface BarTooltipProps {
@@ -59,6 +60,7 @@ export const BarChartHorizontal = ({
   height,
   formatValue,
   className,
+  domain,
 }: BarChartHorizontalProps) => {
   // Salin nameKey ke __name agar tooltip generik bisa membacanya.
   const rows = data.map((d) => ({ ...d, __name: d[nameKey] }))
@@ -79,6 +81,7 @@ export const BarChartHorizontal = ({
             tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
             tickLine={false}
             axisLine={{ stroke: 'var(--border-divider)' }}
+            domain={domain}
           />
           <YAxis
             type="category"

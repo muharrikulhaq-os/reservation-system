@@ -20,25 +20,25 @@ const StatCards = () => {
   const stats = [
     {
       label: "Total Booking",
-      value: sum?.total_bookings ?? "—",
+      value: sum?.total_bookings ?? "-",
       icon: <CalendarCheck className="h-5 w-5 text-[var(--primary)]" />,
       iconBg: "var(--primary-light)",
     },
     {
       label: "Total Kendaraan",
-      value: sum?.total_vehicles ?? "—",
+      value: sum?.total_vehicles ?? "-",
       icon: <Car className="h-5 w-5 text-[#16A34A]" />,
       iconBg: "#DCFCE7",
     },
     {
       label: "Total Ruangan",
-      value: sum?.total_rooms ?? "—",
+      value: sum?.total_rooms ?? "-",
       icon: <Building2 className="h-5 w-5 text-[#0284C7]" />,
       iconBg: "#DBEAFE",
     },
     {
       label: "Total Driver",
-      value: sum?.total_drivers ?? "—",
+      value: sum?.total_drivers ?? "-",
       icon: <Users className="h-5 w-5 text-[#D97706]" />,
       iconBg: "#FEF9C3",
     },
@@ -55,15 +55,17 @@ const StatCards = () => {
 export const DashboardPage = () => {
   const isAdmin = useAuthStore((s) => s.isAdmin());
   const isDriver = useAuthStore((s) => s.isDriver());
+  const isRoomKeeper = useAuthStore((s) => s.isRoomKeeper());
+  const isLimitedView = isDriver || isRoomKeeper;
 
   return (
     <div className="flex flex-col gap-5">
       {isAdmin && <StatCards />}
       
       {/* Main Content Grid */}
-      <div className={`grid grid-cols-1 gap-5 ${isDriver ? "" : "lg:grid-cols-2"}`}>
+      <div className={`grid grid-cols-1 gap-5 ${isLimitedView ? "" : "lg:grid-cols-2"}`}>
         <AvailableBookings />
-        {!isDriver && (
+        {!isLimitedView && (
           <>
             <AvailableVehicleTable />
             <AvailableRoomTable />

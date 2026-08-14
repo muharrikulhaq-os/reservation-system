@@ -8,10 +8,11 @@ import { RESOURCE_TYPE, RESOURCE_STATUS } from '@/constants'
 import type { ResourceType, Vehicle, Room } from '@/types'
 import { useVehiclesPaginated } from '@/modules/vehicles/hooks/useVehicles'
 import { useRoomsPaginated } from '@/modules/rooms/hooks/useRooms'
+import { ResourceStatusBadge } from '@/components/shared'
 
 // ─────────────────────────────────────────
 // RESOURCE PICKER
-// Pilih kendaraan/ruangan — search + pagination + foto
+// Pilih kendaraan/ruangan - search + pagination + foto
 // ─────────────────────────────────────────
 
 interface ResourcePickerProps {
@@ -28,7 +29,7 @@ export const ResourcePicker = ({
   const { search, setSearch, page, setPage, params } = useTableFilter({}, 6)
 
   const isVehicle = resourceType === RESOURCE_TYPE.VEHICLE
-  const queryParams = { ...params, status: RESOURCE_STATUS.AVAILABLE }
+  const queryParams = { ...params }
 
   const vehQ = useVehiclesPaginated(queryParams, { enabled: isVehicle })
   const roomQ = useRoomsPaginated(queryParams, { enabled: !isVehicle })
@@ -172,6 +173,9 @@ const ResourcePickerCard = ({
             {(resource as Room).location} · {(resource as Room).capacity} orang
           </p>
         )}
+        <div className="mt-2">
+          <ResourceStatusBadge status={resource.status} className="px-2 py-0.5 text-[10px]" />
+        </div>
       </div>
     </button>
   )

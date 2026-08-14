@@ -13,7 +13,7 @@ import type { User, RoleName } from '@/types'
 
 // ─────────────────────────────────────────
 // USER COLUMNS
-// Factory — terima handler toggle agar baris
+// Factory - terima handler toggle agar baris
 // bisa memicu dialog konfirmasi di halaman list.
 // ─────────────────────────────────────────
 

@@ -21,7 +21,7 @@ import {
 } from '../hooks/useUsers'
 
 // ─────────────────────────────────────────
-// USER FORM — create & edit
+// USER FORM - create & edit
 // ─────────────────────────────────────────
 
 interface UserFormProps {

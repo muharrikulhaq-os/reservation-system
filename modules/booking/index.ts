@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// BOOKING MODULE — public API
+// BOOKING MODULE - public API
 // import { BookingPage, useBookings } from '@/modules/booking'
 // ─────────────────────────────────────────
 

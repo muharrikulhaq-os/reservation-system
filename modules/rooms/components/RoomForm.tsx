@@ -12,7 +12,7 @@ import { createRoomSchema, type CreateRoomFormData } from '@/schemas/room.schema
 import { useCreateRoom, useUpdateRoom } from '../hooks/useRooms'
 
 // ─────────────────────────────────────────
-// ROOM FORM — create & edit
+// ROOM FORM - create & edit
 // ─────────────────────────────────────────
 
 interface RoomFormProps {

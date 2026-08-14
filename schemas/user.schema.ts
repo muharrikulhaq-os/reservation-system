@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 // ─────────────────────────────────────────
 // USER SCHEMAS
-// Create punya password; Update TIDAK —
+// Create punya password; Update TIDAK -
 // admin tidak mengubah password user lain.
 // ─────────────────────────────────────────
 

@@ -13,7 +13,7 @@ import { useBookings } from "./hooks/useBookings";
 import { bookingColumns } from "./utils/columns";
 
 // ─────────────────────────────────────────
-// BOOKING PAGE — daftar semua booking
+// BOOKING PAGE - daftar semua booking
 // ─────────────────────────────────────────
 
 // Opsi status dari config (satu sumber kebenaran)
@@ -21,7 +21,7 @@ const STATUS_OPTIONS: SelectOption[] = Object.entries(BOOKING_STATUS_CONFIG).map
   ([value, cfg]) => ({ value, label: cfg.label }),
 );
 
-// Tab tipe resource — "ALL" = semua
+// Tab tipe resource - "ALL" = semua
 const RESOURCE_TABS = [
   { value: "ALL", label: "Semua" },
   { value: RESOURCE_TYPE.VEHICLE, label: "Kendaraan" },
@@ -29,16 +29,24 @@ const RESOURCE_TABS = [
 ] as const;
 
 export const BookingPage = () => {
+  // Driver dan Room Keeper tidak dapat membuat booking
+  const isDriver = useAuthStore((s) => s.isDriver());
+  const isRoomKeeper = useAuthStore((s) => s.isRoomKeeper());
+  const isLimitedView = isDriver || isRoomKeeper;
+
+  const defaultResourceType = isDriver
+    ? RESOURCE_TYPE.VEHICLE
+    : isRoomKeeper
+    ? RESOURCE_TYPE.ROOM
+    : undefined;
+
   const { search, setSearch, filters, setFilter, setPage, setLimit, params } =
     useTableFilter({
       status: undefined as BookingStatus | undefined,
-      resourceType: undefined as ResourceType | undefined,
+      resourceType: defaultResourceType,
     });
 
   const { data, isLoading } = useBookings(params);
-
-  // Driver tidak dapat membuat booking
-  const isDriver = useAuthStore((s) => s.isDriver());
 
   return (
     <div className="flex flex-col gap-6">
@@ -47,7 +55,7 @@ export const BookingPage = () => {
         title="Booking"
         description="Kelola seluruh peminjaman kendaraan & ruangan"
         actions={
-          isDriver ? undefined : (
+          isLimitedView ? undefined : (
             <Link href="/booking/new">
               <AppButton
                 variant="primary"
@@ -62,29 +70,31 @@ export const BookingPage = () => {
 
       {/* Card: filter + tabel */}
       <div className="rounded-2xl border border-[var(--border-card)] bg-[var(--bg-card)] p-5 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
-        {/* Resource type tabs */}
-        <Tabs
-          value={filters.resourceType ?? "ALL"}
-          onValueChange={(v) =>
-            setFilter(
-              "resourceType",
-              v === "ALL" ? undefined : (v as ResourceType),
-            )
-          }
-          className="mb-4"
-        >
-          <TabsList className="rounded-lg bg-[var(--bg-subtle)] p-1">
-            {RESOURCE_TABS.map((tab) => (
-              <TabsTrigger
-                key={tab.value}
-                value={tab.value}
-                className="rounded-md px-4 text-sm font-medium text-[var(--text-secondary)] data-[state=active]:bg-[var(--bg-card)] data-[state=active]:text-[var(--primary)] data-[state=active]:shadow-sm"
-              >
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        {/* Resource type tabs - Disembunyikan untuk role terbatas */}
+        {!isLimitedView && (
+          <Tabs
+            value={filters.resourceType ?? "ALL"}
+            onValueChange={(v) =>
+              setFilter(
+                "resourceType",
+                v === "ALL" ? undefined : (v as ResourceType),
+              )
+            }
+            className="mb-4"
+          >
+            <TabsList className="rounded-lg bg-[var(--bg-subtle)] p-1">
+              {RESOURCE_TABS.map((tab) => (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="rounded-md px-4 text-sm font-medium text-[var(--text-secondary)] data-[state=active]:bg-[var(--bg-card)] data-[state=active]:text-[var(--primary)] data-[state=active]:shadow-sm"
+                >
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        )}
 
         {/* Filter row */}
         <div className="mb-4 flex flex-wrap items-end gap-3">

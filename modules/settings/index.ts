@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// SETTINGS MODULE — public API
+// SETTINGS MODULE - public API
 // import { FuelTypeSettings } from '@/modules/settings'
 // ─────────────────────────────────────────
 

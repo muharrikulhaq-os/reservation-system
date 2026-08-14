@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// TYPES — BARREL EXPORT
+// TYPES - BARREL EXPORT
 // Import dari sini: import type { Booking, User } from '@/types'
 // ─────────────────────────────────────────
 

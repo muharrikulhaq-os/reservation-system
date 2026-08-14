@@ -285,7 +285,7 @@ export const BookingForm = () => {
                 <ul className="mt-1 space-y-0.5 text-xs">
                   {conflicts.map((c) => (
                     <li key={c.id}>
-                      • {c.startTime}–{c.endTime} — {c.title}
+                      • {c.startTime}–{c.endTime} - {c.title}
                     </li>
                   ))}
                 </ul>
@@ -370,7 +370,7 @@ export const BookingForm = () => {
         </Card>
       )}
 
-      {/* ── c2. Pilih driver — hanya VEHICLE, setelah jadwal ── */}
+      {/* ── c2. Pilih driver - hanya VEHICLE, setelah jadwal ── */}
       {isVehicle && selected && schedule && startISO && endISO && (
         <Card>
           <CardHeader

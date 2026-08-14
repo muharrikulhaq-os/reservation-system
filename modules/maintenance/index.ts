@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// MAINTENANCE MODULE — public API
+// MAINTENANCE MODULE - public API
 // import { Maintenance, useMaintenanceRecords } from '@/modules/maintenance'
 // ─────────────────────────────────────────
 

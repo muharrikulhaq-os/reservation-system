@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────
 // useTableFilter
 // Gabungan search + pagination dengan
-// debounce — pola yang sering dipakai
+// debounce - pola yang sering dipakai
 // di halaman list (bookings, vehicles, dll)
 // ─────────────────────────────────────────
 
@@ -24,7 +24,7 @@ interface TableFilterReturn<TFilters extends Record<string, unknown>> {
   filters: TFilters
   setFilter: <K extends keyof TFilters>(key: K, value: TFilters[K]) => void
   resetFilters: () => void
-  // Combined params — langsung dipass ke query hook
+  // Combined params - langsung dipass ke query hook
   params: { search: string; page: number; limit: number } & TFilters
 }
 

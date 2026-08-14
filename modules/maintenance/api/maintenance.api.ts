@@ -31,13 +31,13 @@ export const maintenanceApi = {
       .post<ApiResponse<MaintenanceRecord>>(API_ENDPOINTS.MAINTENANCE.BASE, payload)
       .then((r) => r.data),
 
-  // PUT — update (isi endDate → status resource kembali AVAILABLE)
+  // PUT - update (isi endDate → status resource kembali AVAILABLE)
   update: (id: number, payload: UpdateMaintenancePayload) =>
     apiClient
       .put<ApiResponse<MaintenanceRecord>>(API_ENDPOINTS.MAINTENANCE.BY_ID(id), payload)
       .then((r) => r.data),
 
-  // PATCH /:id/complete — multipart, upload foto bukti + set completedAt + AVAILABLE
+  // PATCH /:id/complete - multipart, upload foto bukti + set completedAt + AVAILABLE
   complete: (id: number, payload: CompleteMaintenancePayload) => {
     const fd = new FormData()
     if (payload.photos) payload.photos.forEach((p) => fd.append('photos', p))

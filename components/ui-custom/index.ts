@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// UI-CUSTOM — BARREL EXPORT
+// UI-CUSTOM - BARREL EXPORT
 // Wrapper Shadcn dengan design token proyek.
 // import { AppButton, InputText, ... } from '@/components/ui-custom'
 // ─────────────────────────────────────────

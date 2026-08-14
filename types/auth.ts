@@ -41,14 +41,14 @@ export interface UserSummary {
   department: string // API mengirim string nama dept, bukan objek
 }
 
-// Shape user di dalam login response (berbeda — role & department string)
+// Shape user di dalam login response (berbeda - role & department string)
 export interface AuthUser {
   id: number
   employeeId: string
   name: string
   email: string
-  role: string       // "EMPLOYEE" | "ADMIN" | "DRIVER" | "ROOM_KEEPER" — plain string di login response
-  department: string // "Operations" — plain string
+  role: string       // "EMPLOYEE" | "ADMIN" | "DRIVER" | "ROOM_KEEPER" - plain string di login response
+  department: string // "Operations" - plain string
 }
 
 // --- Auth Payloads & Responses ---
@@ -152,7 +152,7 @@ export interface UpdateProfilePhotoResponse {
 
 // --- Bulk Import (Excel) ---
 
-// Hasil per baris file Excel — backend tidak membatalkan baris lain
+// Hasil per baris file Excel - backend tidak membatalkan baris lain
 // saat satu baris gagal, jadi tiap baris punya status sendiri.
 export interface BulkImportRowResult {
   row: number          // nomor baris di file Excel (header = baris 1)
@@ -217,7 +217,7 @@ export interface UserSummaryByRoleDepartment {
 
 export interface UserSummary {
   totals: UserSummaryTotals
-  // Role tanpa user sama sekali tidak muncul di objek ini — perlakukan sebagai 0.
+  // Role tanpa user sama sekali tidak muncul di objek ini - perlakukan sebagai 0.
   roleCount: Partial<Record<RoleName, number>>
   byRole: UserSummaryByRole[]
   byDepartment: UserSummaryByDepartment[]

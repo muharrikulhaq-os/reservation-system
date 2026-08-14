@@ -21,7 +21,7 @@ interface StartBookingModalProps {
 }
 
 // Catatan: endpoint PATCH /bookings/:id/start belum menerima body.
-// Odometer awal + foto dikumpulkan sebagai DUMMY (UI) — akan dikirim ke
+// Odometer awal + foto dikumpulkan sebagai DUMMY (UI) - akan dikirim ke
 // backend saat field-nya tersedia. Sekarang start hanya transisi status.
 export const StartBookingModal = ({
   bookingId,

@@ -3,7 +3,7 @@ import { AdminOnly } from '@/components/common'
 import { ApprovalQueue } from '@/modules/booking'
 
 export const metadata: Metadata = {
-  title: 'Antrean Persetujuan — Sistem Reservasi',
+  title: 'Antrean Persetujuan - Sistem Reservasi',
 }
 
 export default function Page() {

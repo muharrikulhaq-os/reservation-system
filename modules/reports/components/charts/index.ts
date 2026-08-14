@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// REPORT CHARTS — BARREL EXPORT
+// REPORT CHARTS - BARREL EXPORT
 // ─────────────────────────────────────────
 
 export { TrendLineChart } from './TrendLineChart'

@@ -74,8 +74,8 @@ export const DriverDetailModal = ({ driver, open, onOpenChange }: Props) => {
           </div>
 
           <div className="divide-y divide-[var(--border-divider)]">
-            <Row label="Telepon" value={driver.phoneNumber || '—'} />
-            <Row label="No. SIM" value={driver.licenseNumber || '—'} />
+            <Row label="Telepon" value={driver.phoneNumber || '-'} />
+            <Row label="No. SIM" value={driver.licenseNumber || '-'} />
             <Row
               label="Kendaraan"
               value={
@@ -84,7 +84,7 @@ export const DriverDetailModal = ({ driver, open, onOpenChange }: Props) => {
                     {driver.assignedPlate}
                   </span>
                 ) : (
-                  '—'
+                  '-'
                 )
               }
             />
@@ -95,7 +95,7 @@ export const DriverDetailModal = ({ driver, open, onOpenChange }: Props) => {
             <Star className="h-5 w-5 fill-[#F59E0B] text-[#F59E0B]" />
             <div>
               <p className="text-lg font-bold leading-none text-[var(--text-primary)]">
-                {avg != null ? avg.toFixed(1) : '—'}
+                {avg != null ? avg.toFixed(1) : '-'}
               </p>
               <p className="mt-1 text-xs text-[var(--text-secondary)]">
                 {data?.totalRatings ?? 0} ulasan

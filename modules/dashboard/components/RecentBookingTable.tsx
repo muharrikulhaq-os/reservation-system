@@ -12,10 +12,16 @@ import { useAuthStore } from '@/store/auth.store'
 
 export const AvailableBookings = () => {
   const isAdmin = useAuthStore((s) => s.isAdmin())
+  const isDriver = useAuthStore((s) => s.isDriver())
+  const isRoomKeeper = useAuthStore((s) => s.isRoomKeeper())
+
+  const resourceType = isDriver ? 'VEHICLE' : isRoomKeeper ? 'ROOM' : undefined
+
   const { data, isLoading } = useBookings({
     limit: 5,
     page: 1,
     status: isAdmin ? 'PENDING' : undefined,
+    resourceType,
   })
 
   return (

@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────
 // TANSTACK QUERY CLIENT
-// Konfigurasi global — default behavior
+// Konfigurasi global - default behavior
 // untuk semua useQuery & useMutation
 // ─────────────────────────────────────────
 
@@ -25,7 +25,7 @@ export const queryClient = new QueryClient({
       gcTime:       QUERY_CONFIG.CACHE_TIME,
       retry:        shouldRetry,
       retryDelay:   QUERY_CONFIG.RETRY_DELAY,
-      refetchOnWindowFocus: false, // disable — terlalu agresif untuk dashboard internal
+      refetchOnWindowFocus: false, // disable - terlalu agresif untuk dashboard internal
     },
     mutations: {
       retry: false, // mutasi tidak di-retry otomatis

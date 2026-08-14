@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// REPORTS MODULE — public API
+// REPORTS MODULE - public API
 // import { Reports } from '@/modules/reports'
 // ─────────────────────────────────────────
 

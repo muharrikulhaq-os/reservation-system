@@ -15,7 +15,7 @@ import { RoomCard } from './components/RoomCard'
 import { roomColumns } from './utils/columns'
 
 // ─────────────────────────────────────────
-// ROOMS PAGE — katalog ruangan
+// ROOMS PAGE - katalog ruangan
 // ─────────────────────────────────────────
 
 const STATUS_TABS: { value: string; label: string }[] = [

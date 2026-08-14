@@ -149,7 +149,7 @@ const handleLogout = (): void => {
   tokenStorage.clearAll()
   clearTokenCookies()
   if (typeof window === 'undefined') return
-  // Sudah di halaman login — redirect hanya akan me-reload halaman
+  // Sudah di halaman login - redirect hanya akan me-reload halaman
   // dan menghapus pesan error yang sedang tampil.
   if (window.location.pathname === '/login') return
   window.location.href = '/login'

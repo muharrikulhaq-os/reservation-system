@@ -58,7 +58,7 @@ export const BookingFuelHistory = ({ bookingId }: { bookingId: number }) => {
                     · {formatCurrency(f.totalCost)}
                   </p>
                   <p className="truncate text-xs text-[var(--text-secondary)]">
-                    {f.driverName || '—'} · {formatDate(f.createdAt)}
+                    {f.driverName || '-'} · {formatDate(f.createdAt)}
                   </p>
                 </div>
               </button>

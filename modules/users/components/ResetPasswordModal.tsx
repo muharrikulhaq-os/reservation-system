@@ -13,7 +13,7 @@ import { getErrorMessage } from '@/lib'
 import { useResetUserPassword } from '../hooks/useUsers'
 
 // ─────────────────────────────────────────
-// RESET PASSWORD (ADMIN) — langsung, tanpa OTP.
+// RESET PASSWORD (ADMIN) - langsung, tanpa OTP.
 // Admin sudah terautentikasi & berwenang, jadi tak perlu verifikasi email.
 // Alur user biasa (lupa password) memakai OTP di /forgot-password.
 // ─────────────────────────────────────────
@@ -72,7 +72,7 @@ export const ResetPasswordModal = ({
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // clipboard bisa diblokir browser — abaikan, password tetap terlihat
+      // clipboard bisa diblokir browser - abaikan, password tetap terlihat
     }
   }
 

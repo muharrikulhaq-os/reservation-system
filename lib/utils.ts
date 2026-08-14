@@ -58,20 +58,20 @@ const shortDateFormatter = new Intl.DateTimeFormat("id-ID", {
 
 type DateInput = string | number | Date | null | undefined;
 
-/** Parse aman — kembalikan Date valid atau null (tanpa melempar). */
+/** Parse aman - kembalikan Date valid atau null (tanpa melempar). */
 const parseDate = (value: DateInput): Date | null => {
   if (value === null || value === undefined || value === "") return null;
   const d = value instanceof Date ? value : new Date(value);
   return Number.isNaN(d.getTime()) ? null : d;
 };
 
-/** "26 Mei 2025" — fallback "-" jika tanggal kosong/invalid */
+/** "26 Mei 2025" - fallback "-" jika tanggal kosong/invalid */
 export const formatDate = (iso: DateInput, fallback = "-"): string => {
   const d = parseDate(iso);
   return d ? dateFormatter.format(d) : fallback;
 };
 
-/** "26 Mei 2025, 10.00" — fallback "-" jika tanggal kosong/invalid */
+/** "26 Mei 2025, 10.00" - fallback "-" jika tanggal kosong/invalid */
 export const formatDateTime = (iso: DateInput, fallback = "-"): string => {
   const d = parseDate(iso);
   return d ? dateTimeFormatter.format(d) : fallback;
@@ -102,7 +102,7 @@ export const formatDuration = (
   return `${hours} jam ${minutes} menit`;
 };
 
-/** Format ISO ke value input datetime-local — "" jika invalid */
+/** Format ISO ke value input datetime-local - "" jika invalid */
 export const toDatetimeLocal = (iso: DateInput): string => {
   const d = parseDate(iso);
   return d ? d.toISOString().slice(0, 16) : "";
@@ -141,7 +141,7 @@ export const formatKwh = (kwh: number): string =>
 
 // ── File Utilities ───────────────────────
 
-/** Ukuran file dalam satuan yang mudah dibaca — "204,8 KB" */
+/** Ukuran file dalam satuan yang mudah dibaca - "204,8 KB" */
 export const formatFileSize = (bytes: number): string => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1_048_576) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -154,7 +154,7 @@ export const isFileTooLarge = (file: File, maxMb: number): boolean =>
 
 // ── String Utilities ─────────────────────
 
-/** Inisial dari nama — "Budi Santoso" → "BS" */
+/** Inisial dari nama - "Budi Santoso" → "BS" */
 export const getInitials = (name: string): string =>
   name
     .split(" ")

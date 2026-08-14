@@ -22,7 +22,7 @@ import type { Booking } from "@/types";
 const ch = createColumnHelper<Booking>();
 
 // ─────────────────────────────────────────
-// ROW ACTIONS — detail + cancel (saat PENDING)
+// ROW ACTIONS - detail + cancel (saat PENDING)
 // Dipisah jadi komponen agar bisa pakai hook.
 // ─────────────────────────────────────────
 

@@ -8,10 +8,10 @@ import { useDriversPaginated } from './hooks/useDrivers'
 import { driverColumns } from './utils/columns'
 
 // ─────────────────────────────────────────
-// DRIVERS PAGE — daftar driver
+// DRIVERS PAGE - daftar driver
 // Pagination dilakukan server-side.
 // API /drivers belum mendukung search, jadi
-// pencarian disaring di sisi klien — artinya
+// pencarian disaring di sisi klien - artinya
 // hanya berlaku pada halaman yang sedang tampil.
 // ─────────────────────────────────────────
 
@@ -48,7 +48,7 @@ export const DriversPage = () => {
           />
         </div>
 
-        {/* API belum punya endpoint search — beri tahu batasannya */}
+        {/* API belum punya endpoint search - beri tahu batasannya */}
         {query && (
           <p className="text-xs text-[var(--text-secondary)]">
             Pencarian hanya menyaring halaman ini.

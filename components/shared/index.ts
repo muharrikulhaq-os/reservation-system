@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// SHARED COMPONENTS — BARREL EXPORT
+// SHARED COMPONENTS - BARREL EXPORT
 // Reusable lintas fitur (table, avatar, badge, dll)
 // ─────────────────────────────────────────
 

@@ -71,19 +71,19 @@ export const BookingSection = ({ range }: { range: ReportDateParams }) => {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <ReportStatCard
           label="Total Booking"
-          value={summary?.total ?? '—'}
+          value={summary?.total ?? '-'}
           icon={<CalendarCheck className="h-5 w-5 text-[var(--primary)]" />}
           iconBg="var(--primary-light)"
         />
         <ReportStatCard
           label="Avg Waktu Approval"
-          value={avgHoursToDecision != null ? `${avgHoursToDecision.toFixed(1)} jam` : '—'}
+          value={avgHoursToDecision != null ? `${avgHoursToDecision.toFixed(1)} jam` : '-'}
           icon={<Clock className="h-5 w-5 text-[var(--info)]" />}
           iconBg="#DBEAFE"
         />
         <ReportStatCard
           label="Total Keputusan"
-          value={totalDecisions || '—'}
+          value={totalDecisions || '-'}
           icon={<CheckCircle2 className="h-5 w-5 text-[var(--success)]" />}
           iconBg="#DCFCE7"
         />

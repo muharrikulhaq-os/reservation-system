@@ -10,7 +10,7 @@ import type { FuelType, ResourceStatus, ResourceType } from './enums'
 // FUEL EXPENSES
 // ─────────────────────────────────────────
 
-// Sumber energi — BBM (satuan liter) atau LISTRIK (satuan kWh)
+// Sumber energi - BBM (satuan liter) atau LISTRIK (satuan kWh)
 export type EnergyType = 'BBM' | 'LISTRIK'
 export type FuelUnit = 'LITER' | 'KWH'
 
@@ -55,11 +55,11 @@ export interface FuelExpense {
   createdAt: string
 }
 
-// Payload create fuel (multipart — proofPhoto WAJIB)
+// Payload create fuel (multipart - proofPhoto WAJIB)
 export interface CreateFuelPayload {
   vehicleId: number
   bookingId?: number
-  fuelTypeId: number   // WAJIB — referensi ke fuel-types
+  fuelTypeId: number   // WAJIB - referensi ke fuel-types
   fuelGrade?: string   // RON/grade bebas (opsional)
   // BBM
   liter?: number
@@ -87,7 +87,7 @@ export interface FuelExpenseParams {
 // MAINTENANCE
 // ─────────────────────────────────────────
 
-// Shape dari GET /maintenance (list/detail) — VEHICLE only
+// Shape dari GET /maintenance (list/detail) - VEHICLE only
 export interface MaintenanceRecord {
   id: number
   vehicleId: number
@@ -109,7 +109,7 @@ export interface MaintenanceRecord {
   createdAt: string
 }
 
-// POST /maintenance — JSON
+// POST /maintenance - JSON
 export interface CreateMaintenancePayload {
   vehicleId: number
   maintenanceTypeId?: number
@@ -124,10 +124,10 @@ export interface CreateMaintenancePayload {
   endDate?: string
 }
 
-// PUT /maintenance/:id — sama dengan create
+// PUT /maintenance/:id - sama dengan create
 export type UpdateMaintenancePayload = CreateMaintenancePayload
 
-// PATCH /maintenance/:id/complete — multipart, upload foto bukti
+// PATCH /maintenance/:id/complete - multipart, upload foto bukti
 export interface CompleteMaintenancePayload {
   photos?: File[]
 }
@@ -158,7 +158,7 @@ export interface MasterSetting {
 // (sqlc menserialisasi SUM/numeric secara tidak konsisten).
 export type Numeric = number | string | null
 
-// GET /reports/bookings — ReportBookingSummaryRow
+// GET /reports/bookings - ReportBookingSummaryRow
 export interface BookingSummaryReport {
   total: number
   completed: number
@@ -170,7 +170,7 @@ export interface BookingSummaryReport {
   overdue: number
 }
 
-// GET /reports/resource-usage — v_vehicle_summary (VEHICLE saja)
+// GET /reports/resource-usage - v_vehicle_summary (VEHICLE saja)
 export interface ResourceUsageReport {
   id: number
   vehicle_name: string
@@ -188,7 +188,7 @@ export interface ResourceUsageReport {
   total_fuel_cost: Numeric
 }
 
-// GET /reports/fuel-expenses — v_fuel_expense_summary
+// GET /reports/fuel-expenses - v_fuel_expense_summary
 export interface FuelExpenseReport {
   vehicle_id: number
   plateNumber: string
@@ -203,7 +203,7 @@ export interface FuelExpenseReport {
   grand_total: Numeric
 }
 
-// GET /reports/maintenance-cost — ReportMaintenanceCostRow
+// GET /reports/maintenance-cost - ReportMaintenanceCostRow
 export interface MaintenanceCostReport {
   vehicleId: number
   resource_name: string
@@ -212,7 +212,7 @@ export interface MaintenanceCostReport {
   total_cost: Numeric
 }
 
-// GET /reports/driver-ratings — v_driver_ratings_summary
+// GET /reports/driver-ratings - v_driver_ratings_summary
 export interface DriverRatingReport {
   driver_id: number
   driver_name: string
@@ -227,7 +227,7 @@ export interface DriverRatingReport {
   bintang_1: number
 }
 
-// GET /reports/driver-activity — ReportDriverActivityRow
+// GET /reports/driver-activity - ReportDriverActivityRow
 export interface DriverActivityReport {
   driver_id: number
   driver_name: string
@@ -237,7 +237,7 @@ export interface DriverActivityReport {
   total_fuel_expenses: Numeric
 }
 
-// GET /reports/overdue-bookings — ReportOverdueBookingsRow (flat)
+// GET /reports/overdue-bookings - ReportOverdueBookingsRow (flat)
 export interface OverdueBooking {
   id: number
   userId: number
@@ -289,18 +289,18 @@ export interface HealthStatus {
 }
 
 // ─────────────────────────────────────────
-// REPORT TYPES — EXTENDED
+// REPORT TYPES - EXTENDED
 // TODO: Beberapa type ini belum ada endpoint-nya di backend.
-//       Ditandai dengan [DUMMY] — data sementara dari frontend.
+//       Ditandai dengan [DUMMY] - data sementara dari frontend.
 //       Hapus dummy dan ganti fetch setelah backend siap.
 // ─────────────────────────────────────────
 
-// [EXISTING] — sudah ada di atas:
+// [EXISTING] - sudah ada di atas:
 // BookingSummaryReport, ResourceUsageReport, FuelExpenseReport,
 // MaintenanceCostReport, DriverRatingReport, DriverActivityReport,
 // OverdueBooking, AuditLog, ReportDateParams, AuditLogQueryParams
 
-// [DUMMY] — endpoint belum ada
+// [DUMMY] - endpoint belum ada
 export interface ReportOverview {
   totalBookings: number
   totalCost: number

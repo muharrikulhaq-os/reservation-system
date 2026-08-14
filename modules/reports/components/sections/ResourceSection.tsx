@@ -13,7 +13,7 @@ import { useResourceUsage } from '../../hooks/useReports'
 
 // ─────────────────────────────────────────
 // TAB: RESOURCE
-// Sumber: /reports/resource-usage (v_vehicle_summary — kendaraan saja)
+// Sumber: /reports/resource-usage (v_vehicle_summary - kendaraan saja)
 // ─────────────────────────────────────────
 
 const num = (v: unknown) => Number(v) || 0

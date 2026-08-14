@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────
 // NEXT.JS MIDDLEWARE
 // Route protection + role-based access
-// Berjalan di Edge Runtime — tidak bisa
+// Berjalan di Edge Runtime - tidak bisa
 // akses localStorage, harus pakai cookies
 // ─────────────────────────────────────────
 

@@ -21,7 +21,7 @@ import {
 } from '../hooks/useVehicles'
 
 // ─────────────────────────────────────────
-// VEHICLE FORM — create & edit
+// VEHICLE FORM - create & edit
 // ─────────────────────────────────────────
 
 interface VehicleFormProps {
@@ -163,7 +163,7 @@ export const VehicleForm = ({ initialData, onSuccess }: VehicleFormProps) => {
             )}
           />
 
-          {/* Row 5: odometer — create only */}
+          {/* Row 5: odometer - create only */}
           {!isEdit && (
             <Controller
               control={control}
@@ -207,7 +207,7 @@ export const VehicleForm = ({ initialData, onSuccess }: VehicleFormProps) => {
 }
 
 // ─────────────────────────────────────────
-// CATEGORY FIELD — select + tambah kategori inline
+// CATEGORY FIELD - select + tambah kategori inline
 // ─────────────────────────────────────────
 
 const CategoryField = ({

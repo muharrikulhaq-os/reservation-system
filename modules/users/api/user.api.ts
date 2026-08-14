@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────
 // USER API (call layer)
-// Semua endpoint sudah tersedia di backend — tidak ada dummy.
+// Semua endpoint sudah tersedia di backend - tidak ada dummy.
 // ─────────────────────────────────────────
 
 import { isAxiosError } from 'axios'
@@ -32,7 +32,7 @@ const filenameFromDisposition = (value?: string): string | undefined => {
   return plain ? plain[1] : undefined
 }
 
-// Saat responseType='blob', body error dari API juga berupa Blob —
+// Saat responseType='blob', body error dari API juga berupa Blob -
 // ubah kembali ke JSON agar getErrorMessage() bisa membaca pesannya.
 const normalizeBlobError = async (error: unknown): Promise<unknown> => {
   if (isAxiosError(error) && error.response?.data instanceof Blob) {
@@ -40,7 +40,7 @@ const normalizeBlobError = async (error: unknown): Promise<unknown> => {
       const text = await error.response.data.text()
       error.response.data = JSON.parse(text)
     } catch {
-      // Body bukan JSON — biarkan apa adanya, fallback getErrorMessage yang dipakai.
+      // Body bukan JSON - biarkan apa adanya, fallback getErrorMessage yang dipakai.
     }
   }
   return error
@@ -76,7 +76,7 @@ export const userApi = {
       .patch<ApiResponse<ToggleActiveResponse>>(API_ENDPOINTS.USERS.TOGGLE_ACTIVE(id))
       .then((r) => r.data),
 
-  // Reset password oleh ADMIN — langsung, tanpa OTP.
+  // Reset password oleh ADMIN - langsung, tanpa OTP.
   resetPassword: (id: number, newPassword: string) =>
     apiClient
       .patch<ApiResponse<null>>(API_ENDPOINTS.USERS.RESET_PASSWORD(id), { newPassword })
@@ -87,7 +87,7 @@ export const userApi = {
       .delete<ApiResponse<null>>(API_ENDPOINTS.USERS.BY_ID(id))
       .then((r) => r.data),
 
-  // ── Photo (admin — update foto user lain) ──
+  // ── Photo (admin - update foto user lain) ──
 
   updatePhoto: (id: number, file: File) => {
     const form = new FormData()
@@ -130,7 +130,7 @@ export const userApi = {
 
   // ── Lookup (dropdown) ──────────────────
 
-  // Agregat untuk stat card — dihitung backend atas seluruh data,
+  // Agregat untuk stat card - dihitung backend atas seluruh data,
   // bukan hanya halaman yang sedang tampil.
   getSummary: () =>
     apiClient

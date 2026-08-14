@@ -60,7 +60,7 @@ const auditColumns: ColumnDef<AuditLog, unknown>[] = [
   ch.accessor('description', {
     header: 'Deskripsi',
     cell: ({ getValue }) => (
-      <span className="text-sm text-[var(--text-secondary)]">{getValue() ?? '—'}</span>
+      <span className="text-sm text-[var(--text-secondary)]">{getValue() ?? '-'}</span>
     ),
   }),
 ] as ColumnDef<AuditLog, unknown>[]

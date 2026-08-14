@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// ROOMS MODULE — public API
+// ROOMS MODULE - public API
 // import { RoomsPage, useRooms } from '@/modules/rooms'
 // ─────────────────────────────────────────
 

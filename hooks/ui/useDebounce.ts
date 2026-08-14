@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────
 // useDebounce
-// Delay update nilai — berguna untuk search
+// Delay update nilai - berguna untuk search
 // input agar tidak trigger API tiap keystroke
 // ─────────────────────────────────────────
 

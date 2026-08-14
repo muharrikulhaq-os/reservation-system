@@ -117,7 +117,7 @@ Button.displayName = 'Button'
 
 // ─────────────────────────────────────────
 // ICON BUTTON
-// Button khusus icon — rounded-lg, no label
+// Button khusus icon - rounded-lg, no label
 // ─────────────────────────────────────────
 
 export interface IconButtonProps extends Omit<ButtonProps, 'leftIcon' | 'rightIcon' | 'fullWidth' | 'children'> {

@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────
 // usePagination
 // State management untuk pagination params
-// — sync dengan URL search params opsional
+// - sync dengan URL search params opsional
 // ─────────────────────────────────────────
 
 import { useState, useCallback } from 'react'

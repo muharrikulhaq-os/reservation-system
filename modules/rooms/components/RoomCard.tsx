@@ -10,7 +10,7 @@ import type { Room } from '@/types'
 
 // ─────────────────────────────────────────
 // ROOM CARD
-// Mode kartu katalog ruangan — memuat
+// Mode kartu katalog ruangan - memuat
 // seluruh info yang ada di mode baris,
 // dengan foto sebagai fokus utama.
 // ─────────────────────────────────────────

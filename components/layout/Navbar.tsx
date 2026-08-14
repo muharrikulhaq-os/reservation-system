@@ -87,7 +87,7 @@ export const Navbar = () => {
         {title}
       </h1>
 
-      {/* Search — center */}
+      {/* Search - center */}
       {/* <div className="relative w-full max-w-xs">
         <Search className="pointer-events-none absolute inset-y-0 left-3 my-auto h-4 w-4 text-[var(--text-disabled)]" />
         <Input

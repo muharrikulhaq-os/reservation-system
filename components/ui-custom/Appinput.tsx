@@ -306,7 +306,7 @@ InputNumber.displayName = "InputNumber";
 
 // ─────────────────────────────────────────
 // 5. INPUT RUPIAH
-// Format: Rp 1.000.000 — store as number
+// Format: Rp 1.000.000 - store as number
 // ─────────────────────────────────────────
 
 export interface InputRupiahProps extends Omit<
@@ -714,6 +714,6 @@ export const InputSelect = React.forwardRef<
 InputSelect.displayName = "InputSelect";
 
 // ─────────────────────────────────────────
-// BARREL — export semua dari satu tempat
+// BARREL - export semua dari satu tempat
 // import { InputText, InputPassword, ... } from '@/components/ui-custom/AppInput'
 // ─────────────────────────────────────────

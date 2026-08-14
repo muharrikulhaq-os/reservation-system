@@ -6,7 +6,7 @@ import { cn } from '@/lib'
 
 // ─────────────────────────────────────────
 // ALERT
-// Kartu notifikasi inline — dipakai di atas
+// Kartu notifikasi inline - dipakai di atas
 // form untuk menampilkan error response server,
 // pesan sukses, peringatan, atau info.
 //

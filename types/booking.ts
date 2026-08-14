@@ -83,7 +83,7 @@ export interface BookingMergeResponse {
 
 export interface MergeBookingPayload {
   targetBookingId: number
-  reason: string // WAJIB — alasan penggabungan
+  reason: string // WAJIB - alasan penggabungan
   startDate?: string
   endDate?: string
 }
@@ -187,8 +187,8 @@ export interface CreateBookingPayload {
   startDate: string // RFC3339
   endDate: string
   purpose: string
-  passengerCount: number // WAJIB — untuk validasi kapasitas
-  driverId?: number      // opsional — jika kosong, di-auto-pick / admin assign
+  passengerCount: number // WAJIB - untuk validasi kapasitas
+  driverId?: number      // opsional - jika kosong, di-auto-pick / admin assign
 }
 
 export interface ApproveBookingPayload {

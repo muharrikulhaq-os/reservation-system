@@ -79,7 +79,7 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
 
   if (booking.status !== BOOKING_STATUS.PENDING) return null
 
-  // Approve biasa: cukup klik "Setujui" — driver + kendaraan yang sudah
+  // Approve biasa: cukup klik "Setujui" - driver + kendaraan yang sudah
   // ter-attach saat create tetap dipakai (booking siap digunakan).
   const handleApprove = () => {
     approve.mutate(
@@ -100,7 +100,7 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
     setSubstituteOpen(true)
   }
 
-  // Alihkan & Setujui — kondisional per tipe resource.
+  // Alihkan & Setujui - kondisional per tipe resource.
   const handleAlihkanApprove = async () => {
     try {
       const note = reason.trim() || undefined

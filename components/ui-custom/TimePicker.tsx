@@ -5,7 +5,7 @@ import { ChevronDown, Keyboard } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // ─────────────────────────────────────────
-// TIME PICKER — hybrid dropdown / ketik manual
+// TIME PICKER - hybrid dropdown / ketik manual
 // Dipakai di AvailabilityCalendar & BookingMergePanel.
 // ─────────────────────────────────────────
 
@@ -23,7 +23,7 @@ export const TIME_OPTIONS: string[] = (() => {
 export interface TimePickerProps {
   value: string
   onChange: (v: string) => void
-  /** "14:30" — disable semua opsi <= ini */
+  /** "14:30" - disable semua opsi <= ini */
   disableBefore?: string
   label?: string
   className?: string

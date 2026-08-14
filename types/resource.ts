@@ -119,7 +119,7 @@ export interface CreateVehiclePayload {
   capacity: number
 }
 
-// PUT /vehicles/:id — semua field wajib (bukan partial)
+// PUT /vehicles/:id - semua field wajib (bukan partial)
 export type UpdateVehiclePayload = Required<CreateVehiclePayload>
 
 export interface UpdateVehicleStatusPayload {

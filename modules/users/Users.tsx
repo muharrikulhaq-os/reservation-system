@@ -37,7 +37,7 @@ import { UserBulkImportDialog } from './components/UserBulkImportDialog'
 import { DepartmentManageModal } from './components/DepartmentManageModal'
 
 // ─────────────────────────────────────────
-// USERS PAGE — daftar pengguna
+// USERS PAGE - daftar pengguna
 // ─────────────────────────────────────────
 
 export const Users = () => {

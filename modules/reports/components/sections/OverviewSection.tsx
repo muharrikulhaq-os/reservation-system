@@ -34,7 +34,7 @@ export const OverviewSection = ({ range }: { range: ReportDateParams }) => {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <ReportStatCard
           label="Total Booking"
-          value={overview?.totalBookings ?? '—'}
+          value={overview?.totalBookings ?? '-'}
           icon={<CalendarCheck className="h-5 w-5 text-[var(--primary)]" />}
           iconBg="var(--primary-light)"
           change={overview?.changePercent.bookings}
@@ -42,7 +42,7 @@ export const OverviewSection = ({ range }: { range: ReportDateParams }) => {
         />
         <ReportStatCard
           label="Total Biaya"
-          value={overview ? formatCurrency(overview.totalCost) : '—'}
+          value={overview ? formatCurrency(overview.totalCost) : '-'}
           icon={<Wallet className="h-5 w-5 text-[var(--info)]" />}
           iconBg="#DBEAFE"
           change={overview?.changePercent.cost}
@@ -51,7 +51,7 @@ export const OverviewSection = ({ range }: { range: ReportDateParams }) => {
         />
         <ReportStatCard
           label="Avg Utilisasi"
-          value={overview ? `${overview.avgUtilization.toFixed(1)}%` : '—'}
+          value={overview ? `${overview.avgUtilization.toFixed(1)}%` : '-'}
           icon={<Activity className="h-5 w-5 text-[var(--success)]" />}
           iconBg="#DCFCE7"
           change={overview?.changePercent.utilization}
@@ -59,7 +59,7 @@ export const OverviewSection = ({ range }: { range: ReportDateParams }) => {
         />
         <ReportStatCard
           label="Overdue"
-          value={overview?.overdueCount ?? '—'}
+          value={overview?.overdueCount ?? '-'}
           icon={<AlertTriangle className="h-5 w-5 text-[var(--warning)]" />}
           iconBg="#FEF3C7"
           change={overview?.changePercent.overdue}
@@ -70,7 +70,7 @@ export const OverviewSection = ({ range }: { range: ReportDateParams }) => {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader title="Trend Booking" description="12 bulan terakhir — kendaraan vs ruangan" />
+          <CardHeader title="Trend Booking" description="12 bulan terakhir - kendaraan vs ruangan" />
           <TrendLineChart
             data={trend ?? []}
             xKey="period"

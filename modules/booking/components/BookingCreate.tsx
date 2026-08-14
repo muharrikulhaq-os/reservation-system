@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/shared'
 import { BookingForm } from './BookingForm'
 
 // ─────────────────────────────────────────
-// BOOKING CREATE — wrapper halaman buat booking
+// BOOKING CREATE - wrapper halaman buat booking
 // ─────────────────────────────────────────
 
 export const BookingCreate = () => {

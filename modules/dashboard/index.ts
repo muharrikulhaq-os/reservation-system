@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// DASHBOARD MODULE — public API
+// DASHBOARD MODULE - public API
 // import { DashboardPage } from '@/modules/dashboard'
 // ─────────────────────────────────────────
 

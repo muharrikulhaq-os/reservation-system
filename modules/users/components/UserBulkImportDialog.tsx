@@ -40,7 +40,7 @@ export const UserBulkImportDialog = ({
   onOpenChange,
 }: UserBulkImportDialogProps) => {
   const [file, setFile] = useState<File | null>(null)
-  // InputFile menyimpan state internal — ganti key untuk mereset pilihan file.
+  // InputFile menyimpan state internal - ganti key untuk mereset pilihan file.
   const [fileInputKey, setFileInputKey] = useState(0)
   const [result, setResult] = useState<BulkImportResult | null>(null)
 
@@ -86,7 +86,7 @@ export const UserBulkImportDialog = ({
         </DialogHeader>
 
         <div className="mt-2 space-y-5">
-          {/* Langkah 1 — template */}
+          {/* Langkah 1 - template */}
           <div className="rounded-xl border border-[var(--border-card)] bg-[var(--bg-subtle)] p-4">
             <div className="flex items-start gap-3">
               <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--primary-light)]">
@@ -126,7 +126,7 @@ export const UserBulkImportDialog = ({
             )}
           </div>
 
-          {/* Langkah 2 — unggah */}
+          {/* Langkah 2 - unggah */}
           <div>
             <p className="mb-2 text-sm font-semibold text-[var(--text-primary)]">
               2. Unggah file terisi
@@ -194,10 +194,10 @@ export const UserBulkImportDialog = ({
                             {row.row}
                           </td>
                           <td className="px-3 py-2 text-[var(--text-primary)]">
-                            {row.name || '—'}
+                            {row.name || '-'}
                           </td>
                           <td className="px-3 py-2 text-[var(--text-secondary)]">
-                            {row.email || '—'}
+                            {row.email || '-'}
                           </td>
                           <td className="px-3 py-2">
                             <span className="flex items-start gap-1.5 text-[var(--danger)]">

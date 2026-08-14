@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// SHARED RESOURCE — BARREL EXPORT
+// SHARED RESOURCE - BARREL EXPORT
 // Komponen lintas-fitur untuk vehicles & rooms.
 // ─────────────────────────────────────────
 

@@ -11,7 +11,7 @@ import { Alert, Button, InputField, PasswordInput } from '@/components/common'
 import { useForgotPassword, useVerifyOtp, useResetPassword } from '@/hooks'
 
 // ─────────────────────────────────────────
-// LUPA PASSWORD (user) — 3 langkah sesuai backend:
+// LUPA PASSWORD (user) - 3 langkah sesuai backend:
 //   1. POST /auth/forgot-password { email }      → kirim OTP ke email
 //   2. POST /auth/verify-otp      { email, otpCode } → dapat resetToken
 //   3. POST /auth/reset-password  { resetToken, newPassword }

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { UserEdit } from '@/modules/users'
 
 export const metadata: Metadata = {
-  title: 'Edit Pengguna — Sistem Reservasi',
+  title: 'Edit Pengguna - Sistem Reservasi',
 }
 
 export default async function Page({

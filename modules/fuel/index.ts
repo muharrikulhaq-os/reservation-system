@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// FUEL MODULE — public API
+// FUEL MODULE - public API
 // import { Fuel, useFuelExpenses } from '@/modules/fuel'
 // ─────────────────────────────────────────
 

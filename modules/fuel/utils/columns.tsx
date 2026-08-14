@@ -124,12 +124,11 @@ export const fuelColumns: ColumnDef<FuelExpense, unknown>[] = [
     size: 100,
     cell: ({ row }) => {
       const f = row.original
-      // Tidak bergantung pada fuelType — pilih berdasarkan field yang terisi
       const text =
-        f.liter != null
-          ? `${formatNumber(f.liter)} L`
-          : f.kwh != null
-            ? `${formatNumber(f.kwh)} kWh`
+        f.fuelType === ENERGY_TYPE.BBM
+          ? `${formatNumber(f.liter ?? 0)} L`
+          : f.fuelType === ENERGY_TYPE.LISTRIK
+            ? `${formatNumber(f.kwh ?? 0)} kWh`
             : '-'
       return <span className="text-sm text-[var(--text-primary)]">{text}</span>
     },
@@ -141,7 +140,7 @@ export const fuelColumns: ColumnDef<FuelExpense, unknown>[] = [
     size: 120,
     cell: ({ row }) => {
       const f = row.original
-      const price = f.pricePerLiter ?? f.pricePerKwh
+      const price = f.fuelType === ENERGY_TYPE.LISTRIK ? (f.pricePerKwh ?? 0) : (f.pricePerLiter ?? 0)
       return (
         <span className="text-sm text-[var(--text-secondary)]">
           {formatCurrency(price ?? 0)}
@@ -167,7 +166,7 @@ export const fuelColumns: ColumnDef<FuelExpense, unknown>[] = [
     cell: ({ row }) => {
       const f = row.original
       if (f.odometerBefore == null && f.odometerAfter == null) {
-        return <span className="text-xs text-[var(--text-disabled)]">—</span>
+        return <span className="text-xs text-[var(--text-disabled)]">-</span>
       }
       return (
         <span className="text-xs text-[var(--text-secondary)]">

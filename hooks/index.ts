@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// HOOKS — BARREL EXPORT
+// HOOKS - BARREL EXPORT
 // import { useBookings, useDebounce } from '@/hooks'
 // ─────────────────────────────────────────
 

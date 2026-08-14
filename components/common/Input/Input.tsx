@@ -6,7 +6,7 @@ import { cn } from '@/lib'
 
 // ─────────────────────────────────────────
 // BASE INPUT
-// Atomic — hanya rendering input element
+// Atomic - hanya rendering input element
 // ─────────────────────────────────────────
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -89,7 +89,7 @@ export const InputHint = ({ children, className }: { children: React.ReactNode; 
 
 // ─────────────────────────────────────────
 // INPUT WRAPPER (Label + Input + Error/Hint)
-// Composed — paling sering dipakai
+// Composed - paling sering dipakai
 // ─────────────────────────────────────────
 
 export interface InputFieldProps extends InputProps {

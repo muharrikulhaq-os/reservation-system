@@ -78,7 +78,7 @@ export const driverColumns: ColumnDef<Driver, unknown>[] = [
           {plate}
         </span>
       ) : (
-        <span className="text-xs text-[var(--text-disabled)]">—</span>
+        <span className="text-xs text-[var(--text-disabled)]">-</span>
       )
     },
   }),

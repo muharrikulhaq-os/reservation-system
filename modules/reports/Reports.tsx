@@ -16,7 +16,7 @@ import {
 import { useDepartmentSummary } from './hooks/useReports'
 
 // ─────────────────────────────────────────
-// LAPORAN & ANALITIK — view utama (6 tab)
+// LAPORAN & ANALITIK - view utama (6 tab)
 // DateRangeFilter persisten di semua tab.
 // ─────────────────────────────────────────
 

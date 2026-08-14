@@ -35,7 +35,7 @@ export const useRoomsPaginated = (
     queryKey: [...QUERY_KEYS.ROOMS, 'paginated', params],
     queryFn:  () => roomService.getAll(params),
     enabled:  options?.enabled ?? true,
-    // Tahan data halaman sebelumnya saat pindah halaman —
+    // Tahan data halaman sebelumnya saat pindah halaman -
     // tanpa ini pager ikut hilang tiap kali refetch.
     placeholderData: keepPreviousData,
   })

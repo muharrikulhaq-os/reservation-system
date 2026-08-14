@@ -12,7 +12,7 @@ import { getErrorMessage } from '@/lib'
 import { Alert, Button, InputField, PasswordInput } from '@/components/common'
 
 // ─────────────────────────────────────────
-// LOGIN PAGE — self-contained
+// LOGIN PAGE - self-contained
 // Dipanggil di app/(auth)/login/page.tsx → <LoginPage />
 // ─────────────────────────────────────────
 

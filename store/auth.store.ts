@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// AUTH STORE — Zustand
+// AUTH STORE - Zustand
 // Menyimpan user & token di memory.
 // Token persisten di localStorage via tokenStorage.
 // ─────────────────────────────────────────

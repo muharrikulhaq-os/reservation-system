@@ -36,7 +36,7 @@ export const useVehiclesPaginated = (
     queryKey: [...QUERY_KEYS.VEHICLES, 'paginated', params],
     queryFn:  () => vehicleService.getAll(params),
     enabled:  options?.enabled ?? true,
-    // Tahan data halaman sebelumnya saat pindah halaman —
+    // Tahan data halaman sebelumnya saat pindah halaman -
     // tanpa ini pager ikut hilang tiap kali refetch.
     placeholderData: keepPreviousData,
   })

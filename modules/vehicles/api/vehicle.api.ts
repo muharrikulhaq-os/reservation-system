@@ -37,7 +37,7 @@ export const vehicleService = {
       .post<ApiResponse<Vehicle>>(API_ENDPOINTS.VEHICLES.BASE, payload)
       .then((r) => r.data),
 
-  // PUT — semua field wajib sesuai API doc
+  // PUT - semua field wajib sesuai API doc
   update: (id: number, payload: UpdateVehiclePayload) =>
     apiClient
       .put<ApiResponse<Vehicle>>(API_ENDPOINTS.VEHICLES.BY_ID(id), payload)

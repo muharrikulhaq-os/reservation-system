@@ -22,7 +22,7 @@ export const TOKEN_CONFIG = {
 
 // --- UI Preference Keys ---
 // Key penyimpanan preferensi tampilan (bukan data).
-// Dipakai lewat usePersistedState — jangan akses storage langsung.
+// Dipakai lewat usePersistedState - jangan akses storage langsung.
 
 export const STORAGE_KEYS = {
   VEHICLES_VIEW_MODE: "vehicles:view-mode",
@@ -99,8 +99,8 @@ export const QUERY_KEYS = {
 // --- Query Config ---
 
 export const QUERY_CONFIG = {
-  STALE_TIME: 5 * 60 * 1000, // 5 menit — data dianggap fresh
-  CACHE_TIME: 10 * 60 * 1000, // 10 menit — cache disimpan
+  STALE_TIME: 5 * 60 * 1000, // 5 menit - data dianggap fresh
+  CACHE_TIME: 10 * 60 * 1000, // 10 menit - cache disimpan
   RETRY: 2,
   RETRY_DELAY: 1_000, // 1 detik antar retry
 } as const;

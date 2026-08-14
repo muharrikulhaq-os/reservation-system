@@ -103,6 +103,7 @@ export const DriverSection = ({ range }: { range: ReportDateParams }) => {
             valueKey="avg"
             barColor="var(--warning)"
             formatValue={(v) => v.toFixed(1)}
+            domain={[0, 5]}
           />
         </Card>
 

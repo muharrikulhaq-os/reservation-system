@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// USERS MODULE — public API
+// USERS MODULE - public API
 // import { Users, useUsers } from '@/modules/users'
 // ─────────────────────────────────────────
 

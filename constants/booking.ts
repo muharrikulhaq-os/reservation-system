@@ -65,7 +65,7 @@ export const FUEL_TYPE = {
 } as const satisfies Record<string, FuelType>
 
 // --- Booking Status UI Config ---
-// Satu tempat untuk warna & label status — pakai di StatusBadge component
+// Satu tempat untuk warna & label status - pakai di StatusBadge component
 
 export const BOOKING_STATUS_CONFIG = {
   PENDING: {

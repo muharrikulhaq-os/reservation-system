@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// DRIVERS MODULE — public API
+// DRIVERS MODULE - public API
 // import { DriversPage, useDrivers } from '@/modules/drivers'
 // ─────────────────────────────────────────
 

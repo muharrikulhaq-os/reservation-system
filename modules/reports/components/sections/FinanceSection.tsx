@@ -72,7 +72,7 @@ export const FinanceSection = ({ range }: { range: ReportDateParams }) => {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <ReportStatCard
           label="Total BBM"
-          value={cost ? formatCurrency(cost.totalFuelCost) : '—'}
+          value={cost ? formatCurrency(cost.totalFuelCost) : '-'}
           icon={<Fuel className="h-5 w-5 text-[var(--warning)]" />}
           iconBg="#FEF3C7"
           change={cost?.changePercent.fuel}
@@ -81,7 +81,7 @@ export const FinanceSection = ({ range }: { range: ReportDateParams }) => {
         />
         <ReportStatCard
           label="Total Maintenance"
-          value={cost ? formatCurrency(cost.totalMaintenanceCost) : '—'}
+          value={cost ? formatCurrency(cost.totalMaintenanceCost) : '-'}
           icon={<Wrench className="h-5 w-5 text-[var(--info)]" />}
           iconBg="#DBEAFE"
           change={cost?.changePercent.maintenance}
@@ -90,7 +90,7 @@ export const FinanceSection = ({ range }: { range: ReportDateParams }) => {
         />
         <ReportStatCard
           label="Total Biaya"
-          value={cost ? formatCurrency(cost.totalCost) : '—'}
+          value={cost ? formatCurrency(cost.totalCost) : '-'}
           icon={<Wallet className="h-5 w-5 text-[var(--primary)]" />}
           iconBg="var(--primary-light)"
           change={cost?.changePercent.total}

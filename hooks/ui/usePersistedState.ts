@@ -2,13 +2,13 @@
 
 // ─────────────────────────────────────────
 // usePersistedState
-// State yang diingat antar kunjungan —
+// State yang diingat antar kunjungan -
 // untuk preferensi UI (mode tampilan, dsb),
 // BUKAN untuk data server atau token.
 //
 // Nilai dibaca setelah mount (bukan saat
 // inisialisasi state) supaya render pertama
-// tetap sama dengan hasil SSR — kalau dibaca
+// tetap sama dengan hasil SSR - kalau dibaca
 // langsung di useState, hydration mismatch.
 //
 // Catatan mobile: saat porting ke React Native,
@@ -30,7 +30,7 @@ export const usePersistedState = <T,>(
       const raw = window.localStorage.getItem(key)
       if (raw !== null) setValue(JSON.parse(raw) as T)
     } catch {
-      // storage tidak tersedia / nilai korup — pakai default
+      // storage tidak tersedia / nilai korup - pakai default
     }
   }, [key])
 
@@ -40,7 +40,7 @@ export const usePersistedState = <T,>(
       try {
         window.localStorage.setItem(key, JSON.stringify(next))
       } catch {
-        // storage penuh atau diblokir — state in-memory tetap jalan
+        // storage penuh atau diblokir - state in-memory tetap jalan
       }
     },
     [key],

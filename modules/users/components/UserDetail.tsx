@@ -210,7 +210,7 @@ export const UserDetail = ({ userId }: UserDetailProps) => {
 
               <Separator className="bg-[var(--border-divider)]" />
 
-              {/* Reset password — langsung, tanpa OTP (hak admin) */}
+              {/* Reset password - langsung, tanpa OTP (hak admin) */}
               <div>
                 <AppButton
                   variant="secondary"

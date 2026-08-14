@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// VEHICLES MODULE — public API
+// VEHICLES MODULE - public API
 // import { VehiclesPage, useVehicles } from '@/modules/vehicles'
 // ─────────────────────────────────────────
 

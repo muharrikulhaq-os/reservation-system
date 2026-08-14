@@ -48,7 +48,7 @@ export const getPageItems = (
 // ─────────────────────────────────────────
 // PAGINATION
 // Pager bersama untuk <DataTable/> (mode baris)
-// dan <CardGrid/> (mode kartu) — supaya kedua
+// dan <CardGrid/> (mode kartu) - supaya kedua
 // mode tampil identik.
 // ─────────────────────────────────────────
 
@@ -70,13 +70,13 @@ export const Pagination = ({
   const totalPages  = pagination.totalPages ?? 0
 
   // Limit yang sedang aktif belum tentu ada di daftar pilihan
-  // (mis. picker yang memakai limit 6) — sisipkan agar select tidak kosong.
+  // (mis. picker yang memakai limit 6) - sisipkan agar select tidak kosong.
   const limitOptions = PAGINATION.LIMIT_OPTIONS.includes(pagination.limit)
     ? PAGINATION.LIMIT_OPTIONS
     : [...PAGINATION.LIMIT_OPTIONS, pagination.limit].sort((a, b) => a - b)
 
   // Halaman aktif bisa melewati totalPages saat data menyusut
-  // (mis. filter dipersempit atau baris terakhir dihapus) — tarik kembali
+  // (mis. filter dipersempit atau baris terakhir dihapus) - tarik kembali
   // ke halaman terakhir yang valid agar tabel tidak tampil kosong.
   useEffect(() => {
     if (totalPages > 0 && currentPage > totalPages) onPageChange(totalPages)

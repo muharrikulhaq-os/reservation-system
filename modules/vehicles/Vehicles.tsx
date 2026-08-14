@@ -15,7 +15,7 @@ import { VehicleCard } from './components/VehicleCard'
 import { vehicleColumns } from './utils/columns'
 
 // ─────────────────────────────────────────
-// VEHICLES PAGE — katalog kendaraan
+// VEHICLES PAGE - katalog kendaraan
 // ─────────────────────────────────────────
 
 const STATUS_TABS: { value: string; label: string }[] = [

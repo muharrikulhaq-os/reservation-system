@@ -10,7 +10,7 @@ import type { Vehicle } from '@/types'
 
 // ─────────────────────────────────────────
 // VEHICLE CARD
-// Mode kartu katalog kendaraan — memuat
+// Mode kartu katalog kendaraan - memuat
 // seluruh info yang ada di mode baris,
 // dengan foto sebagai fokus utama.
 // ─────────────────────────────────────────

@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// REPORT COMPONENTS — BARREL EXPORT
+// REPORT COMPONENTS - BARREL EXPORT
 // ─────────────────────────────────────────
 
 export * from './charts'

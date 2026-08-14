@@ -17,7 +17,7 @@ export const settingService = {
       .get<ApiResponse<MasterSetting>>(API_ENDPOINTS.SETTINGS.BY_KEY(key))
       .then((r) => r.data),
 
-  // PUT — create or update (value sebagai string)
+  // PUT - create or update (value sebagai string)
   upsert: (key: string, value: string) =>
     apiClient
       .put<ApiResponse<MasterSetting>>(API_ENDPOINTS.SETTINGS.BY_KEY(key), { value })

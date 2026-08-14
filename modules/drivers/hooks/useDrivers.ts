@@ -31,7 +31,7 @@ export const useDriversPaginated = (params?: DriverQueryParams) =>
   useQuery({
     queryKey: [...QUERY_KEYS.DRIVERS, 'paginated', params],
     queryFn:  () => driverService.getAll(params),
-    // Tahan data halaman sebelumnya saat pindah halaman —
+    // Tahan data halaman sebelumnya saat pindah halaman -
     // tanpa ini pager ikut hilang tiap kali refetch.
     placeholderData: keepPreviousData,
   })
@@ -50,7 +50,7 @@ export const useDriverAssignmentHistory = (id: number) =>
     enabled:  !!id,
   })
 
-// Driver tersedia — hanya fetch jika startDate & endDate ada
+// Driver tersedia - hanya fetch jika startDate & endDate ada
 export const useAvailableDrivers = (params: AvailableDriverParams | null) =>
   useQuery({
     queryKey: [...QUERY_KEYS.DRIVERS, 'available', params],
@@ -94,7 +94,7 @@ export const useAssignDriverToVehicle = () => {
       driverService.assignToVehicle(id, payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.DRIVERS })
-      // Invalidate vehicles juga — assignedPlate di vehicle bisa berubah
+      // Invalidate vehicles juga - assignedPlate di vehicle bisa berubah
       qc.invalidateQueries({ queryKey: QUERY_KEYS.VEHICLES })
     },
   })

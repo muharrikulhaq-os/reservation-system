@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────
 // ATTACHMENT HOOKS
-// Global delete — berlaku untuk semua jenis
+// Global delete - berlaku untuk semua jenis
 // ─────────────────────────────────────────
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
