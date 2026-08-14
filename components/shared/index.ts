@@ -32,3 +32,6 @@ export type {
 } from './calendar/AvailabilityCalendar'
 
 export * from './Resource'
+
+export { ConfirmDialog } from './ConfirmDialog'
+export type { ConfirmDialogProps } from './ConfirmDialog'

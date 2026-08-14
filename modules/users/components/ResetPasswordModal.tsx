@@ -7,13 +7,14 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog'
 import { AppButton, InputPassword } from '@/components/ui-custom'
 import { getErrorMessage } from '@/lib'
 import { useResetUserPassword } from '../hooks/useUsers'
 
 // ─────────────────────────────────────────
-// RESET PASSWORD (ADMIN) - langsung, tanpa OTP.
+// RESET PASSWORD (ADMIN) — langsung, tanpa OTP.
 // Admin sudah terautentikasi & berwenang, jadi tak perlu verifikasi email.
 // Alur user biasa (lupa password) memakai OTP di /forgot-password.
 // ─────────────────────────────────────────
@@ -49,15 +50,13 @@ export const ResetPasswordModal = ({
   const mismatch = confirm.length > 0 && password !== confirm
   const canSubmit = password.length >= 8 && password === confirm && !reset.isPending
 
-  const close = (o: boolean) => {
-    onOpenChange(o)
-    if (!o) {
-      setPassword('')
-      setConfirm('')
-      setDone(false)
-      setCopied(false)
-      reset.reset()
-    }
+  const close = () => {
+    onOpenChange(false)
+    setPassword('')
+    setConfirm('')
+    setDone(false)
+    setCopied(false)
+    reset.reset()
   }
 
   const handleGenerate = () => {
@@ -72,7 +71,7 @@ export const ResetPasswordModal = ({
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // clipboard bisa diblokir browser - abaikan, password tetap terlihat
+      // clipboard bisa diblokir browser — abaikan, password tetap terlihat
     }
   }
 
@@ -87,7 +86,7 @@ export const ResetPasswordModal = ({
   }
 
   return (
-    <Dialog open={open} onOpenChange={close}>
+    <Dialog open={open} onOpenChange={(o) => !o && close()}>
       <DialogContent className="rounded-2xl p-6 shadow-[var(--shadow-modal)] sm:max-w-md">
         <DialogHeader>
           <DialogTitle
@@ -97,6 +96,9 @@ export const ResetPasswordModal = ({
             <KeyRound className="h-5 w-5 text-[var(--primary)]" />
             Reset Password
           </DialogTitle>
+          <DialogDescription className="text-xs text-[var(--text-secondary)]">
+            Setel password baru untuk akun pengguna {userName}.
+          </DialogDescription>
         </DialogHeader>
 
         {done ? (
@@ -128,7 +130,7 @@ export const ResetPasswordModal = ({
               </p>
             </div>
 
-            <AppButton fullWidth onClick={() => close(false)}>
+            <AppButton fullWidth onClick={() => close()}>
               Selesai
             </AppButton>
           </div>
@@ -181,7 +183,7 @@ export const ResetPasswordModal = ({
                 variant="secondary"
                 fullWidth
                 disabled={reset.isPending}
-                onClick={() => close(false)}
+                onClick={() => close()}
               >
                 Batal
               </AppButton>

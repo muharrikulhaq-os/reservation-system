@@ -20,6 +20,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { useTableFilter } from '@/hooks'
@@ -231,14 +232,14 @@ export const Users = () => {
               {pendingToggleUser?.isActive ? 'Nonaktifkan' : 'Aktifkan'}{' '}
               {pendingToggleUser?.name}?
             </DialogTitle>
-          </DialogHeader>
-
-          <div className="mt-2 space-y-4">
-            <p className="text-sm text-[var(--text-secondary)]">
+            <DialogDescription className="text-sm text-[var(--text-secondary)]">
               {pendingToggleUser?.isActive
                 ? 'User tidak akan bisa login. Booking aktif tidak terpengaruh.'
                 : 'User akan dapat login kembali ke sistem.'}
-            </p>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-2 space-y-4">
 
             <div className="flex gap-3 pt-1">
               <AppButton

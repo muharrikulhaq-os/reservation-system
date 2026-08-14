@@ -7,8 +7,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog'
 import { AppButton, InputText } from '@/components/ui-custom'
+import { ConfirmDialog } from '@/components/shared'
 import {
   useUserDepartments,
   useCreateDepartment,
@@ -31,6 +33,7 @@ export const DepartmentManageModal = ({
   const [newName, setNewName] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editName, setEditName] = useState('')
+  const [deptToDelete, setDeptToDelete] = useState<{ id: number; name: string } | null>(null)
 
   const handleCreate = () => {
     if (!newName.trim()) return
@@ -62,10 +65,17 @@ export const DepartmentManageModal = ({
     setEditName('')
   }
 
-  const handleDelete = (id: number) => {
-    if (confirm('Apakah Anda yakin ingin menghapus departemen ini?')) {
-      deleteDept.mutate(id)
-    }
+  const handleDelete = (dept: { id: number; name: string }) => {
+    setDeptToDelete(dept)
+  }
+
+  const handleConfirmDelete = () => {
+    if (!deptToDelete) return
+    deleteDept.mutate(deptToDelete.id, {
+      onSettled: () => {
+        setDeptToDelete(null)
+      },
+    })
   }
 
   return (
@@ -81,6 +91,9 @@ export const DepartmentManageModal = ({
               Kelola Departemen
             </div>
           </DialogTitle>
+          <DialogDescription className="text-xs text-[var(--text-secondary)]">
+            Tambah, ubah nama, atau hapus departemen organisasi.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="mt-4 flex flex-col flex-1 overflow-hidden">
@@ -165,7 +178,7 @@ export const DepartmentManageModal = ({
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDelete(dept.id)}
+                            onClick={() => handleDelete(dept)}
                             className="p-1.5 text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-red-600 rounded-md transition-colors"
                             disabled={deleteDept.isPending}
                           >
@@ -181,6 +194,28 @@ export const DepartmentManageModal = ({
           </div>
         </div>
       </DialogContent>
+
+      <ConfirmDialog
+        open={!!deptToDelete}
+        onOpenChange={(openState) => {
+          if (!openState) setDeptToDelete(null)
+        }}
+        title="Hapus Departemen"
+        description={
+          <span>
+            Apakah Anda yakin ingin menghapus departemen{' '}
+            <strong className="font-semibold text-[var(--text-primary)]">
+              &ldquo;{deptToDelete?.name}&rdquo;
+            </strong>
+            ? Tindakan ini tidak dapat dibatalkan.
+          </span>
+        }
+        confirmText="Ya, Hapus"
+        cancelText="Batal"
+        variant="danger"
+        loading={deleteDept.isPending}
+        onConfirm={handleConfirmDelete}
+      />
     </Dialog>
   )
 }
