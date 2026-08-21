@@ -3,6 +3,7 @@
 import { useRef } from 'react'
 import { ImageIcon } from 'lucide-react'
 import { AppButton, InputFile } from '@/components/ui-custom'
+import { SafeImage } from '@/components/shared/media/SafeImage'
 import { resolveFileUrl } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 
@@ -38,10 +39,12 @@ export const PhotoUploader = ({
   if (resolved) {
     return (
       <div className={cn('relative', className)}>
-        <img
+        <SafeImage
           src={resolved}
           alt="Foto resource"
           className="h-48 w-full rounded-xl object-cover"
+          fallbackClassName="h-48 w-full rounded-xl bg-[var(--bg-subtle)] text-[var(--text-disabled)]"
+          fallback={<ImageIcon className="h-10 w-10" />}
         />
         {canEdit && (
           <>

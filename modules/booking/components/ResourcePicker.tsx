@@ -2,6 +2,7 @@
 
 import { Search, Car, Building2, Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { InputText, IconButton } from '@/components/ui-custom'
+import { SafeImage } from '@/components/shared/media/SafeImage'
 import { cn, resolveFileUrl } from '@/lib'
 import { useTableFilter } from '@/hooks'
 import { RESOURCE_TYPE, RESOURCE_STATUS } from '@/constants'
@@ -136,22 +137,18 @@ const ResourcePickerCard = ({
     >
       {/* Foto / placeholder */}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--bg-subtle)]">
-        {photoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={photoUrl}
-            alt={resource.name}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            {isVehicle ? (
+        <SafeImage
+          src={photoUrl}
+          alt={resource.name}
+          className="h-full w-full object-cover"
+          fallback={
+            isVehicle ? (
               <Car className="h-10 w-10 text-[var(--text-disabled)]" />
             ) : (
               <Building2 className="h-10 w-10 text-[var(--text-disabled)]" />
-            )}
-          </div>
-        )}
+            )
+          }
+        />
         {selected && (
           <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)] text-white">
             <Check className="h-3.5 w-3.5" />

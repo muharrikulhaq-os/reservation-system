@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { FileCheck, MapPin } from "lucide-react";
+import { FileCheck, ImageOff, MapPin } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Card, CardSection } from "@/components/common";
+import { SafeImage } from "@/components/shared/media/SafeImage";
 import { formatDateTime, resolveFileUrl } from "@/lib";
 import type { ReturnReportPhoto } from "@/types";
 import { useReturnReport } from "../hooks/useBookings";
@@ -78,13 +79,13 @@ export const ReturnReportCard = ({ bookingId }: ReturnReportCardProps) => {
                   onClick={() => setPreview(photo)}
                   className="aspect-square overflow-hidden rounded-lg border border-[var(--border-card)]"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={resolveFileUrl(photo.filePath) ?? ""}
+                  <SafeImage
+                    src={resolveFileUrl(photo.filePath)}
                     alt={photo.fileName}
                     className="h-full w-full object-cover"
+                    fallbackClassName="bg-[var(--bg-subtle)] text-[var(--text-disabled)]"
+                    fallback={<ImageOff className="h-5 w-5" />}
                   />
-                  {/* {photo.filePath} */}
                 </button>
               ))}
             </div>
@@ -102,11 +103,12 @@ export const ReturnReportCard = ({ bookingId }: ReturnReportCardProps) => {
       >
         <DialogContent className="max-w-2xl rounded-2xl p-2 shadow-[var(--shadow-modal)]">
           {preview && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={resolveFileUrl(preview.filePath) ?? ""}
+            <SafeImage
+              src={resolveFileUrl(preview.filePath)}
               alt={preview.fileName}
               className="max-h-[80vh] w-full rounded-xl object-contain"
+              fallbackClassName="h-64 w-full rounded-xl bg-[var(--bg-subtle)] text-[var(--text-disabled)]"
+              fallback={<ImageOff className="h-10 w-10" />}
             />
           )}
         </DialogContent>

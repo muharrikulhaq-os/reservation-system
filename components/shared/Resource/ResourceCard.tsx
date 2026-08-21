@@ -1,6 +1,7 @@
 'use client'
 
 import { ResourceStatusBadge } from '@/components/shared/badge/StatusBadge'
+import { SafeImage } from '@/components/shared/media/SafeImage'
 import { resolveFileUrl } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import type { ResourceStatus } from '@/types'
@@ -50,17 +51,13 @@ export const ResourceCard = ({
     >
       {/* Foto area */}
       <div className="relative h-36 w-full overflow-hidden rounded-lg bg-[var(--bg-subtle)]">
-        {resolved ? (
-          <img
-            src={resolved}
-            alt={name}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-[var(--text-disabled)] [&>svg]:h-12 [&>svg]:w-12">
-            {icon}
-          </div>
-        )}
+        <SafeImage
+          src={resolved}
+          alt={name}
+          className="h-full w-full object-cover"
+          fallbackClassName="text-[var(--text-disabled)] [&>svg]:h-12 [&>svg]:w-12"
+          fallback={icon}
+        />
 
         {/* Status badge overlay */}
         <div className="absolute bottom-2 left-2">

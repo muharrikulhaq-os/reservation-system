@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import { resolveFileUrl, getInitials } from '@/lib/utils'
+import { SafeImage } from '@/components/shared/media/SafeImage'
 
 // ─────────────────────────────────────────
 // USER AVATAR
@@ -42,27 +43,27 @@ export const UserAvatar = ({ name, photo, size = 'md', className }: UserAvatarPr
   const color    = AVATAR_COLORS[hashName(name)]
   const initials = getInitials(name)
 
-  if (photoUrl) {
-    return (
-      <img
-        src={photoUrl}
-        alt={name}
-        className={cn('rounded-full object-cover', SIZE[size], className)}
-      />
-    )
-  }
-
-  return (
+  const initialsFallback = (
     <span
       className={cn(
-        'inline-flex shrink-0 items-center justify-center rounded-full font-semibold',
+        'inline-flex h-full w-full shrink-0 items-center justify-center rounded-full font-semibold',
         SIZE[size],
-        className,
       )}
       style={{ backgroundColor: color.bg, color: color.text }}
       aria-label={name}
     >
       {initials}
     </span>
+  )
+
+  if (!photoUrl) return initialsFallback
+
+  return (
+    <SafeImage
+      src={photoUrl}
+      alt={name}
+      className={cn('rounded-full object-cover', SIZE[size], className)}
+      fallback={initialsFallback}
+    />
   )
 }

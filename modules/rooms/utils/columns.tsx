@@ -5,6 +5,7 @@ import { Building2, MapPin, Users } from 'lucide-react'
 import { AdminOnly } from '@/components/common'
 import { ResourceStatusBadge } from '@/components/shared'
 import { createColumnHelper, type ColumnDef } from '@/components/shared/table/DataTable'
+import { SafeImage } from '@/components/shared/media/SafeImage'
 import { resolveFileUrl } from '@/lib'
 import type { Room } from '@/types'
 
@@ -24,11 +25,12 @@ export const roomColumns: ColumnDef<Room, unknown>[] = [
       return (
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-12 shrink-0 items-center justify-center overflow-hidden rounded bg-[var(--bg-subtle)] text-[var(--text-disabled)]">
-            {photo ? (
-              <img src={photo} alt={r.name} className="h-full w-full object-cover" />
-            ) : (
-              <Building2 className="h-4 w-4" />
-            )}
+            <SafeImage
+              src={photo}
+              alt={r.name}
+              className="h-full w-full object-cover"
+              fallback={<Building2 className="h-4 w-4" />}
+            />
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-semibold text-[var(--text-primary)]">

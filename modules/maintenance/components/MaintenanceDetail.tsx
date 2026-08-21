@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Car, CheckCircle2 } from 'lucide-react'
+import { Car, CheckCircle2, ImageOff } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
 import { PageHeader } from '@/components/shared'
+import { SafeImage } from '@/components/shared/media/SafeImage'
 import { AppButton } from '@/components/ui-custom'
 import { formatDate, formatCurrency, formatNumber, resolveFileUrl } from '@/lib'
 import {
@@ -125,8 +126,13 @@ export const MaintenanceDetail = ({ id }: { id: number }) => {
                 rel="noopener noreferrer"
                 className="block aspect-square overflow-hidden rounded-xl border border-[var(--border-card)]"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt={`Bukti ${i + 1}`} className="h-full w-full object-cover" />
+                <SafeImage
+                  src={url}
+                  alt={`Bukti ${i + 1}`}
+                  className="h-full w-full object-cover"
+                  fallbackClassName="bg-[var(--bg-subtle)] text-[var(--text-disabled)]"
+                  fallback={<ImageOff className="h-5 w-5" />}
+                />
               </a>
             ))}
           </div>

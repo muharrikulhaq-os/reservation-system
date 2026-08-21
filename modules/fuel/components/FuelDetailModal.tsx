@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { SafeImage } from '@/components/shared/media/SafeImage'
 import { formatDate, formatCurrency, formatNumber, resolveFileUrl } from '@/lib'
 import { ENERGY_TYPE, ENERGY_TYPE_CONFIG } from '@/constants'
 import type { FuelExpense } from '@/types'
@@ -132,11 +133,17 @@ export const FuelDetailModal = ({ fuel, open, onOpenChange }: Props) => {
                 rel="noopener noreferrer"
                 className="block overflow-hidden rounded-xl border border-[var(--border-card)]"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <SafeImage
                   src={proofUrl}
                   alt="Bukti pengisian"
                   className="max-h-72 w-full object-contain bg-[var(--bg-subtle)]"
+                  fallbackClassName="gap-2 bg-[var(--bg-subtle)] px-4 py-6 text-sm text-[var(--text-disabled)]"
+                  fallback={
+                    <>
+                      <ImageOff className="h-4 w-4" />
+                      Foto bukti tidak tersedia.
+                    </>
+                  }
                 />
               </a>
             ) : (
