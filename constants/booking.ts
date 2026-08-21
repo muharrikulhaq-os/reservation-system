@@ -34,6 +34,7 @@ export const RESOURCE_STATUS = {
   AVAILABLE:   'AVAILABLE',
   MAINTENANCE: 'MAINTENANCE',
   INACTIVE:    'INACTIVE',
+  IN_USE:      'IN_USE',
 } as const satisfies Record<string, ResourceStatus>
 
 // --- Booking Status ---
@@ -146,6 +147,11 @@ export const RESOURCE_STATUS_CONFIG = {
     label:    'Tidak Aktif',
     bg:       '#F3F4F6',
     text:     '#374151',
+  },
+  IN_USE: {
+    label:    'Digunakan',
+    bg:       '#DBEAFE',
+    text:     '#1E40AF',
   },
 } as const satisfies Record<ResourceStatus, { label: string; bg: string; text: string }>
 

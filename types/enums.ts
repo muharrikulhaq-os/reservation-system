@@ -7,7 +7,7 @@ export type RoleName = 'ADMIN' | 'EMPLOYEE' | 'DRIVER' | 'ROOM_KEEPER'
 
 export type ResourceType = 'VEHICLE' | 'ROOM'
 
-export type ResourceStatus = 'AVAILABLE' | 'MAINTENANCE' | 'INACTIVE'
+export type ResourceStatus = 'AVAILABLE' | 'MAINTENANCE' | 'INACTIVE' | 'IN_USE'
 
 export type BookingStatus =
   | 'PENDING'
