@@ -92,6 +92,7 @@ const ACTIVITY_ICON: Record<BookingActivityAction, React.ComponentType<{ classNa
   SUBSTITUTE_RESOURCE: ArrowRightLeft,
   MERGE: Merge,
   SUBMIT_RETURN_REPORT: FileCheck,
+  OVERDUE: AlertTriangle,
 };
 
 export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
@@ -127,6 +128,12 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
 
   const isVehicle = booking.resource.type === RESOURCE_TYPE.VEHICLE;
   const ResourceIcon = isVehicle ? Car : DoorOpen;
+  // OVERDUE = booking yang sama seperti ONGOING (belum diselesaikan), cuma
+  // sudah lewat endDate — driver & admin tetap punya akses ke aksi yang sama
+  // (laporan pengembalian, BBM, selesaikan), status "Terlambat" cukup lewat badge.
+  const isOngoingOrOverdue =
+    booking.status === BOOKING_STATUS.ONGOING ||
+    booking.status === BOOKING_STATUS.OVERDUE;
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[3fr_2fr]">
@@ -335,9 +342,8 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           </Card>
         )}
 
-        {/* Return report - review (tampil saat ONGOING/COMPLETED & sudah ada) */}
-        {(booking.status === BOOKING_STATUS.ONGOING ||
-          booking.status === BOOKING_STATUS.COMPLETED) && (
+        {/* Return report - review (tampil saat ONGOING/OVERDUE/COMPLETED & sudah ada) */}
+        {(isOngoingOrOverdue || booking.status === BOOKING_STATUS.COMPLETED) && (
           <ReturnReportCard bookingId={booking.id} />
         )}
 
@@ -373,9 +379,10 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
             !booking.assignedDriver
           ) && <StartPanel bookingId={booking.id} onActionComplete={refetch} />}
 
-        {/* CompletePanel: Bisa dilihat oleh Admin, atau Room Keeper (hanya untuk ruangan) */}
+        {/* CompletePanel: Bisa dilihat oleh Admin, atau Room Keeper (hanya untuk ruangan).
+            Tetap tampil saat OVERDUE - booking yang terlambat tetap harus bisa diselesaikan. */}
         {(isAdmin || (isRoomKeeper && !isVehicle)) &&
-          booking.status === BOOKING_STATUS.ONGOING && (
+          isOngoingOrOverdue && (
             <CompletePanel
               bookingId={booking.id}
               hasReturnReport={!!returnReport}
@@ -397,7 +404,7 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
 
         {/* Driver: catat pengisian BBM */}
         {isDriver &&
-          booking.status === BOOKING_STATUS.ONGOING &&
+          isOngoingOrOverdue &&
           booking.resource.type === RESOURCE_TYPE.VEHICLE && (
             <DriverFuelCard
               vehicleId={booking.assignedVehicle?.id}
@@ -418,9 +425,9 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
             />
           )}
 
-        {/* Driver: kirim laporan pengembalian */}
+        {/* Driver: kirim laporan pengembalian - tetap tersedia saat OVERDUE */}
         {isDriver &&
-          booking.status === BOOKING_STATUS.ONGOING &&
+          isOngoingOrOverdue &&
           booking.resource.type === RESOURCE_TYPE.VEHICLE && (
             <Card>
               <CardHeader title="Laporan Pengembalian" />

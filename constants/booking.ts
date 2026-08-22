@@ -170,4 +170,5 @@ export const ACTIVITY_ACTION_CONFIG = {
   SUBSTITUTE_RESOURCE: { label: 'Resource Dialihkan',            icon: 'ArrowRightLeft', color: '#7C3AED' },
   MERGE:               { label: 'Booking Digabungkan',           icon: 'Merge',          color: '#0284C7' },
   SUBMIT_RETURN_REPORT:{ label: 'Laporan Pengembalian Dikirim',  icon: 'FileCheck',      color: '#0284C7' },
+  OVERDUE:             { label: 'Terlambat Dikembalikan',       icon: 'AlertTriangle',  color: '#D97706' },
 } as const satisfies Record<BookingActivityAction, { label: string; icon: string; color: string }>

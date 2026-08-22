@@ -37,3 +37,4 @@ export type BookingActivityAction =
   | 'SUBSTITUTE_RESOURCE'
   | 'MERGE'
   | 'SUBMIT_RETURN_REPORT'
+  | 'OVERDUE'
