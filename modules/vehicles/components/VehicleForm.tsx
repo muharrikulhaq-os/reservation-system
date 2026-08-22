@@ -8,6 +8,7 @@ import { AlertCircle, Plus, X } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
 import { AppButton, InputText, InputNumber, InputSelect } from '@/components/ui-custom'
 import { getErrorMessage } from '@/lib'
+import { VEHICLE_ENERGY_TYPE_OPTIONS } from '@/constants'
 import type { Vehicle, SelectOption } from '@/types'
 import {
   createVehicleSchema,
@@ -55,8 +56,9 @@ export const VehicleForm = ({ initialData, onSuccess }: VehicleFormProps) => {
           currentOdometer: initialData.currentOdometer,
           capacity: initialData.capacity,
           categoryId: initialData.category.id,
+          energyType: initialData.energyType,
         }
-      : { currentOdometer: 0 },
+      : { currentOdometer: 0, energyType: 'BBM' },
   })
 
   const categoryOptions: SelectOption<number>[] = (categories ?? []).map((c) => ({
@@ -163,7 +165,21 @@ export const VehicleForm = ({ initialData, onSuccess }: VehicleFormProps) => {
             )}
           />
 
-          {/* Row 5: odometer - create only */}
+          {/* Row 5: tipe energi + odometer (odometer create only) */}
+          <Controller
+            control={control}
+            name="energyType"
+            render={({ field }) => (
+              <InputSelect
+                label="Tipe Energi"
+                required
+                options={VEHICLE_ENERGY_TYPE_OPTIONS}
+                value={field.value ?? ''}
+                onChange={(e) => field.onChange(e.target.value)}
+                error={errors.energyType?.message}
+              />
+            )}
+          />
           {!isEdit && (
             <Controller
               control={control}

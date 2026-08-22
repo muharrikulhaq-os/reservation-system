@@ -20,6 +20,15 @@ export const ENERGY_TYPE_CONFIG: Record<
   LISTRIK: { label: 'Listrik', color: '#0891B2', unit: 'kWh' },
 }
 
+// ── Vehicle energy type (beda dari ENERGY_TYPE di atas - HYBRID cuma
+//    berlaku untuk kendaraan, bukan untuk transaksi pengisian) ──
+
+export const VEHICLE_ENERGY_TYPE_OPTIONS: { value: string; label: string }[] = [
+  { value: 'BBM',     label: 'BBM' },
+  { value: 'LISTRIK', label: 'Listrik' },
+  { value: 'HYBRID',  label: 'Hybrid' },
+]
+
 // ── Maintenance ───────────────────────────
 
 // type = string bebas (backend contoh: routine, repair)

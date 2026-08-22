@@ -28,6 +28,7 @@ export const createVehicleSchema = z.object({
     .number({ error: 'Pilih kategori' })
     .int()
     .positive('Pilih kategori'),
+  energyType: z.enum(['BBM', 'LISTRIK', 'HYBRID'], { error: 'Pilih tipe energi' }),
 })
 
 // --- Update Vehicle (PUT = semua field wajib) ---

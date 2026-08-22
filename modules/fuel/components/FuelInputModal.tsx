@@ -97,6 +97,15 @@ export const FuelInputModal = ({
     if (selectedVehicle) setOdometerBefore(selectedVehicle.currentOdometer)
   }, [selectedVehicle])
 
+  // Tipe energi mengikuti kendaraan - kendaraan BBM/LISTRIK cuma bisa diisi
+  // sesuai tipenya sendiri. HYBRID dibiarkan bebas dipilih (bisa keduanya).
+  useEffect(() => {
+    if (!selectedVehicle) return
+    if (selectedVehicle.energyType === 'BBM' || selectedVehicle.energyType === 'LISTRIK') {
+      setEnergyType(selectedVehicle.energyType)
+    }
+  }, [selectedVehicle])
+
   const totalCost = isBbm
     ? (liter ?? 0) * (pricePerLiter ?? 0)
     : (kwh ?? 0) * (pricePerKwh ?? 0)
@@ -216,16 +225,23 @@ export const FuelInputModal = ({
               {([ENERGY_TYPE.BBM, ENERGY_TYPE.LISTRIK] as const).map((et) => {
                 const active = energyType === et
                 const bbm = et === ENERGY_TYPE.BBM
+                // Kendaraan non-hybrid cuma bisa diisi sesuai tipe energinya sendiri.
+                const locked =
+                  !!selectedVehicle &&
+                  selectedVehicle.energyType !== 'HYBRID' &&
+                  selectedVehicle.energyType !== et
                 return (
                   <button
                     key={et}
                     type="button"
+                    disabled={locked}
                     onClick={() => setEnergyType(et)}
                     className={cn(
                       'flex h-10 items-center justify-center gap-1.5 rounded-lg border text-sm font-medium transition-all',
                       active
                         ? 'border-[1.5px] border-[var(--primary)] bg-[var(--primary-light)] text-[var(--primary)]'
                         : 'border-[var(--border-input)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]',
+                      locked && 'cursor-not-allowed opacity-40 hover:bg-transparent',
                     )}
                   >
                     {bbm ? <Fuel className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
@@ -234,6 +250,12 @@ export const FuelInputModal = ({
                 )
               })}
             </div>
+            {selectedVehicle && selectedVehicle.energyType !== 'HYBRID' && (
+              <p className="mt-1.5 text-xs text-[var(--text-disabled)]">
+                {selectedVehicle.name} hanya menggunakan{' '}
+                {selectedVehicle.energyType === 'BBM' ? 'BBM' : 'listrik'}.
+              </p>
+            )}
           </div>
 
           {/* Jenis bahan bakar (difilter tipe energi) */}

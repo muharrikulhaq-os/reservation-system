@@ -14,6 +14,10 @@ export interface VehicleCategory {
 
 // --- Vehicle ---
 
+// Sumber energi kendaraan (beda dari EnergyType fuel_expenses - HYBRID bisa
+// diisi BBM atau listrik, jadi tidak dipaksa satu tipe transaksi saja).
+export type VehicleEnergyType = 'BBM' | 'LISTRIK' | 'HYBRID'
+
 // Shape dari GET /vehicles & GET /vehicles/:id
 export interface Vehicle {
   id: number
@@ -28,6 +32,7 @@ export interface Vehicle {
   category: VehicleCategory
   status: ResourceStatus
   photoUrl: string | null
+  energyType: VehicleEnergyType
 }
 
 // Subset untuk nested di booking response
@@ -117,6 +122,7 @@ export interface CreateVehiclePayload {
   currentOdometer?: number
   categoryId: number
   capacity: number
+  energyType?: VehicleEnergyType
 }
 
 // PUT /vehicles/:id - semua field wajib (bukan partial)
