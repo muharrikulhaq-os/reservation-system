@@ -19,7 +19,7 @@ import {
   InputTextArea,
 } from '@/components/ui-custom'
 import { cn, getErrorMessage, formatCurrency } from '@/lib'
-import { RESOURCE_STATUS, ENERGY_TYPE } from '@/constants'
+import { ENERGY_TYPE } from '@/constants'
 import type { EnergyType, SelectOption } from '@/types'
 import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
 import { useCreateFuel } from '../hooks/useFuel'
@@ -39,7 +39,9 @@ export const FuelInputModal = ({
   trigger,
 }: FuelInputModalProps) => {
   const [open, setOpen] = useState(false)
-  const { data: vehicles } = useVehicles({ status: RESOURCE_STATUS.AVAILABLE, limit: 100 })
+  // Tidak difilter status - kendaraan yang paling sering diisi BBM justru
+  // sedang IN_USE (dipakai driver di tengah perjalanan), bukan AVAILABLE.
+  const { data: vehicles } = useVehicles({ limit: 100 })
   const { data: fuelTypes } = useFuelTypes()
   const create = useCreateFuel()
 
