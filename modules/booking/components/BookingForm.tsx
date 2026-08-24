@@ -12,11 +12,12 @@ import { ResourcePicker } from './ResourcePicker'
 import {
   AvailabilityCalendar,
   ResourceStatusBadge,
+  SafeImage,
   type CalendarEvent,
   type DateTimeRange,
 } from '@/components/shared'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { getErrorMessage, formatShortDate, formatDuration } from '@/lib'
+import { getErrorMessage, formatShortDate, formatDuration, resolveFileUrl } from '@/lib'
 import { RESOURCE_TYPE } from '@/constants'
 import type { ResourceType, Vehicle, Room } from '@/types'
 import {
@@ -183,8 +184,13 @@ export const BookingForm = () => {
         <Card>
           <CardHeader title="Resource Dipilih" />
           <CardSection className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--bg-card)] text-[var(--text-secondary)]">
-              <TypeIcon className="h-4 w-4" />
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
+              <SafeImage
+                src={resolveFileUrl(selected.photoUrl)}
+                alt={selected.name}
+                className="h-full w-full object-cover"
+                fallback={<TypeIcon className="h-6 w-6" />}
+              />
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
@@ -352,8 +358,13 @@ export const BookingForm = () => {
           <CardHeader title="Detail Booking" />
 
           <CardSection className="mb-5 flex items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-card)] text-[var(--text-secondary)]">
-              <TypeIcon className="h-5 w-5" />
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
+              <SafeImage
+                src={resolveFileUrl(selected.photoUrl)}
+                alt={selected.name}
+                className="h-full w-full object-cover"
+                fallback={<TypeIcon className="h-6 w-6" />}
+              />
             </span>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-[var(--text-primary)]">

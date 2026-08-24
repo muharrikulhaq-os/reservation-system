@@ -75,6 +75,7 @@ export interface ResourceRef {
   name: string
   type: 'VEHICLE' | 'ROOM'
   status: ResourceStatus
+  photoUrl: string | null
 }
 
 // --- Attachment ---

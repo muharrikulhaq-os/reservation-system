@@ -38,6 +38,7 @@ import {
   Badge,
   UserAvatar,
   StarRating,
+  SafeImage,
 } from "@/components/shared";
 import { AppButton, InputFile } from "@/components/ui-custom";
 import {
@@ -214,8 +215,13 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
 
             <InfoBlock label="Resource">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
-                  <ResourceIcon className="h-4 w-4" />
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
+                  <SafeImage
+                    src={resolveFileUrl(booking.resource.photoUrl)}
+                    alt={booking.resource.name}
+                    className="h-full w-full object-cover"
+                    fallback={<ResourceIcon className="h-6 w-6" />}
+                  />
                 </span>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-[var(--text-primary)]">

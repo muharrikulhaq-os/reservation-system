@@ -4,12 +4,13 @@ import Link from "next/link";
 import { ArrowRightLeft, Building2, Car, Eye, GitMerge, X, Zap } from "lucide-react";
 import { UserAvatar } from "@/components/shared/avatar/Avatar";
 import { BookingStatusBadge } from "@/components/shared/badge/StatusBadge";
+import { SafeImage } from "@/components/shared/media/SafeImage";
 import {
   createColumnHelper,
   type ColumnDef,
 } from "@/components/shared/table/DataTable";
 import { AppButton } from "@/components/ui-custom/Appbutton";
-import { formatDate } from "@/lib";
+import { formatDate, resolveFileUrl } from "@/lib";
 import { BOOKING_STATUS, RESOURCE_TYPE } from "@/constants";
 import { useCancelBooking } from "../hooks/useBookings";
 import type { Booking } from "@/types";
@@ -104,12 +105,19 @@ export const bookingColumns: ColumnDef<Booking, unknown>[] = [
 
       return (
         <div className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
-            {isVehicle ? (
-              <Car className="h-4 w-4" />
-            ) : (
-              <Building2 className="h-4 w-4" />
-            )}
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
+            <SafeImage
+              src={resolveFileUrl(resource.photoUrl)}
+              alt={resource.name}
+              className="h-full w-full object-cover"
+              fallback={
+                isVehicle ? (
+                  <Car className="h-5 w-5" />
+                ) : (
+                  <Building2 className="h-5 w-5" />
+                )
+              }
+            />
           </span>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-1.5">
