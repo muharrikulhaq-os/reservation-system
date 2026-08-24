@@ -1,11 +1,14 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
-import { Car, Info, MapPin, Zap } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Car, Info, MapPin, Search, Zap } from 'lucide-react'
 import { cn } from '@/lib'
-import { UserAvatar } from '@/components/shared'
+import { Pagination, UserAvatar } from '@/components/shared'
+import { InputText } from '@/components/ui-custom'
 import { useAvailableDrivers } from '@/modules/drivers'
-import type { AvailableDriver } from '@/types'
+import type { AvailableDriver, PaginationMeta } from '@/types'
+
+const PAGE_SIZE = 5
 
 // ─────────────────────────────────────────
 // DRIVER SELECTOR
@@ -53,6 +56,8 @@ export const DriverSelector = ({
   onSuggestedChange,
 }: DriverSelectorProps) => {
   const { data: drivers, isLoading } = useAvailableDrivers({ startDate, endDate })
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
 
   // Supir dengan sisa kursi cukup untuk jumlah penumpang.
   const eligibleDrivers = useMemo(
@@ -63,6 +68,32 @@ export const DriverSelector = ({
       }),
     [drivers, passengerCount, bookedVehicleCapacity],
   )
+
+  // Cari berdasarkan nama supir - dipaginasi, 5 per halaman secara default.
+  const filteredDrivers = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return eligibleDrivers
+    return eligibleDrivers.filter((d) => d.driverName.toLowerCase().includes(q))
+  }, [eligibleDrivers, search])
+
+  // Balik ke halaman 1 kalau pencarian/daftar berubah, biar tidak nyangkut
+  // di halaman kosong.
+  useEffect(() => {
+    setPage(1)
+  }, [search, eligibleDrivers.length])
+
+  const totalPages = Math.max(1, Math.ceil(filteredDrivers.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pagedDrivers = filteredDrivers.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  )
+  const paginationMeta: PaginationMeta = {
+    total: filteredDrivers.length,
+    page: currentPage,
+    limit: PAGE_SIZE,
+    totalPages,
+  }
 
   // Auto-pick: prioritaskan supir KOSONG (senggang, belum pegang kendaraan).
   const suggestedDriverId = useMemo(() => {
@@ -120,7 +151,17 @@ export const DriverSelector = ({
         </p>
       )}
 
-      {/* Empty */}
+      {/* Pencarian - hanya kalau ada lebih dari satu supir eligible */}
+      {!isLoading && eligibleDrivers.length > 0 && (
+        <InputText
+          placeholder="Cari nama supir…"
+          leftIcon={<Search className="h-4 w-4" />}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      )}
+
+      {/* Empty - belum ada supir yang eligible sama sekali */}
       {!isLoading && eligibleDrivers.length === 0 && (
         <p className="py-3 text-center text-sm text-[var(--text-disabled)]">
           Tidak ada supir dengan kursi cukup untuk {passengerCount} penumpang. Admin
@@ -128,8 +169,15 @@ export const DriverSelector = ({
         </p>
       )}
 
-      {/* List driver eligible */}
-      {eligibleDrivers.map((driver) => {
+      {/* Empty - pencarian tidak cocok */}
+      {!isLoading && eligibleDrivers.length > 0 && filteredDrivers.length === 0 && (
+        <p className="py-3 text-center text-sm text-[var(--text-disabled)]">
+          Tidak ada supir dengan nama "{search}".
+        </p>
+      )}
+
+      {/* List driver eligible (dipaginasi) */}
+      {pagedDrivers.map((driver) => {
         const { capacity, remaining, isFree } = effectiveSeats(
           driver,
           bookedVehicleCapacity,
@@ -241,6 +289,11 @@ export const DriverSelector = ({
           </button>
         )
       })}
+
+      {/* Pager - cuma tampil kalau lebih dari satu halaman */}
+      {totalPages > 1 && (
+        <Pagination pagination={paginationMeta} onPageChange={setPage} />
+      )}
     </div>
   )
 }
