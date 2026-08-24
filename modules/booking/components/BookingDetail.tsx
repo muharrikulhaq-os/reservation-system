@@ -105,6 +105,7 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
   const isAdmin = useAuthStore((s) => s.isAdmin());
   const isDriver = useAuthStore((s) => s.isDriver());
   const isRoomKeeper = useAuthStore((s) => s.isRoomKeeper());
+  const isEmployee = useAuthStore((s) => s.isEmployee());
   const currentUserId = useAuthStore((s) => s.user?.id);
   const { mutate: cancelBooking, isPending: isCancelling } = useCancelBooking();
 
@@ -134,6 +135,10 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
   const isOngoingOrOverdue =
     booking.status === BOOKING_STATUS.ONGOING ||
     booking.status === BOOKING_STATUS.OVERDUE;
+  // Karyawan pemilik booking ruangan bisa mulai/selesaikan sendiri (tidak
+  // butuh admin/room keeper di lokasi) - dibatasi backend ke ruangan + pemilik.
+  const canSelfServeRoom =
+    isEmployee && !isVehicle && currentUserId === booking.user.id;
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[3fr_2fr]">
@@ -371,17 +376,17 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
             )}
         </AdminOnly>
 
-        {/* StartPanel: Bisa dilihat oleh Admin, atau Room Keeper (hanya untuk ruangan) */}
-        {(isAdmin || (isRoomKeeper && !isVehicle)) &&
+        {/* StartPanel: Admin, Room Keeper (ruangan), atau karyawan pemilik booking ruangan */}
+        {(isAdmin || (isRoomKeeper && !isVehicle) || canSelfServeRoom) &&
           booking.status === BOOKING_STATUS.APPROVED &&
           !(
             booking.resource.type === RESOURCE_TYPE.VEHICLE &&
             !booking.assignedDriver
           ) && <StartPanel bookingId={booking.id} onActionComplete={refetch} />}
 
-        {/* CompletePanel: Bisa dilihat oleh Admin, atau Room Keeper (hanya untuk ruangan).
+        {/* CompletePanel: Admin, Room Keeper (ruangan), atau karyawan pemilik booking ruangan.
             Tetap tampil saat OVERDUE - booking yang terlambat tetap harus bisa diselesaikan. */}
-        {(isAdmin || (isRoomKeeper && !isVehicle)) &&
+        {(isAdmin || (isRoomKeeper && !isVehicle) || canSelfServeRoom) &&
           isOngoingOrOverdue && (
             <CompletePanel
               bookingId={booking.id}
