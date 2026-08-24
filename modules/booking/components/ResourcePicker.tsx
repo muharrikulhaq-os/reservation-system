@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { Search, Car, Building2, Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { InputText, IconButton } from '@/components/ui-custom'
 import { SafeImage } from '@/components/shared/media/SafeImage'
@@ -27,10 +28,19 @@ export const ResourcePicker = ({
   value,
   onChange,
 }: ResourcePickerProps) => {
-  const { search, setSearch, page, setPage, params } = useTableFilter({}, 6)
+  const { search, setSearch, page, setPage, params, resetFilters } = useTableFilter({}, 6)
 
   const isVehicle = resourceType === RESOURCE_TYPE.VEHICLE
   const queryParams = { ...params }
+
+  // Kendaraan & ruangan pakai satu state search/page yang sama - kalau tidak
+  // direset saat ganti tab, halaman/kata kunci dari tab sebelumnya kebawa
+  // (mis. di halaman 2 kendaraan, pindah ke ruangan yang cuma 1 halaman →
+  // hasil kosong padahal datanya ada).
+  useEffect(() => {
+    resetFilters()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resourceType])
 
   const vehQ = useVehiclesPaginated(queryParams, { enabled: isVehicle })
   const roomQ = useRoomsPaginated(queryParams, { enabled: !isVehicle })
