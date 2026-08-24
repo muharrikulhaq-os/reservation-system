@@ -8,6 +8,7 @@ import { bookingService } from '../api/booking.api'
 import type {
   BookingQueryParams,
   CreateBookingPayload,
+  StartBookingPayload,
   ApproveBookingPayload,
   RejectBookingPayload,
   AssignVehiclePayload,
@@ -142,7 +143,8 @@ export const useAssignVehicle = () => {
 export const useStartBooking = () => {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: number) => bookingService.start(id),
+    mutationFn: ({ id, payload }: { id: number; payload?: StartBookingPayload }) =>
+      bookingService.start(id, payload),
     onSuccess:  () => qc.invalidateQueries({ queryKey: QUERY_KEYS.BOOKINGS }),
   })
 }

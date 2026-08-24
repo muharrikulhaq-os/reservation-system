@@ -25,6 +25,11 @@ export interface Booking extends Timestamps {
   returnedAt: string | null
   assignedDriver: DriverSummary | null
   assignedVehicle: VehicleSummary | null
+  // Odometer + lokasi + foto saat mulai perjalanan (diisi driver, VEHICLE
+  // saja) - hanya ada di response detail (GetBookingByID), tidak di list.
+  odometerStart?: number | null
+  startLocation?: string | null
+  startPhotoUrl?: string | null
   // Pengalihan resource oleh admin saat approve
   isReassigned?: boolean
   originalResource?: OriginalResource | null
@@ -192,6 +197,14 @@ export interface CreateBookingPayload {
   driverId?: number      // opsional - jika kosong, di-auto-pick / admin assign
   // Opsional, VEHICLE saja - default NON_SPD di backend bila tidak dikirim.
   bookingType?: BookingType
+}
+
+// PATCH /bookings/:id/start - semua field opsional (ROOM/self-serve start
+// tidak mengirim apa pun; driver VEHICLE mengirim odometer + foto).
+export interface StartBookingPayload {
+  odometerStart?: number
+  startLocation?: string
+  startPhoto?: File
 }
 
 export interface ApproveBookingPayload {

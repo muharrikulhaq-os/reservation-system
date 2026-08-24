@@ -20,9 +20,6 @@ interface StartBookingModalProps {
   trigger?: ReactNode
 }
 
-// Catatan: endpoint PATCH /bookings/:id/start belum menerima body.
-// Odometer awal + foto dikumpulkan sebagai DUMMY (UI) - akan dikirim ke
-// backend saat field-nya tersedia. Sekarang start hanya transisi status.
 export const StartBookingModal = ({
   bookingId,
   currentOdometer,
@@ -38,10 +35,12 @@ export const StartBookingModal = ({
   const canSubmit = odometer != null && !!photo
 
   const handleSubmit = async () => {
-    if (!canSubmit) return
+    if (!canSubmit || !photo) return
     try {
-      // TODO [BACKEND]: kirim odometerStart + foto saat endpoint start mendukung.
-      await start.mutateAsync(bookingId)
+      await start.mutateAsync({
+        id: bookingId,
+        payload: { odometerStart: odometer, startPhoto: photo },
+      })
       setOpen(false)
       onSuccess?.()
     } catch {

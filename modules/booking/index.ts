@@ -11,7 +11,7 @@ export { BookingApprovalPanel } from "./components/BookingApprovalPanel";
 export { BookingAssignPanel } from "./components/BookingAssignPanel";
 export { BookingMergePanel } from "./components/BookingMergePanel";
 export { ReturnReportModal } from "./components/ReturnReportModal";
-export { ReturnReportCard } from "./components/ReturnReportCard";
+export { TripRecordTabs } from "./components/TripRecordTabs";
 export { ApprovalQueue } from "./components/ApprovalQueue";
 export { bookingColumns } from "./utils/columns";
 export { bookingService } from "./api/booking.api";

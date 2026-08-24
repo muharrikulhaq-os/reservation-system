@@ -67,10 +67,9 @@ import { BookingApprovalPanel } from "./BookingApprovalPanel";
 import { BookingAssignPanel } from "./BookingAssignPanel";
 import { BookingMergePanel } from "./BookingMergePanel";
 import { ReturnReportModal } from "./ReturnReportModal";
-import { ReturnReportCard } from "./ReturnReportCard";
 import { StartBookingModal } from "./StartBookingModal";
 import { RateDriverModal } from "./RateDriverModal";
-import { BookingFuelHistory } from "./BookingFuelHistory";
+import { TripRecordTabs } from "./TripRecordTabs";
 import { FuelInputModal } from "@/modules/fuel";
 
 // ─────────────────────────────────────────
@@ -363,9 +362,13 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           </Card>
         )}
 
-        {/* Return report - review (tampil saat ONGOING/OVERDUE/COMPLETED & sudah ada) */}
-        {(isOngoingOrOverdue || booking.status === BOOKING_STATUS.COMPLETED) && (
-          <ReturnReportCard bookingId={booking.id} />
+        {/* Catatan perjalanan (tab): odometer keberangkatan, BBM, laporan
+            pengembalian - VEHICLE saja, tampil saat ONGOING/OVERDUE/COMPLETED */}
+        {isVehicle && (isOngoingOrOverdue || booking.status === BOOKING_STATUS.COMPLETED) && (
+          <TripRecordTabs
+            booking={booking}
+            linkedBookingIds={(mergeInfo ?? []).map((m) => m.linkedBooking.bookingId)}
+          />
         )}
 
         {/* Kalender (view only) */}
@@ -472,14 +475,6 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
               <ReturnReportModal bookingId={booking.id} onSuccess={refetch} />
             </Card>
           )}
-
-        {/* Riwayat pengisian BBM (auto-sembunyi bila kosong) */}
-        {isVehicle && (
-          <BookingFuelHistory
-            bookingId={booking.id}
-            linkedBookingIds={(mergeInfo ?? []).map((m) => m.linkedBooking.bookingId)}
-          />
-        )}
 
         {/* Activity Timeline (dipindah dari kolom kiri) */}
         {activity && activity.length > 0 && (
@@ -701,7 +696,7 @@ const StartPanel = ({
         loading={start.isPending}
         leftIcon={<Play className="h-4 w-4" />}
         onClick={() =>
-          start.mutate(bookingId, { onSuccess: () => onActionComplete?.() })
+          start.mutate({ id: bookingId }, { onSuccess: () => onActionComplete?.() })
         }
       >
         Mulai Booking

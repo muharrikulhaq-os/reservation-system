@@ -15,6 +15,7 @@ import type {
   DriverRatingsResult,
   BookingQueryParams,
   CreateBookingPayload,
+  StartBookingPayload,
   ApproveBookingPayload,
   RejectBookingPayload,
   AssignVehiclePayload,
@@ -69,10 +70,24 @@ export const bookingService = {
       .post<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.ASSIGN_VEHICLE(id), payload)
       .then((r) => r.data),
 
-  start: (id: number) =>
-    apiClient
-      .patch<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.START(id))
-      .then((r) => r.data),
+  // payload opsional - ROOM/self-serve start tidak kirim apa pun (PATCH
+  // tanpa body), driver VEHICLE kirim odometer + foto sebagai multipart.
+  start: (id: number, payload?: StartBookingPayload) => {
+    if (!payload) {
+      return apiClient
+        .patch<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.START(id))
+        .then((r) => r.data)
+    }
+    const form = new FormData()
+    if (payload.odometerStart != null) form.append('odometerStart', String(payload.odometerStart))
+    if (payload.startLocation) form.append('startLocation', payload.startLocation)
+    if (payload.startPhoto) form.append('startPhoto', payload.startPhoto)
+    return apiClient
+      .patch<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.START(id), form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then((r) => r.data)
+  },
 
   complete: (id: number) =>
     apiClient
