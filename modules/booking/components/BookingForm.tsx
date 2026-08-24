@@ -42,6 +42,9 @@ export const BookingForm = () => {
   const [showPicker, setShowPicker] = useState(!preselectedResourceId)
   const [schedule, setSchedule] = useState<DateTimeRange | null>(null)
   const [conflicts, setConflicts] = useState<CalendarEvent[]>([])
+  // Jadwal bentrok tetap boleh diajukan (nanti admin gabungkan/alihkan saat
+  // approve) - tapi harus lewat keputusan eksplisit, bukan lolos diam-diam.
+  const [conflictAcknowledged, setConflictAcknowledged] = useState(false)
   const [selectedDriverId, setSelectedDriverId] = useState<number | null>(null)
   const [suggestedDriverId, setSuggestedDriverId] = useState<number | null>(null)
   const [passengerCount, setPassengerCount] = useState<number>(1)
@@ -78,6 +81,7 @@ export const BookingForm = () => {
     setValue('resourceId', resource.resourceId, { shouldValidate: true })
     setSchedule(null)
     setConflicts([])
+    setConflictAcknowledged(false)
     setSelectedDriverId(null)
     setSuggestedDriverId(null)
     setPassengerCount(1)
@@ -91,6 +95,7 @@ export const BookingForm = () => {
     setSelected(null)
     setSchedule(null)
     setConflicts([])
+    setConflictAcknowledged(false)
     setSelectedDriverId(null)
     setSuggestedDriverId(null)
     setPassengerCount(1)
@@ -119,6 +124,7 @@ export const BookingForm = () => {
   // Konfirmasi jadwal dari calendar (tanggal + jam digabung jadi ISO)
   const handleDateTimeSelect = (range: DateTimeRange) => {
     setSchedule(range)
+    setConflictAcknowledged(false)
     setValue(
       'startDate',
       new Date(`${formatYMD(range.startDate)}T${range.startTime}:00`).toISOString(),
@@ -151,6 +157,10 @@ export const BookingForm = () => {
   // Validasi kapasitas (butuh data kendaraan)
   const isPassengerValid =
     !isVehicle || (passengerCount >= 1 && passengerCount <= (capacity ?? 0))
+
+  // Jadwal siap dipakai lanjut: sudah dikonfirmasi, dan kalau bentrok, admin
+  // sudah eksplisit pilih "Tetap Ajukan" di panel keputusan.
+  const scheduleReady = !!schedule && (conflicts.length === 0 || conflictAcknowledged)
 
   const finalDriverId = selectedDriverId ?? suggestedDriverId ?? undefined
 
@@ -273,25 +283,10 @@ export const BookingForm = () => {
             resourceType={resourceType}
             mode="range"
             minDate={new Date()}
+            allowConflictOverride
             onSelectDateTime={handleDateTimeSelect}
             onConflictDetected={setConflicts}
           />
-
-          {conflicts.length > 0 && (
-            <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <div>
-                <p className="font-semibold">Jadwal bentrok</p>
-                <ul className="mt-1 space-y-0.5 text-xs">
-                  {conflicts.map((c) => (
-                    <li key={c.id}>
-                      • {c.startTime}–{c.endTime} - {c.title}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
 
           {(errors.startDate || errors.endDate) && (
             <p className="mt-2 flex items-center gap-1 text-xs text-[var(--danger)]">
@@ -302,8 +297,57 @@ export const BookingForm = () => {
         </Card>
       )}
 
-      {/* ── c. Detail (setelah jadwal dikonfirmasi) ── */}
-      {selected && schedule && (
+      {/* ── b2. Jadwal bentrok - keputusan wajib sebelum lanjut ── */}
+      {selected && schedule && conflicts.length > 0 && !conflictAcknowledged && (
+        <Card className="border-amber-200 bg-amber-50/40">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-amber-800">
+                Jadwal ini bentrok dengan booking lain
+              </p>
+              <ul className="mt-1.5 space-y-0.5 text-xs text-amber-700">
+                {conflicts.map((c) => (
+                  <li key={c.id}>
+                    • {c.startTime}–{c.endTime} - {c.title}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-xs text-amber-700">
+                {isVehicle ? 'Kendaraan' : 'Ruangan'} ini sudah dipakai/dipesan
+                di jadwal yang sama. Anda bisa pilih {isVehicle ? 'kendaraan' : 'ruangan'} lain,
+                atau tetap ajukan - admin akan menggabungkan (merge) atau
+                mengalihkan booking ini saat meninjau.
+              </p>
+              <div className="mt-3 flex gap-2">
+                <AppButton
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    setShowPicker(true)
+                    setSelected(null)
+                    setSchedule(null)
+                    setConflicts([])
+                  }}
+                >
+                  Pilih {isVehicle ? 'Kendaraan' : 'Ruangan'} Lain
+                </AppButton>
+                <AppButton
+                  type="button"
+                  size="sm"
+                  onClick={() => setConflictAcknowledged(true)}
+                >
+                  Tetap Ajukan
+                </AppButton>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* ── c. Detail (setelah jadwal dikonfirmasi & bentrok diputuskan) ── */}
+      {selected && scheduleReady && (
         <Card>
           <CardHeader title="Detail Booking" />
 
@@ -371,7 +415,7 @@ export const BookingForm = () => {
       )}
 
       {/* ── c2. Pilih driver - hanya VEHICLE, setelah jadwal ── */}
-      {isVehicle && selected && schedule && startISO && endISO && (
+      {isVehicle && selected && scheduleReady && startISO && endISO && (
         <Card>
           <CardHeader
             title="Pilih Driver"
@@ -413,7 +457,7 @@ export const BookingForm = () => {
           type="submit"
           variant="primary"
           loading={isPending}
-          disabled={isPending || !isPassengerValid}
+          disabled={isPending || !isPassengerValid || !scheduleReady}
         >
           Ajukan Booking
         </AppButton>

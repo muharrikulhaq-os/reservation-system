@@ -68,6 +68,10 @@ export interface AvailabilityCalendarProps {
   /** Booking yang tidak boleh dianggap blocking - mis. saat menjadwalkan
    *  ulang booking yang sedang di-merge, dia tak boleh bentrok dgn dirinya sendiri. */
   excludeBookingIds?: number[]
+  /** Izinkan tetap memilih tanggal/jam yang bentrok (conflictKeys +
+   *  onConflictDetected tetap dipanggil) alih-alih hard-block. Default false -
+   *  dipakai form booking, yang punya langkah keputusan sendiri sesudahnya. */
+  allowConflictOverride?: boolean
 }
 
 // ─────────────────────────────────────────
@@ -203,6 +207,7 @@ export const AvailabilityCalendar = ({
   showHeader = true,
   className,
   excludeBookingIds,
+  allowConflictOverride = false,
 }: AvailabilityCalendarProps) => {
   const today = startOfDay(new Date())
 
@@ -394,7 +399,12 @@ export const AvailabilityCalendar = ({
     if (conflicts.length) {
       setConflictKeys(rangeKeys(selectedStart, date))
       onConflictDetected?.(conflicts)
-      return // jangan set end
+      // Biasanya jangan set end - tapi caller boleh membuka jalur lanjut
+      // (mis. form booking, yang punya langkah keputusan sendiri: ganti
+      // kendaraan atau tetap ajukan untuk digabung/dialihkan admin nanti).
+      if (!allowConflictOverride) return
+      setSelectedEnd(date)
+      return
     }
     setConflictKeys(new Set())
     onConflictDetected?.([])
