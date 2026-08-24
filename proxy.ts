@@ -13,17 +13,23 @@ import { TOKEN_CONFIG } from '@/constants'
 const PUBLIC_ROUTES  = ['/login', '/register', '/guest-booking', '/forgot-password']
 // redirect ke dashboard jika sudah login (user yang sudah masuk pakai ganti password biasa)
 const AUTH_ROUTES    = ['/login', '/register', '/forgot-password']
-// Hanya ADMIN
-const ADMIN_ROUTES   = ['/admin', '/reports', '/users', '/settings', '/drivers', '/booking/approval']
-// Terlarang untuk DRIVER (ruangan + membuat booking)
-const DRIVER_FORBIDDEN = ['/rooms', '/booking/new']
+// Hanya ADMIN (Pemeliharaan admin-only di backend bahkan untuk lihat data)
+const ADMIN_ROUTES   = ['/admin', '/reports', '/users', '/settings', '/drivers', '/booking/approval', '/maintenance']
+// Hanya ADMIN atau EMPLOYEE - booking dibuat oleh keduanya (DRIVER
+// menjalankan booking, bukan membuatnya); kendaraan dikelola oleh admin,
+// dipilih/dipakai oleh employee saat booking - DRIVER & ROOM_KEEPER tidak
+// mengelola kendaraan sama sekali.
+const ADMIN_OR_EMPLOYEE_ROUTES = ['/booking/new', '/vehicles']
+// Terlarang untuk DRIVER (ruangan bukan urusan driver)
+const DRIVER_FORBIDDEN = ['/rooms']
 
 // ── Helpers ──────────────────────────────
 
-const isPublicRoute        = (path: string) => PUBLIC_ROUTES.some((r)      => path.startsWith(r))
-const isAuthRoute          = (path: string) => AUTH_ROUTES.some((r)        => path.startsWith(r))
-const isAdminRoute         = (path: string) => ADMIN_ROUTES.some((r)       => path.startsWith(r))
-const isDriverForbidden    = (path: string) => DRIVER_FORBIDDEN.some((r)   => path.startsWith(r))
+const isPublicRoute          = (path: string) => PUBLIC_ROUTES.some((r)           => path.startsWith(r))
+const isAuthRoute            = (path: string) => AUTH_ROUTES.some((r)             => path.startsWith(r))
+const isAdminRoute           = (path: string) => ADMIN_ROUTES.some((r)            => path.startsWith(r))
+const isAdminOrEmployeeRoute = (path: string) => ADMIN_OR_EMPLOYEE_ROUTES.some((r) => path.startsWith(r))
+const isDriverForbidden      = (path: string) => DRIVER_FORBIDDEN.some((r)        => path.startsWith(r))
 
 // ─────────────────────────────────────────
 // MIDDLEWARE
@@ -55,7 +61,17 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/unauthorized', request.url))
   }
 
-  // 4. Role-based: driver tidak boleh akses ruangan & membuat booking
+  // 4. Role-based: admin/employee-only routes (booking baru, kendaraan)
+  if (
+    isLoggedIn &&
+    isAdminOrEmployeeRoute(pathname) &&
+    userRole !== 'ADMIN' &&
+    userRole !== 'EMPLOYEE'
+  ) {
+    return NextResponse.redirect(new URL('/unauthorized', request.url))
+  }
+
+  // 5. Role-based: driver tidak boleh akses ruangan
   if (isLoggedIn && isDriverForbidden(pathname) && userRole === 'DRIVER') {
     return NextResponse.redirect(new URL('/unauthorized', request.url))
   }
