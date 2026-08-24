@@ -17,13 +17,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card } from '@/components/common'
-import { BookingStatusBadge, UserAvatar } from '@/components/shared'
-import {
-  AppButton,
-  InputDate,
-  InputTextArea,
-  TimePicker,
-} from '@/components/ui-custom'
+import { AvailabilityCalendar, BookingStatusBadge, UserAvatar } from '@/components/shared'
+import type { CalendarEvent, DateTimeRange } from '@/components/shared'
+import { AppButton, InputTextArea } from '@/components/ui-custom'
 import { cn, getErrorMessage } from '@/lib'
 import { BOOKING_STATUS, RESOURCE_TYPE } from '@/constants'
 import type { Booking } from '@/types'
@@ -94,9 +90,8 @@ export const BookingMergePanel = ({
     .sort((a, b) => Number(isRequested(b)) - Number(isRequested(a)))
 
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
-  const [mergeDate, setMergeDate] = useState('')
-  const [mergeStartTime, setMergeStartTime] = useState('')
-  const [mergeEndTime, setMergeEndTime] = useState('')
+  const [mergeSchedule, setMergeSchedule] = useState<DateTimeRange | null>(null)
+  const [mergeConflicts, setMergeConflicts] = useState<CalendarEvent[]>([])
   const [reason, setReason] = useState('')
 
   const merge = useMergeBooking()
@@ -104,17 +99,8 @@ export const BookingMergePanel = ({
 
   const openMergeForm = (candidate: Booking) => {
     setSelectedBooking(candidate)
-    setMergeDate(formatYMD(new Date(booking.startDate)))
-    setMergeStartTime(
-      formatTime(booking.startDate) < formatTime(candidate.startDate)
-        ? formatTime(booking.startDate)
-        : formatTime(candidate.startDate),
-    )
-    setMergeEndTime(
-      formatTime(booking.endDate) > formatTime(candidate.endDate)
-        ? formatTime(booking.endDate)
-        : formatTime(candidate.endDate),
-    )
+    setMergeSchedule(null)
+    setMergeConflicts([])
     setReason('')
   }
 
@@ -124,9 +110,13 @@ export const BookingMergePanel = ({
   // Setelah merge sukses, booking ini di-approve dengan catatan
   // "telah dilakukan merge" → status berubah ke APPROVED.
   const handleMerge = async () => {
-    if (!selectedBooking || !reason.trim()) return
-    const startDate = new Date(`${mergeDate}T${mergeStartTime}:00`).toISOString()
-    const endDate = new Date(`${mergeDate}T${mergeEndTime}:00`).toISOString()
+    if (!selectedBooking || !reason.trim() || !mergeSchedule) return
+    const startDate = new Date(
+      `${formatYMD(mergeSchedule.startDate)}T${mergeSchedule.startTime}:00`,
+    ).toISOString()
+    const endDate = new Date(
+      `${formatYMD(mergeSchedule.endDate)}T${mergeSchedule.endTime}:00`,
+    ).toISOString()
     try {
       await merge.mutateAsync({
         id: selectedBooking.id,
@@ -250,7 +240,7 @@ export const BookingMergePanel = ({
         open={!!selectedBooking}
         onOpenChange={(open) => !open && setSelectedBooking(null)}
       >
-        <DialogContent className="rounded-2xl p-6 shadow-[var(--shadow-modal)] sm:max-w-lg">
+        <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl p-6 shadow-[var(--shadow-modal)] sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle
               className="flex items-center gap-2 text-lg font-bold text-[var(--text-primary)]"
@@ -283,23 +273,38 @@ export const BookingMergePanel = ({
                 mengikuti driver &amp; kendaraan dari booking utama.
               </p>
 
-              <InputDate
-                label="Tanggal Perjalanan Gabungan"
-                value={mergeDate}
-                onChange={(e) => setMergeDate(e.target.value)}
-              />
-
-              <div className="grid grid-cols-2 gap-3">
-                <TimePicker
-                  label="JAM MULAI"
-                  value={mergeStartTime}
-                  onChange={setMergeStartTime}
+              <div>
+                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-secondary)]">
+                  Jadwal Perjalanan Gabungan{' '}
+                  <span className="text-[var(--danger)]">*</span>
+                </label>
+                <p className="mb-2 text-xs text-[var(--text-secondary)]">
+                  Klik tanggal mulai lalu tanggal selesai, lalu pilih jam - sama
+                  seperti membuat booking baru.
+                </p>
+                <AvailabilityCalendar
+                  resourceId={selectedBooking.resource.id}
+                  mode="range"
+                  minDate={new Date()}
+                  excludeBookingIds={[selectedBooking.id, booking.id]}
+                  onSelectDateTime={setMergeSchedule}
+                  onConflictDetected={setMergeConflicts}
                 />
-                <TimePicker
-                  label="JAM SELESAI"
-                  value={mergeEndTime}
-                  onChange={setMergeEndTime}
-                />
+                {mergeConflicts.length > 0 && (
+                  <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <div>
+                      <p className="font-semibold">Jadwal bentrok</p>
+                      <ul className="mt-1 space-y-0.5 text-xs">
+                        {mergeConflicts.map((c) => (
+                          <li key={c.id}>
+                            • {c.startTime}–{c.endTime} - {c.title}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <InputTextArea
@@ -323,7 +328,12 @@ export const BookingMergePanel = ({
                 <AppButton
                   fullWidth
                   loading={merge.isPending || approve.isPending}
-                  disabled={merge.isPending || approve.isPending || !reason.trim()}
+                  disabled={
+                    merge.isPending ||
+                    approve.isPending ||
+                    !reason.trim() ||
+                    !mergeSchedule
+                  }
                   onClick={handleMerge}
                 >
                   Gabungkan &amp; Setujui

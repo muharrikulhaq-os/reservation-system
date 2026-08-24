@@ -65,6 +65,9 @@ export interface AvailabilityCalendarProps {
   maxDate?: Date
   showHeader?: boolean
   className?: string
+  /** Booking yang tidak boleh dianggap blocking - mis. saat menjadwalkan
+   *  ulang booking yang sedang di-merge, dia tak boleh bentrok dgn dirinya sendiri. */
+  excludeBookingIds?: number[]
 }
 
 // ─────────────────────────────────────────
@@ -199,6 +202,7 @@ export const AvailabilityCalendar = ({
   maxDate,
   showHeader = true,
   className,
+  excludeBookingIds,
 }: AvailabilityCalendarProps) => {
   const today = startOfDay(new Date())
 
@@ -262,8 +266,11 @@ export const AvailabilityCalendar = ({
       return map
     }
 
-    // 2. Dari hasil fetch booking
-    const bookings = fetched?.data ?? []
+    // 2. Dari hasil fetch booking (exclude booking yang sedang dijadwalkan
+    //    ulang sendiri, biar tidak dianggap bentrok dgn dirinya sendiri)
+    const bookings = (fetched?.data ?? []).filter(
+      (b) => !excludeBookingIds?.includes(b.id),
+    )
     for (const b of bookings) {
       const start = startOfDay(new Date(b.startDate))
       const end = startOfDay(new Date(b.endDate))
@@ -297,7 +304,8 @@ export const AvailabilityCalendar = ({
       }
     }
     return map
-  }, [data, fetched])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, fetched, excludeBookingIds?.join(',')])
 
   // ── Grid 6x7 mulai Minggu ──
   const cells = useMemo(() => {
