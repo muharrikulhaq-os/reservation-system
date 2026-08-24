@@ -159,6 +159,7 @@ export const API_ENDPOINTS = {
     COST_BY_DEPT:        `${API_PREFIX}/reports/cost/by-department`,
     COST_TREND:          `${API_PREFIX}/reports/cost/trend`,
     DRIVER_PERFORMANCE:  `${API_PREFIX}/reports/driver-performance`,
+    DRIVER_TRIPS:        `${API_PREFIX}/reports/driver-trips`,
     DEPT_SUMMARY:        `${API_PREFIX}/reports/department-summary`,
   },
 } as const

@@ -410,6 +410,33 @@ export interface DriverPerformance {
   lateCount: number
 }
 
+// SPD vs Non-SPD trip count, dan rating per driver - semuanya di-scope ke
+// rentang tanggal yang sama (beda dari DriverPerformance.avgRating yang
+// sepanjang masa, tidak ikut filter tanggal).
+//
+// Dua metrik overtime yang BEDA, jangan disamakan:
+// - overtime* ("Keterlambatan"): trip selesai lewat endDate booking itu
+//   sendiri - relatif ke jadwal trip itu, NON_SPD saja.
+// - lembur* ("Lembur"): trip selesai lewat jam kerja tetap 18:00 WIB,
+//   terlepas dari jadwal booking - NON_SPD saja (sama seperti overtime),
+//   SPD tidak pernah dihitung lembur.
+export interface DriverTrips {
+  driverId: number
+  driverName: string
+  employeeId: string
+  spdTrips: number
+  nonSpdTrips: number
+  totalTrips: number
+  overtimeTrips: number
+  totalOvertimeMinutes: number
+  totalOvertimeHours: number
+  lemburTrips: number
+  totalLemburMinutes: number
+  totalLemburHours: number
+  avgRating: number
+  totalReviews: number
+}
+
 export interface DepartmentSummary {
   departmentId: number
   departmentName: string

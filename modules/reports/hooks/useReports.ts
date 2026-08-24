@@ -125,6 +125,14 @@ export const useDriverPerformance = (params?: ReportDateParams) =>
     queryFn: () => reportApi.getDriverPerformance(params).then((r) => r.data),
   })
 
+// SPD/Non-SPD trip count, overtime, dan rating per driver - satu-satunya
+// varian yang rating-nya ikut ter-filter rentang tanggal yang sama.
+export const useDriverTrips = (params?: ReportDateParams) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.REPORTS.DRIVER_TRIPS, params],
+    queryFn: () => reportApi.getDriverTrips(params).then((r) => r.data),
+  })
+
 export const useDepartmentSummary = (params?: ReportDateParams) =>
   useQuery({
     queryKey: [...QUERY_KEYS.REPORTS.DEPT_SUMMARY, params],

@@ -27,6 +27,7 @@ import type {
   CostByDepartment,
   CostTrend,
   DriverPerformance,
+  DriverTrips,
   DepartmentSummary,
   ReportTrendParams,
   ReportPeriodParams,
@@ -92,6 +93,11 @@ export const reportApi = {
 
   getDriverPerformance: (params?: ReportDateParams) =>
     get<DriverPerformance[]>(API_ENDPOINTS.REPORTS.DRIVER_PERFORMANCE, params),
+
+  // SPD vs Non-SPD, overtime, dan rating per driver - satu-satunya endpoint
+  // yang rating-nya ikut ter-filter rentang tanggal (params).
+  getDriverTrips: (params?: ReportDateParams) =>
+    get<DriverTrips[]>(API_ENDPOINTS.REPORTS.DRIVER_TRIPS, params),
 
   getDepartmentSummary: (params?: ReportDateParams) =>
     get<DepartmentSummary[]>(API_ENDPOINTS.REPORTS.DEPT_SUMMARY, params),

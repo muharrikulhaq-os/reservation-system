@@ -92,6 +92,7 @@ export const QUERY_KEYS = {
     COST_BY_DEPT: ["reports", "cost-by-department"] as const,
     COST_TREND: ["reports", "cost-trend"] as const,
     DRIVER_PERFORMANCE: ["reports", "driver-performance"] as const,
+    DRIVER_TRIPS: ["reports", "driver-trips"] as const,
     DEPT_SUMMARY: ["reports", "department-summary"] as const,
   },
 } as const;
