@@ -22,6 +22,11 @@ export type BookingStatus =
 
 export type ApprovalAction = 'APPROVED' | 'REJECTED'
 
+// SPD (Surat Perintah Dinas / perjalanan jauh, dinas resmi) vs NON_SPD
+// (perjalanan dekat, kena hitungan keterlambatan & lembur). Hanya relevan
+// untuk booking VEHICLE - default NON_SPD bila tidak dipilih.
+export type BookingType = 'SPD' | 'NON_SPD'
+
 export type FuelType = 'BBM' | 'LISTRIK'
 
 // Aksi yang tercatat di timeline aktivitas booking

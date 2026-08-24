@@ -3,7 +3,7 @@
 // ─────────────────────────────────────────
 
 import type { Timestamps } from './common'
-import type { BookingStatus, ApprovalAction, ResourceType, BookingActivityAction } from './enums'
+import type { BookingStatus, ApprovalAction, ResourceType, BookingActivityAction, BookingType } from './enums'
 import type { UserSummary } from './auth'
 import type { ResourceRef, VehicleSummary } from './resource'
 import type { DriverSummary } from './driver'
@@ -13,6 +13,7 @@ import type { DriverSummary } from './driver'
 export interface Booking extends Timestamps {
   id: number
   status: BookingStatus
+  bookingType: BookingType
   purpose: string
   user: UserSummary
   resource: ResourceRef
@@ -189,6 +190,8 @@ export interface CreateBookingPayload {
   purpose: string
   passengerCount: number // WAJIB - untuk validasi kapasitas
   driverId?: number      // opsional - jika kosong, di-auto-pick / admin assign
+  // Opsional, VEHICLE saja - default NON_SPD di backend bila tidak dikirim.
+  bookingType?: BookingType
 }
 
 export interface ApproveBookingPayload {

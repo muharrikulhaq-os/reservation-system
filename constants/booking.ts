@@ -4,6 +4,7 @@
 
 import type {
   BookingStatus,
+  BookingType,
   ResourceStatus,
   ResourceType,
   RoleName,
@@ -50,6 +51,19 @@ export const BOOKING_STATUS = {
   EXPIRED:   'EXPIRED',
   IGNORED:   'IGNORED',
 } as const satisfies Record<string, BookingStatus>
+
+// --- Booking Type (SPD = perjalanan jauh/dinas resmi, NON_SPD = perjalanan
+//     dekat - hanya relevan untuk VEHICLE, default NON_SPD) ---
+
+export const BOOKING_TYPE = {
+  SPD:     'SPD',
+  NON_SPD: 'NON_SPD',
+} as const satisfies Record<string, BookingType>
+
+export const BOOKING_TYPE_CONFIG: Record<BookingType, { label: string; description: string }> = {
+  SPD:     { label: 'SPD',     description: 'Perjalanan jauh / dinas resmi' },
+  NON_SPD: { label: 'Non-SPD', description: 'Perjalanan dekat / pemakaian umum' },
+}
 
 // --- Approval Action ---
 

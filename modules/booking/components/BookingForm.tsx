@@ -17,9 +17,9 @@ import {
   type DateTimeRange,
 } from '@/components/shared'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { getErrorMessage, formatShortDate, formatDuration, resolveFileUrl } from '@/lib'
-import { RESOURCE_TYPE } from '@/constants'
-import type { ResourceType, Vehicle, Room } from '@/types'
+import { cn, getErrorMessage, formatShortDate, formatDuration, resolveFileUrl } from '@/lib'
+import { RESOURCE_TYPE, BOOKING_TYPE, BOOKING_TYPE_CONFIG } from '@/constants'
+import type { ResourceType, Vehicle, Room, BookingType } from '@/types'
 import {
   createBookingSchema,
   type CreateBookingFormData,
@@ -49,6 +49,7 @@ export const BookingForm = () => {
   const [selectedDriverId, setSelectedDriverId] = useState<number | null>(null)
   const [suggestedDriverId, setSuggestedDriverId] = useState<number | null>(null)
   const [passengerCount, setPassengerCount] = useState<number>(1)
+  const [bookingType, setBookingType] = useState<BookingType>(BOOKING_TYPE.NON_SPD)
 
   // Untuk resolusi preselect dari query param
   const { data: vehicles } = useVehicles({ limit: 100 })
@@ -86,6 +87,7 @@ export const BookingForm = () => {
     setSelectedDriverId(null)
     setSuggestedDriverId(null)
     setPassengerCount(1)
+    setBookingType(BOOKING_TYPE.NON_SPD)
     setValue('passengerCount', 1, { shouldValidate: true })
     setValue('startDate', '', { shouldValidate: false })
     setValue('endDate', '', { shouldValidate: false })
@@ -100,6 +102,7 @@ export const BookingForm = () => {
     setSelectedDriverId(null)
     setSuggestedDriverId(null)
     setPassengerCount(1)
+    setBookingType(BOOKING_TYPE.NON_SPD)
   }
 
   // Auto-select resource dari query param (sekali, saat data siap)
@@ -171,6 +174,7 @@ export const BookingForm = () => {
         ...data,
         passengerCount: isVehicle ? passengerCount : 1,
         driverId: isVehicle ? finalDriverId : undefined,
+        bookingType: isVehicle ? bookingType : undefined,
       },
       { onSuccess: () => router.push('/booking') },
     )
@@ -411,6 +415,37 @@ export const BookingForm = () => {
               </span>
             </div>
           </CardSection>
+
+          {isVehicle && (
+            <div className="mb-5">
+              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-secondary)]">
+                Jenis Perjalanan <span className="text-[var(--danger)]">*</span>
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {([BOOKING_TYPE.NON_SPD, BOOKING_TYPE.SPD] as const).map((bt) => {
+                  const active = bookingType === bt
+                  return (
+                    <button
+                      key={bt}
+                      type="button"
+                      onClick={() => setBookingType(bt)}
+                      className={cn(
+                        'flex h-10 items-center justify-center rounded-lg border text-sm font-medium transition-all',
+                        active
+                          ? 'border-[1.5px] border-[var(--primary)] bg-[var(--primary-light)] text-[var(--primary)]'
+                          : 'border-[var(--border-input)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]',
+                      )}
+                    >
+                      {BOOKING_TYPE_CONFIG[bt].label}
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="mt-1.5 text-xs text-[var(--text-disabled)]">
+                {BOOKING_TYPE_CONFIG[bookingType].description}
+              </p>
+            </div>
+          )}
 
           <InputTextArea
             label="Tujuan Peminjaman"

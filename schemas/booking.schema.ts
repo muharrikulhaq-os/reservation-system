@@ -21,6 +21,8 @@ export const createBookingSchema = z.object({
     .number({ error: 'Jumlah penumpang wajib diisi' })
     .min(1, 'Minimal 1 penumpang'),
   driverId: z.number().optional(),
+  // Opsional, VEHICLE saja - default NON_SPD di backend bila tidak dikirim.
+  bookingType: z.enum(['SPD', 'NON_SPD']).optional(),
   // Validasi kapasitas dilakukan di komponen (butuh data kapasitas kendaraan)
 })
 

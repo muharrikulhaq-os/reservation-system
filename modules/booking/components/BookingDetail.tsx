@@ -191,11 +191,16 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
 
         {/* Info utama */}
         <Card>
-          <div className="mb-5">
+          <div className="mb-5 flex items-center gap-2">
             <BookingStatusBadge
               status={booking.status}
               className="px-3 py-1 text-sm"
             />
+            {isVehicle && (
+              <Badge variant={booking.bookingType === "SPD" ? "info" : "default"}>
+                {booking.bookingType === "SPD" ? "SPD" : "Non-SPD"}
+              </Badge>
+            )}
           </div>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
