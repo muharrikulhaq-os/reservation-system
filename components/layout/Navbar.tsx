@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Search, HelpCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -75,6 +75,7 @@ const NavIconBtn = ({
 
 export const Navbar = () => {
   const title = usePageTitle();
+  const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const { showModal, setShowModal } = useReleaseNotes();
 
@@ -104,7 +105,11 @@ export const Navbar = () => {
 
         {/* Avatar */}
         {user && (
-          <button className="ml-1 rounded-full" aria-label="Profil">
+          <button
+            className="ml-1 rounded-full"
+            aria-label="Profil"
+            onClick={() => router.push("/profile")}
+          >
             <UserAvatar name={user.name} size="sm" />
           </button>
         )}

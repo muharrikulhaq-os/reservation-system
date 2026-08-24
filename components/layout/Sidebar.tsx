@@ -146,8 +146,11 @@ const BottomUser = () => {
 
   return (
     <div className="border-t border-[var(--border-divider)] pt-3">
-      {/* User info */}
-      <div className="flex items-center gap-3 rounded-xl px-2 py-2">
+      {/* User info - klik untuk ke profil */}
+      <Link
+        href="/profile"
+        className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-[var(--bg-subtle)]"
+      >
         <UserAvatar name={user.name} size="md" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
@@ -157,7 +160,7 @@ const BottomUser = () => {
             {user.role}
           </span>
         </div>
-      </div>
+      </Link>
 
       {/* Action icons */}
       <div className="mt-1 flex gap-1 px-2">
