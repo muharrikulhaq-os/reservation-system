@@ -574,11 +574,14 @@ export const AvailabilityCalendar = ({
           )
 
           // State background
+          // isPast SENGAJA tidak pakai pointer-events-none - tanggal lampau
+          // tetap harus bisa di-klik untuk lihat riwayat booking (popover),
+          // cuma tidak bisa dipilih lagi (sudah dijaga terpisah di isInteractive).
           let stateCls = 'bg-[var(--bg-card)]'
           if (!inMonth)
             stateCls = 'bg-[var(--bg-card)] opacity-40 pointer-events-none'
           else if (isPast)
-            stateCls = 'bg-[var(--bg-card)] opacity-30 pointer-events-none'
+            stateCls = 'bg-[var(--bg-card)] opacity-30'
           else if (unavailable || beforeMin || afterMax)
             stateCls = 'bg-[var(--bg-subtle)] cursor-not-allowed'
           else if (isInteractive)
