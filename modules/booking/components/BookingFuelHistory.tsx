@@ -6,17 +6,27 @@ import { Card, CardHeader } from '@/components/common'
 import { cn, formatCurrency, formatNumber, formatDate } from '@/lib'
 import { ENERGY_TYPE } from '@/constants'
 import type { FuelExpense } from '@/types'
-import { useFuelExpenses, FuelDetailModal } from '@/modules/fuel'
+import { useFuelExpensesForBookings, FuelDetailModal } from '@/modules/fuel'
 
 // ─────────────────────────────────────────
 // BOOKING FUEL HISTORY
-// Riwayat pengisian BBM/listrik untuk satu booking.
+// Riwayat pengisian BBM/listrik untuk satu booking - kalau booking ini
+// digabung (merge), pengisian yang dicatat di booking pasangannya ikut
+// muncul juga (satu trip, satu riwayat).
 // Menyembunyikan diri jika belum ada pengisian.
 // ─────────────────────────────────────────
 
-export const BookingFuelHistory = ({ bookingId }: { bookingId: number }) => {
-  const { data, isLoading } = useFuelExpenses({ bookingId, limit: 50 })
-  const items = data?.data ?? []
+export const BookingFuelHistory = ({
+  bookingId,
+  linkedBookingIds = [],
+}: {
+  bookingId: number
+  linkedBookingIds?: number[]
+}) => {
+  const { items, isLoading } = useFuelExpensesForBookings([
+    bookingId,
+    ...linkedBookingIds,
+  ])
   const [selected, setSelected] = useState<FuelExpense | null>(null)
 
   if (isLoading || items.length === 0) return null

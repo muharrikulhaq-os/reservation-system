@@ -2,7 +2,7 @@
 // FUEL EXPENSE HOOKS
 // ─────────────────────────────────────────
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEYS } from '@/constants'
 import { fuelApi } from '../api/fuel.api'
 import type { FuelExpenseParams, CreateFuelPayload } from '@/types'
@@ -14,6 +14,23 @@ export const useFuelExpenses = (params?: FuelExpenseParams) =>
     queryKey: [...QUERY_KEYS.FUEL, params],
     queryFn:  () => fuelApi.getAll(params),
   })
+
+// Riwayat BBM gabungan untuk beberapa booking sekaligus - dipakai saat booking
+// sudah di-merge, supaya pengisian yang dicatat di booking pasangannya (primary
+// atau merged, siapapun) tetap muncul di kedua sisi.
+export const useFuelExpensesForBookings = (bookingIds: number[]) => {
+  const results = useQueries({
+    queries: bookingIds.map((bookingId) => ({
+      queryKey: [...QUERY_KEYS.FUEL, { bookingId, limit: 50 }],
+      queryFn:  () => fuelApi.getAll({ bookingId, limit: 50 }),
+    })),
+  })
+  const isLoading = results.some((r) => r.isLoading)
+  const items = results
+    .flatMap((r) => r.data?.data ?? [])
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  return { items, isLoading }
+}
 
 export const useFuelExpense = (id: number) =>
   useQuery({

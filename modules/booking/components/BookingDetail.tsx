@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   AlertCircle,
   AlertTriangle,
@@ -139,6 +140,10 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
   // butuh admin/room keeper di lokasi) - dibatasi backend ke ruangan + pemilik.
   const canSelfServeRoom =
     isEmployee && !isVehicle && currentUserId === booking.user.id;
+  // Kalau booking ini adalah sisi "digabung" (bukan primary) dari sebuah
+  // merge, ini ID booking utamanya - dipakai untuk mengunci form rating.
+  const mergedIntoPrimaryId = (mergeInfo ?? []).find((m) => !m.isPrimary)
+    ?.linkedBooking.bookingId;
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[3fr_2fr]">
@@ -418,17 +423,34 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
             />
           )}
 
-        {/* Pemilik booking: beri rating driver setelah selesai */}
+        {/* Pemilik booking: beri rating driver setelah selesai.
+            Booking hasil merge (bukan primary) tidak punya form sendiri -
+            satu trip cukup satu rating, diisi dari booking utama. */}
         {currentUserId === booking.user.id &&
           booking.status === BOOKING_STATUS.COMPLETED &&
           booking.resource.type === RESOURCE_TYPE.VEHICLE &&
-          !!booking.assignedDriver && (
+          !!booking.assignedDriver &&
+          (mergedIntoPrimaryId ? (
+            <Card>
+              <CardHeader title="Rating Driver" />
+              <p className="text-sm text-[var(--text-secondary)]">
+                Booking ini digabung (merge) dengan{" "}
+                <Link
+                  href={`/booking/${mergedIntoPrimaryId}`}
+                  className="font-medium text-[var(--primary)] hover:underline"
+                >
+                  booking utama #{mergedIntoPrimaryId}
+                </Link>
+                . Rating driver diisi dari sana.
+              </p>
+            </Card>
+          ) : (
             <RatingCard
               bookingId={booking.id}
               driverName={booking.assignedDriver.name}
               onSuccess={refetch}
             />
-          )}
+          ))}
 
         {/* Driver: kirim laporan pengembalian - tetap tersedia saat OVERDUE */}
         {isDriver &&
@@ -441,7 +463,12 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           )}
 
         {/* Riwayat pengisian BBM (auto-sembunyi bila kosong) */}
-        {isVehicle && <BookingFuelHistory bookingId={booking.id} />}
+        {isVehicle && (
+          <BookingFuelHistory
+            bookingId={booking.id}
+            linkedBookingIds={(mergeInfo ?? []).map((m) => m.linkedBooking.bookingId)}
+          />
+        )}
 
         {/* Activity Timeline (dipindah dari kolom kiri) */}
         {activity && activity.length > 0 && (
