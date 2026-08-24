@@ -1,12 +1,13 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Search, Bell, HelpCircle } from "lucide-react";
+import { Search, HelpCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 import { UserAvatar } from "@/components/shared/avatar/Avatar";
 import { ReleaseNotesModal, useReleaseNotes } from "@/components/shared/ReleaseNotesModal";
+import { NotificationBell } from "@/modules/notifications";
 
 // ─────────────────────────────────────────
 // PAGE TITLE MAP
@@ -98,7 +99,7 @@ export const Navbar = () => {
 
       {/* Right icons */}
       <div className="flex items-center gap-1 shrink-0">
-        <NavIconBtn icon={Bell} label="Notifikasi" badge />
+        <NotificationBell />
         <NavIconBtn icon={HelpCircle} label="Bantuan" onClick={() => setShowModal(true)} />
 
         {/* Avatar */}

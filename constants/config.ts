@@ -70,6 +70,10 @@ export const QUERY_KEYS = {
   // Settings
   SETTINGS: ["master-settings"] as const,
 
+  // Notifications
+  NOTIFICATIONS: ["notifications"] as const,
+  NOTIFICATIONS_UNREAD_COUNT: ["notifications", "unread-count"] as const,
+
   // Reports
   REPORTS: {
     BOOKINGS: ["reports", "bookings"] as const,

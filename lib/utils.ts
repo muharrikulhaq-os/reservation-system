@@ -171,3 +171,32 @@ export const resolveFileUrl = (
   const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
   return `${base}${path}`;
 };
+
+/**
+ * URL koneksi WebSocket notifikasi (ws/wss + token via query param, karena
+ * WebSocket browser & React Native tidak bisa set header Authorization saat
+ * handshake). Backend: middleware.Auth() baca `?token=` sebagai fallback.
+ */
+export const buildWsUrl = (path: string, token: string): string => {
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
+  const wsBase = base.replace(/^http/, "ws");
+  return `${wsBase}${path}?token=${encodeURIComponent(token)}`;
+};
+
+/** "Baru saja" / "5 menit lalu" / "3 jam lalu" / "2 hari lalu", jatuh ke
+ * formatShortDate untuk yang lebih lama dari seminggu. */
+export const formatRelativeTime = (iso: DateInput, fallback = "-"): string => {
+  if (!iso) return fallback;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return fallback;
+
+  const diffSec = Math.round((Date.now() - date.getTime()) / 1000);
+  if (diffSec < 60) return "Baru saja";
+  const diffMin = Math.round(diffSec / 60);
+  if (diffMin < 60) return `${diffMin} menit lalu`;
+  const diffHour = Math.round(diffMin / 60);
+  if (diffHour < 24) return `${diffHour} jam lalu`;
+  const diffDay = Math.round(diffHour / 24);
+  if (diffDay < 7) return `${diffDay} hari lalu`;
+  return formatShortDate(iso, fallback);
+};

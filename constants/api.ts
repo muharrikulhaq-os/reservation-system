@@ -162,4 +162,15 @@ export const API_ENDPOINTS = {
     DRIVER_TRIPS:        `${API_PREFIX}/reports/driver-trips`,
     DEPT_SUMMARY:        `${API_PREFIX}/reports/department-summary`,
   },
+
+  // ── Notifications ───────────────────────
+  NOTIFICATIONS: {
+    BASE:            `${API_PREFIX}/users/me/notifications`,
+    UNREAD_COUNT:    `${API_PREFIX}/users/me/notifications/unread-count`,
+    MARK_READ:       (id: number) => `${API_PREFIX}/users/me/notifications/${id}/read`,
+    MARK_ALL_READ:   `${API_PREFIX}/users/me/notifications/read-all`,
+    DEVICE_TOKENS:   `${API_PREFIX}/users/me/device-tokens`,
+    // Path WS relatif ke API_PREFIX - lihat WS_URL di config.ts untuk yang lengkap.
+    WS:              `${API_PREFIX}/ws`,
+  },
 } as const
