@@ -9,7 +9,6 @@ import { reportApi } from '../api/report.api'
 import type {
   ReportDateParams,
   ReportTrendParams,
-  ReportPeriodParams,
   AuditLogQueryParams,
 } from '@/types'
 
@@ -39,16 +38,16 @@ export const useMaintenanceCostReport = (params?: ReportDateParams) =>
     queryFn: () => reportApi.getMaintenanceCost(params).then((r) => r.data),
   })
 
-export const useDriverRatingsReport = () =>
+export const useDriverRatingsReport = (params?: ReportDateParams) =>
   useQuery({
-    queryKey: QUERY_KEYS.REPORTS.DRIVER_RATINGS,
-    queryFn: () => reportApi.getDriverRatings().then((r) => r.data),
+    queryKey: [...QUERY_KEYS.REPORTS.DRIVER_RATINGS, params],
+    queryFn: () => reportApi.getDriverRatings(params).then((r) => r.data),
   })
 
-export const useDriverActivityReport = () =>
+export const useDriverActivityReport = (params?: ReportDateParams) =>
   useQuery({
-    queryKey: QUERY_KEYS.REPORTS.DRIVER_ACTIVITY,
-    queryFn: () => reportApi.getDriverActivity().then((r) => r.data),
+    queryKey: [...QUERY_KEYS.REPORTS.DRIVER_ACTIVITY, params],
+    queryFn: () => reportApi.getDriverActivity(params).then((r) => r.data),
   })
 
 export const useOverdueBookings = () =>
@@ -65,7 +64,7 @@ export const useAuditLogs = (params?: AuditLogQueryParams) =>
 
 // ── Dummy endpoints (TODO: ganti setelah backend siap) ──
 
-export const useReportOverview = (params?: ReportPeriodParams) =>
+export const useReportOverview = (params?: ReportDateParams) =>
   useQuery({
     queryKey: [...QUERY_KEYS.REPORTS.OVERVIEW, params],
     queryFn: () => reportApi.getOverview(params).then((r) => r.data),

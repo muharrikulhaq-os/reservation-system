@@ -1,14 +1,16 @@
 'use client'
 
-import { Fuel, Wrench, Wallet } from 'lucide-react'
+import { Fuel, Wrench, Wallet, Search } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
-import { DataTable, createColumnHelper, type ColumnDef } from '@/components/shared'
+import { DataTable, createColumnHelper, type ColumnDef, Pagination } from '@/components/shared'
+import { InputText } from '@/components/ui-custom'
 import { formatCurrency } from '@/lib'
 import type { ReportDateParams, CostByVehicle } from '@/types'
 import { ReportStatCard } from '../ReportStatCard'
 import { TrendLineChart, BarChartHorizontal } from '../charts'
 import { DataTableExport } from '../DataTableExport'
-import { formatPeriodShort } from '../../utils/format'
+import { formatPeriodShort, pickTrendGranularity } from '../../utils/format'
+import { useClientListFilter } from '../../hooks/useClientListFilter'
 import {
   useCostSummary,
   useCostTrend,
@@ -63,9 +65,18 @@ const vehicleColumns: ColumnDef<CostByVehicle, unknown>[] = [
 
 export const FinanceSection = ({ range }: { range: ReportDateParams }) => {
   const { data: cost } = useCostSummary(range)
-  const { data: trend } = useCostTrend({ groupBy: 'monthly', periods: 6 })
+  const groupBy = pickTrendGranularity(range.startDate ?? '', range.endDate ?? '')
+  const { data: trend } = useCostTrend({ groupBy, startDate: range.startDate, endDate: range.endDate })
   const { data: byVehicle, isLoading: loadingVehicle } = useCostByVehicle(range)
   const { data: byDept } = useCostByDepartment(range)
+
+  const {
+    search: vehicleSearch,
+    setSearch: setVehicleSearch,
+    items: pagedVehicles,
+    pagination: vehiclePagination,
+    setPage: setVehiclePage,
+  } = useClientListFilter(byVehicle ?? [], { searchFields: ['name', 'plateNumber'] })
 
   return (
     <div className="flex flex-col gap-6">
@@ -100,7 +111,7 @@ export const FinanceSection = ({ range }: { range: ReportDateParams }) => {
       </div>
 
       <Card>
-        <CardHeader title="Trend Biaya" description="6 bulan terakhir" />
+        <CardHeader title="Trend Biaya" description="Periode terpilih" />
         <TrendLineChart
           data={trend ?? []}
           xKey="period"
@@ -131,12 +142,23 @@ export const FinanceSection = ({ range }: { range: ReportDateParams }) => {
             />
           }
         />
+        <div className="mb-4 max-w-xs">
+          <InputText
+            placeholder="Cari kendaraan…"
+            value={vehicleSearch}
+            onChange={(e) => setVehicleSearch(e.target.value)}
+            leftIcon={<Search className="h-4 w-4" />}
+          />
+        </div>
         <DataTable
-          data={byVehicle ?? []}
+          data={pagedVehicles}
           columns={vehicleColumns}
           isLoading={loadingVehicle}
           emptyMessage="Belum ada data biaya kendaraan"
         />
+        {vehiclePagination.total > 0 && (
+          <Pagination pagination={vehiclePagination} onPageChange={setVehiclePage} />
+        )}
       </Card>
 
       <Card>

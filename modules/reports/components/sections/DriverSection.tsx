@@ -1,11 +1,14 @@
 'use client'
 
+import { Search } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
-import { DataTable, createColumnHelper, type ColumnDef, Badge } from '@/components/shared'
+import { DataTable, createColumnHelper, type ColumnDef, Badge, Pagination } from '@/components/shared'
+import { InputText } from '@/components/ui-custom'
 import { formatCurrency } from '@/lib'
 import type { ReportDateParams, DriverPerformance } from '@/types'
 import { BarChartHorizontal } from '../charts'
 import { ratingStars } from '../../utils/format'
+import { useClientListFilter } from '../../hooks/useClientListFilter'
 import {
   useDriverPerformance,
   useDriverTrips,
@@ -126,8 +129,8 @@ const performanceColumns: ColumnDef<DriverReportRow, unknown>[] = [
 export const DriverSection = ({ range }: { range: ReportDateParams }) => {
   const { data: performance, isLoading: isLoadingPerformance } = useDriverPerformance(range)
   const { data: trips, isLoading: isLoadingTrips } = useDriverTrips(range)
-  const { data: ratings } = useDriverRatingsReport()
-  const { data: activity } = useDriverActivityReport()
+  const { data: ratings } = useDriverRatingsReport(range)
+  const { data: activity } = useDriverActivityReport(range)
 
   // Gabung SPD/keterlambatan/lembur/rating (DriverTrips, ikut rentang
   // tanggal) ke baris performa driver - rating dari DriverPerformance
@@ -158,6 +161,14 @@ export const DriverSection = ({ range }: { range: ReportDateParams }) => {
     total_bookings: a.total_bookings,
   }))
 
+  const {
+    search,
+    setSearch,
+    items: pagedRows,
+    pagination,
+    setPage,
+  } = useClientListFilter(rows, { searchFields: ['driverName'] })
+
   return (
     <div className="flex flex-col gap-6">
       <Card>
@@ -165,17 +176,26 @@ export const DriverSection = ({ range }: { range: ReportDateParams }) => {
           title="Performa Driver"
           description="Periode terpilih - trip SPD/Non-SPD, keterlambatan pengembalian, lembur (lewat jam kerja), dan rating"
         />
+        <div className="mb-4 max-w-xs">
+          <InputText
+            placeholder="Cari driver…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            leftIcon={<Search className="h-4 w-4" />}
+          />
+        </div>
         <DataTable
-          data={rows}
+          data={pagedRows}
           columns={performanceColumns}
           isLoading={isLoadingPerformance || isLoadingTrips}
           emptyMessage="Belum ada data performa driver"
         />
+        {pagination.total > 0 && <Pagination pagination={pagination} onPageChange={setPage} />}
       </Card>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader title="Rating Driver" description="Peringkat rata-rata rating" />
+          <CardHeader title="Rating Driver" description="Peringkat rata-rata rating - periode terpilih" />
           <BarChartHorizontal
             data={ratingsData}
             nameKey="driver_name"
@@ -187,7 +207,7 @@ export const DriverSection = ({ range }: { range: ReportDateParams }) => {
         </Card>
 
         <Card>
-          <CardHeader title="Aktivitas Driver" description="Total trip per driver" />
+          <CardHeader title="Aktivitas Driver" description="Total trip per driver - periode terpilih" />
           <BarChartHorizontal
             data={activityData}
             nameKey="driver_name"

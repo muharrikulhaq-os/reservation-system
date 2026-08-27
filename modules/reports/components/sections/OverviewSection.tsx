@@ -8,15 +8,20 @@ import type { ReportDateParams } from '@/types'
 import { ReportStatCard } from '../ReportStatCard'
 import { TrendLineChart, DonutChart } from '../charts'
 import { useReportOverview, useBookingTrend, useBookingSummary } from '../../hooks/useReports'
-import { formatPeriodShort } from '../../utils/format'
+import { formatPeriodShort, pickTrendGranularity } from '../../utils/format'
 
 // ─────────────────────────────────────────
 // TAB: RINGKASAN
+// Stat card & trend dulu tidak ikut filter tanggal sama sekali (Overview
+// pakai period tetap "monthly", trend selalu 12 bulan mundur dari
+// sekarang) - sekarang keduanya ikut range yang dipilih; granularitas
+// trend (harian/mingguan/bulanan) menyesuaikan lebar range-nya.
 // ─────────────────────────────────────────
 
 export const OverviewSection = ({ range }: { range: ReportDateParams }) => {
-  const { data: overview } = useReportOverview()
-  const { data: trend } = useBookingTrend({ groupBy: 'monthly', periods: 12 })
+  const { data: overview } = useReportOverview(range)
+  const groupBy = pickTrendGranularity(range.startDate ?? '', range.endDate ?? '')
+  const { data: trend } = useBookingTrend({ groupBy, startDate: range.startDate, endDate: range.endDate })
   const { data: summary } = useBookingSummary(range)
 
   const donutData = summary
@@ -70,7 +75,7 @@ export const OverviewSection = ({ range }: { range: ReportDateParams }) => {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader title="Trend Booking" description="12 bulan terakhir - kendaraan vs ruangan" />
+          <CardHeader title="Trend Booking" description="Periode terpilih - kendaraan vs ruangan" />
           <TrendLineChart
             data={trend ?? []}
             xKey="period"

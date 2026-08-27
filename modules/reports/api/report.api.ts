@@ -30,7 +30,6 @@ import type {
   DriverTrips,
   DepartmentSummary,
   ReportTrendParams,
-  ReportPeriodParams,
 } from '@/types'
 
 const get = <T>(url: string, params?: unknown) =>
@@ -49,11 +48,11 @@ export const reportApi = {
   getMaintenanceCost: (params?: ReportDateParams) =>
     get<MaintenanceCostReport[]>(API_ENDPOINTS.REPORTS.MAINTENANCE_COST, params),
 
-  getDriverRatings: () =>
-    get<DriverRatingReport[]>(API_ENDPOINTS.REPORTS.DRIVER_RATINGS),
+  getDriverRatings: (params?: ReportDateParams) =>
+    get<DriverRatingReport[]>(API_ENDPOINTS.REPORTS.DRIVER_RATINGS, params),
 
-  getDriverActivity: () =>
-    get<DriverActivityReport[]>(API_ENDPOINTS.REPORTS.DRIVER_ACTIVITY),
+  getDriverActivity: (params?: ReportDateParams) =>
+    get<DriverActivityReport[]>(API_ENDPOINTS.REPORTS.DRIVER_ACTIVITY, params),
 
   getOverdueBookings: () =>
     get<OverdueBooking[]>(API_ENDPOINTS.REPORTS.OVERDUE_BOOKINGS),
@@ -64,7 +63,7 @@ export const reportApi = {
       .then((r) => r.data),
 
   // ── Extended ──
-  getOverview: (params?: ReportPeriodParams) =>
+  getOverview: (params?: ReportDateParams) =>
     get<ReportOverview>(API_ENDPOINTS.REPORTS.OVERVIEW, params),
 
   getBookingTrend: (params?: ReportTrendParams) =>

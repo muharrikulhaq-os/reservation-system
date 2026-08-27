@@ -1,13 +1,15 @@
 'use client'
 
-import { CalendarCheck, Clock, CheckCircle2 } from 'lucide-react'
+import { CalendarCheck, Clock, CheckCircle2, Search } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
-import { DataTable, createColumnHelper, type ColumnDef, Badge } from '@/components/shared'
+import { DataTable, createColumnHelper, type ColumnDef, Badge, Pagination } from '@/components/shared'
+import { InputText } from '@/components/ui-custom'
 import { RESOURCE_TYPE } from '@/constants'
 import type { ReportDateParams, BookingByResource } from '@/types'
 import { ReportStatCard } from '../ReportStatCard'
 import { TrendLineChart, BarChartHorizontal } from '../charts'
-import { formatPeriodShort } from '../../utils/format'
+import { formatPeriodShort, pickTrendGranularity } from '../../utils/format'
+import { useClientListFilter } from '../../hooks/useClientListFilter'
 import {
   useBookingSummary,
   useApprovalPerformance,
@@ -60,11 +62,20 @@ export const BookingSection = ({ range }: { range: ReportDateParams }) => {
   const { data: approval } = useApprovalPerformance(range)
   const { data: byDept } = useBookingByDepartment(range)
   const { data: byResource, isLoading: loadingResource } = useBookingByResource(range)
-  const { data: trend } = useBookingTrend({ groupBy: 'monthly', periods: 12 })
+  const groupBy = pickTrendGranularity(range.startDate ?? '', range.endDate ?? '')
+  const { data: trend } = useBookingTrend({ groupBy, startDate: range.startDate, endDate: range.endDate })
 
   // approval-performance = objek tunggal
   const avgHoursToDecision = approval?.avgApprovalTimeHours ?? null
   const totalDecisions = approval?.totalProcessed ?? 0
+
+  const {
+    search: resourceSearch,
+    setSearch: setResourceSearch,
+    items: pagedResources,
+    pagination: resourcePagination,
+    setPage: setResourcePage,
+  } = useClientListFilter(byResource ?? [], { searchFields: ['resourceName'] })
 
   return (
     <div className="flex flex-col gap-6">
@@ -96,16 +107,27 @@ export const BookingSection = ({ range }: { range: ReportDateParams }) => {
 
       <Card>
         <CardHeader title="Booking per Resource" />
+        <div className="mb-4 max-w-xs">
+          <InputText
+            placeholder="Cari resource…"
+            value={resourceSearch}
+            onChange={(e) => setResourceSearch(e.target.value)}
+            leftIcon={<Search className="h-4 w-4" />}
+          />
+        </div>
         <DataTable
-          data={byResource ?? []}
+          data={pagedResources}
           columns={resourceColumns}
           isLoading={loadingResource}
           emptyMessage="Belum ada data resource"
         />
+        {resourcePagination.total > 0 && (
+          <Pagination pagination={resourcePagination} onPageChange={setResourcePage} />
+        )}
       </Card>
 
       <Card>
-        <CardHeader title="Trend Booking" description="12 bulan terakhir" />
+        <CardHeader title="Trend Booking" description="Periode terpilih" />
         <TrendLineChart
           data={trend ?? []}
           xKey="period"

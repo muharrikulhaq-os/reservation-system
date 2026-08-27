@@ -277,6 +277,8 @@ export interface AuditLogQueryParams {
   limit?: number
   entityType?: string
   userId?: number
+  startDate?: string
+  endDate?: string
 }
 
 // ─────────────────────────────────────────
@@ -447,12 +449,13 @@ export interface DepartmentSummary {
   topResource: string
 }
 
-// Query params tambahan
+// Query params tambahan - trend chart dulu selalu jendela tetap (N periods
+// mundur dari sekarang), sekarang dibatasi rentang tanggal eksplisit (sama
+// seperti ReportDateParams) supaya ikut filter di halaman Laporan;
+// `groupBy` dipilih frontend berdasarkan lebar rentang (lihat
+// utils/trendGranularity.ts) - bukan lagi jumlah bucket tetap.
 export interface ReportTrendParams {
   groupBy?: 'daily' | 'weekly' | 'monthly'
-  periods?: number
-}
-
-export interface ReportPeriodParams {
-  period?: 'monthly' | 'quarterly' | 'yearly'
+  startDate?: string
+  endDate?: string
 }

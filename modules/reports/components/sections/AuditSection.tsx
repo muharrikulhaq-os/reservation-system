@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Search } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
 import { DataTable, createColumnHelper, type ColumnDef, Badge } from '@/components/shared'
@@ -8,7 +8,7 @@ import { InputSelect } from '@/components/ui-custom'
 import { useDebounce } from '@/hooks'
 import { PAGINATION } from '@/constants'
 import { formatDateTime } from '@/lib'
-import type { AuditLog } from '@/types'
+import type { AuditLog, ReportDateParams } from '@/types'
 import { useAuditLogs } from '../../hooks/useReports'
 
 // ─────────────────────────────────────────
@@ -65,7 +65,7 @@ const auditColumns: ColumnDef<AuditLog, unknown>[] = [
   }),
 ] as ColumnDef<AuditLog, unknown>[]
 
-export const AuditSection = () => {
+export const AuditSection = ({ range }: { range: ReportDateParams }) => {
   const [page, setPage] = useState<number>(PAGINATION.DEFAULT_PAGE)
   const [limit, setLimitState] = useState<number>(PAGINATION.DEFAULT_LIMIT)
   const [entityType, setEntityType] = useState('')
@@ -79,16 +79,25 @@ export const AuditSection = () => {
     setPage(PAGINATION.DEFAULT_PAGE)
   }
 
+  // Ganti rentang tanggal (filter global) → hasil berubah, jangan biarkan
+  // halaman lama tertinggal (bisa jadi kosong kalau rentang baru lebih sempit).
+  useEffect(() => {
+    setPage(PAGINATION.DEFAULT_PAGE)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range.startDate, range.endDate])
+
   const { data, isLoading } = useAuditLogs({
     page,
     limit,
     entityType: entityType || undefined,
     userId: Number.isFinite(userId) && userId > 0 ? userId : undefined,
+    startDate: range.startDate,
+    endDate: range.endDate,
   })
 
   return (
     <Card>
-      <CardHeader title="Audit Log" description="Jejak aktivitas sistem" />
+      <CardHeader title="Audit Log" description="Jejak aktivitas sistem - periode terpilih" />
 
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <div className="w-52">

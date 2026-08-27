@@ -148,7 +148,7 @@ export const Reports = () => {
           <DriverSection range={range} />
         </TabsContent>
         <TabsContent value="audit" className="mt-5">
-          <AuditSection />
+          <AuditSection range={range} />
         </TabsContent>
       </Tabs>
     </div>
