@@ -37,3 +37,6 @@ export * from './Resource'
 
 export { ConfirmDialog } from './ConfirmDialog'
 export type { ConfirmDialogProps } from './ConfirmDialog'
+
+export { UserProfileModal } from './user-profile/UserProfileModal'
+export { UserProfileButton } from './user-profile/UserProfileButton'

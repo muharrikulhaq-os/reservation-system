@@ -5,6 +5,7 @@ import { ArrowRightLeft, Building2, Car, Eye, GitMerge, X, Zap } from "lucide-re
 import { UserAvatar } from "@/components/shared/avatar/Avatar";
 import { BookingStatusBadge } from "@/components/shared/badge/StatusBadge";
 import { SafeImage } from "@/components/shared/media/SafeImage";
+import { UserProfileButton } from "@/components/shared/user-profile/UserProfileButton";
 import {
   createColumnHelper,
   type ColumnDef,
@@ -78,17 +79,17 @@ export const bookingColumns: ColumnDef<Booking, unknown>[] = [
     cell: ({ getValue }) => {
       const user = getValue();
       return (
-        <div className="flex items-center gap-2.5">
+        <UserProfileButton userId={user.id} className="flex items-center gap-2.5">
           <UserAvatar name={user.name} size="sm" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-[var(--text-primary)]">
+            <p className="truncate text-sm font-medium text-[var(--text-primary)] hover:underline">
               {user.name}
             </p>
             <p className="truncate text-xs text-[var(--text-secondary)]">
               {user.department}
             </p>
           </div>
-        </div>
+        </UserProfileButton>
       );
     },
   }),

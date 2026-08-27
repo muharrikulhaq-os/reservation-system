@@ -5,6 +5,7 @@ import { Car, CheckCircle2, ImageOff } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
 import { PageHeader } from '@/components/shared'
 import { SafeImage } from '@/components/shared/media/SafeImage'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { AppButton } from '@/components/ui-custom'
 import { formatDate, formatCurrency, formatNumber, resolveFileUrl } from '@/lib'
 import {
@@ -27,6 +28,7 @@ const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
 export const MaintenanceDetail = ({ id }: { id: number }) => {
   const { data, isLoading, refetch } = useMaintenanceRecord(id)
   const [completeOpen, setCompleteOpen] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
   if (isLoading) {
     return (
@@ -119,11 +121,10 @@ export const MaintenanceDetail = ({ id }: { id: number }) => {
           <CardHeader title="Bukti Pekerjaan" />
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {photos.map((url, i) => (
-              <a
+              <button
                 key={i}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
+                type="button"
+                onClick={() => setPreviewUrl(url)}
                 className="block aspect-square overflow-hidden rounded-xl border border-[var(--border-card)]"
               >
                 <SafeImage
@@ -133,11 +134,27 @@ export const MaintenanceDetail = ({ id }: { id: number }) => {
                   fallbackClassName="bg-[var(--bg-subtle)] text-[var(--text-disabled)]"
                   fallback={<ImageOff className="h-5 w-5" />}
                 />
-              </a>
+              </button>
             ))}
           </div>
+          <p className="mt-1.5 text-xs text-[var(--text-disabled)]">Klik untuk perbesar</p>
         </Card>
       )}
+
+      {/* Preview foto full size */}
+      <Dialog open={!!previewUrl} onOpenChange={(open) => !open && setPreviewUrl(null)}>
+        <DialogContent className="max-w-2xl rounded-2xl p-2 shadow-[var(--shadow-modal)]">
+          {previewUrl && (
+            <SafeImage
+              src={previewUrl}
+              alt="Preview bukti pekerjaan"
+              className="max-h-[80vh] w-full rounded-xl object-contain"
+              fallbackClassName="h-64 w-full rounded-xl bg-[var(--bg-subtle)] text-[var(--text-disabled)]"
+              fallback={<ImageOff className="h-10 w-10" />}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       <CompleteMaintenanceModal
         maintenance={data}

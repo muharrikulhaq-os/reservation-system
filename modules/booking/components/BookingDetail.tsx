@@ -39,6 +39,7 @@ import {
   UserAvatar,
   StarRating,
   SafeImage,
+  UserProfileButton,
 } from "@/components/shared";
 import { AppButton, InputFile } from "@/components/ui-custom";
 import {
@@ -71,6 +72,7 @@ import { StartBookingModal } from "./StartBookingModal";
 import { RateDriverModal } from "./RateDriverModal";
 import { TripRecordTabs } from "./TripRecordTabs";
 import { FuelInputModal } from "@/modules/fuel";
+import { DriverProfileButton } from "@/modules/drivers";
 
 // ─────────────────────────────────────────
 // BOOKING DETAIL
@@ -204,17 +206,17 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <InfoBlock label="Peminjam">
-              <div className="flex items-center gap-2.5">
+              <UserProfileButton userId={booking.user.id} className="flex items-center gap-2.5">
                 <UserAvatar name={booking.user.name} size="md" />
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
+                  <p className="truncate text-sm font-semibold text-[var(--text-primary)] hover:underline">
                     {booking.user.name}
                   </p>
                   <p className="truncate text-xs text-[var(--text-secondary)]">
                     {booking.user.department}
                   </p>
                 </div>
-              </div>
+              </UserProfileButton>
             </InfoBlock>
 
             <InfoBlock label="Resource">
@@ -310,11 +312,15 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
                   className="flex items-start justify-between gap-3 rounded-xl bg-[var(--bg-subtle)] p-3"
                 >
                   <div className="flex items-center gap-2.5">
-                    <UserAvatar name={m.linkedBooking.userName} size="md" />
+                    <UserProfileButton userId={m.linkedBooking.userId}>
+                      <UserAvatar name={m.linkedBooking.userName} size="md" />
+                    </UserProfileButton>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
-                        {m.linkedBooking.userName}
-                      </p>
+                      <UserProfileButton userId={m.linkedBooking.userId}>
+                        <p className="truncate text-sm font-semibold text-[var(--text-primary)] hover:underline">
+                          {m.linkedBooking.userName}
+                        </p>
+                      </UserProfileButton>
                       <p className="truncate text-xs text-[var(--text-secondary)]">
                         {m.linkedBooking.department} · {m.linkedBooking.employeeId}
                       </p>
@@ -347,10 +353,10 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
         {isVehicle && booking.assignedDriver && (
           <Card>
             <CardHeader title="Driver Ditugaskan" />
-            <div className="flex items-center gap-3">
+            <DriverProfileButton driverId={booking.assignedDriver.id} className="flex items-center gap-3">
               <UserAvatar name={booking.assignedDriver.name} size="lg" />
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
+                <p className="truncate text-sm font-semibold text-[var(--text-primary)] hover:underline">
                   {booking.assignedDriver.name}
                 </p>
                 <p className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
@@ -358,7 +364,7 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
                   {booking.assignedDriver.phoneNumber}
                 </p>
               </div>
-            </div>
+            </DriverProfileButton>
           </Card>
         )}
 

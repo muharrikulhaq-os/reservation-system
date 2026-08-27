@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { UserAvatar } from '@/components/shared/avatar/Avatar'
+import { UserProfileButton } from '@/components/shared/user-profile/UserProfileButton'
 import { BookingStatusBadge } from '@/components/shared/badge/StatusBadge'
 import { createColumnHelper, type ColumnDef } from '@/components/shared/table/DataTable'
 import { formatDate } from '@/lib'
@@ -21,12 +22,12 @@ export const recentBookingColumns: ColumnDef<Booking, unknown>[] = [
     cell: ({ getValue }) => {
       const user = getValue()
       return (
-        <div className="flex items-center gap-2.5">
+        <UserProfileButton userId={user.id} className="flex items-center gap-2.5">
           <UserAvatar name={user.name} size="sm" />
-          <span className="text-sm font-medium text-[var(--text-primary)]">
+          <span className="text-sm font-medium text-[var(--text-primary)] hover:underline">
             {user.name}
           </span>
-        </div>
+        </UserProfileButton>
       )
     },
   }),

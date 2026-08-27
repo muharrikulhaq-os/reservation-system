@@ -12,7 +12,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
-import { UserAvatar, SafeImage } from '@/components/shared'
+import { UserAvatar, SafeImage, UserProfileButton } from '@/components/shared'
 import { AppButton } from '@/components/ui-custom'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { StatCard } from '@/modules/dashboard/components/StatCard'
@@ -258,17 +258,20 @@ const QueueRow = ({
   return (
     <li className="flex flex-wrap items-center gap-4 py-3 first:pt-0">
       {/* Kiri: peminjam */}
-      <div className="flex min-w-0 flex-1 items-center gap-2.5">
+      <UserProfileButton
+        userId={booking.user.id}
+        className="flex min-w-0 flex-1 items-center gap-2.5"
+      >
         <UserAvatar name={booking.user.name} size="md" />
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
+          <p className="truncate text-sm font-semibold text-[var(--text-primary)] hover:underline">
             {booking.user.name}
           </p>
           <p className="truncate text-xs text-[var(--text-secondary)]">
             {booking.user.department} · Diajukan {formatDate(booking.createdAt)}
           </p>
         </div>
-      </div>
+      </UserProfileButton>
 
       {/* Tengah: resource + tanggal */}
       <div className="flex min-w-0 flex-1 items-center gap-2.5">

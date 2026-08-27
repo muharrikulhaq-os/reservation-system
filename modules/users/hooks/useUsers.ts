@@ -21,11 +21,11 @@ export const useUsers = (params?: UserQueryParams) =>
     queryFn:  () => userApi.getAll(params),
   })
 
-export const useUser = (id: number) =>
+export const useUser = (id: number, options?: { enabled?: boolean }) =>
   useQuery({
     queryKey: [...QUERY_KEYS.USERS, id],
     queryFn:  () => userApi.getById(id).then((r) => r.data),
-    enabled:  !!id,
+    enabled:  !!id && (options?.enabled ?? true),
   })
 
 // Ringkasan jumlah user (total, per role, per departemen) untuk stat card

@@ -36,11 +36,11 @@ export const useDriversPaginated = (params?: DriverQueryParams) =>
     placeholderData: keepPreviousData,
   })
 
-export const useDriver = (id: number) =>
+export const useDriver = (id: number, options?: { enabled?: boolean }) =>
   useQuery({
     queryKey: [...QUERY_KEYS.DRIVERS, id],
     queryFn:  () => driverService.getById(id).then((r) => r.data),
-    enabled:  !!id,
+    enabled:  !!id && (options?.enabled ?? true),
   })
 
 export const useDriverAssignmentHistory = (id: number) =>
