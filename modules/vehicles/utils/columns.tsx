@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Car, Users } from 'lucide-react'
 import { AdminOnly } from '@/components/common'
-import { ResourceStatusBadge, Badge } from '@/components/shared'
+import { ResourceStatusBadge, SpdActiveBadge, Badge } from '@/components/shared'
 import { createColumnHelper, type ColumnDef } from '@/components/shared/table/DataTable'
 import { SafeImage } from '@/components/shared/media/SafeImage'
 import { resolveFileUrl } from '@/lib'
@@ -72,8 +72,13 @@ export const vehicleColumns: ColumnDef<Vehicle, unknown>[] = [
 
   ch.accessor('status', {
     header: 'Status',
-    size: 120,
-    cell: ({ getValue }) => <ResourceStatusBadge status={getValue()} />,
+    size: 150,
+    cell: ({ getValue, row }) => (
+      <div className="flex flex-col items-start gap-1">
+        <ResourceStatusBadge status={getValue()} />
+        {row.original.isSpdActive && <SpdActiveBadge />}
+      </div>
+    ),
   }),
 
   ch.display({

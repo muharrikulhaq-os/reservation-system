@@ -5,7 +5,7 @@ import { useVehiclesPaginated } from '@/modules/vehicles/hooks/useVehicles'
 import { DataTable } from '@/components/shared/table/DataTable'
 import { createColumnHelper, type ColumnDef } from '@/components/shared/table/DataTable'
 import type { Vehicle } from '@/types'
-import { ResourceStatusBadge } from '@/components/shared/badge/StatusBadge'
+import { ResourceStatusBadge, SpdActiveBadge } from '@/components/shared/badge/StatusBadge'
 
 const ch = createColumnHelper<Vehicle>()
 
@@ -19,7 +19,12 @@ const availableVehicleColumns: ColumnDef<Vehicle, unknown>[] = [
   }),
   ch.accessor('status', {
     header: 'Status',
-    cell: ({ getValue }) => <ResourceStatusBadge status={getValue()} />,
+    cell: ({ getValue, row }) => (
+      <div className="flex flex-col items-start gap-1">
+        <ResourceStatusBadge status={getValue()} />
+        {row.original.isSpdActive && <SpdActiveBadge />}
+      </div>
+    ),
   }),
   ch.display({
     id: 'actions',

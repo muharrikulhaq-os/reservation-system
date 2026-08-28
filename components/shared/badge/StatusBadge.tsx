@@ -97,6 +97,26 @@ export const BookingTypeBadge = ({ bookingType, status, className }: BookingType
 }
 
 // ─────────────────────────────────────────
+// SPD ACTIVE BADGE
+// Kendaraan sedang terklaim SPD hari ini (hari kalender penuh) - dipasang
+// di mana pun kendaraan ditampilkan (list, detail, card, picker), terpisah
+// dari BookingTypeBadge yang menandai jenis SATU booking.
+// ─────────────────────────────────────────
+
+export const SpdActiveBadge = ({ className }: { className?: string }) => (
+  <span
+    className={cn(
+      'inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5',
+      'text-[10px] font-semibold whitespace-nowrap text-[var(--danger)]',
+      className,
+    )}
+    title="Kendaraan sedang bertugas SPD hari ini - tidak bisa dibooking"
+  >
+    <Zap className="h-2.5 w-2.5" /> Digunakan SPD
+  </span>
+)
+
+// ─────────────────────────────────────────
 // RESOURCE STATUS BADGE
 // ─────────────────────────────────────────
 

@@ -17,7 +17,7 @@ export { UserAvatar } from './avatar/Avatar'
 
 export { SafeImage } from './media/SafeImage'
 
-export { BookingStatusBadge, ResourceStatusBadge, Badge, BookingTypeBadge } from './badge/StatusBadge'
+export { BookingStatusBadge, ResourceStatusBadge, Badge, BookingTypeBadge, SpdActiveBadge } from './badge/StatusBadge'
 
 export { PageHeader } from './page-header/PageHeader'
 

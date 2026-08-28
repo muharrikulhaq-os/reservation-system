@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { CalendarDays, Car, Gauge, Users } from 'lucide-react'
 import { AdminOnly } from '@/components/common'
-import { Badge, ResourceStatusBadge } from '@/components/shared'
+import { Badge, ResourceStatusBadge, SpdActiveBadge } from '@/components/shared'
 import { AppButton } from '@/components/ui-custom'
 import { formatOdometer, resolveFileUrl } from '@/lib'
 import type { Vehicle } from '@/types'
@@ -36,8 +36,9 @@ export const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
           </div>
         )}
 
-        <div className="absolute left-2.5 top-2.5">
+        <div className="absolute left-2.5 top-2.5 flex flex-col items-start gap-1">
           <ResourceStatusBadge status={vehicle.status} />
+          {vehicle.isSpdActive && <SpdActiveBadge />}
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import { Card, CardHeader, CardSection, CardDivider, AdminOnly } from '@/compone
 import {
   AvailabilityCalendar,
   ResourceStatusBadge,
+  SpdActiveBadge,
   PhotoUploader,
   AttachmentList,
   StatusChanger,
@@ -167,7 +168,15 @@ export const VehicleDetail = ({ vehicleId }: VehicleDetailProps) => {
           <CardSection className="space-y-3">
             <InfoItem label="Resource ID" value={`#${vehicle.resourceId}`} />
             <CardDivider />
-            <InfoItem label="Status Saat Ini" value={<ResourceStatusBadge status={vehicle.status} />} />
+            <InfoItem
+              label="Status Saat Ini"
+              value={
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <ResourceStatusBadge status={vehicle.status} />
+                  {vehicle.isSpdActive && <SpdActiveBadge />}
+                </div>
+              }
+            />
           </CardSection>
         </Card>
       </div>

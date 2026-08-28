@@ -12,13 +12,15 @@ import { ResourcePicker } from './ResourcePicker'
 import {
   AvailabilityCalendar,
   ResourceStatusBadge,
+  BookingTypeBadge,
+  SpdActiveBadge,
   SafeImage,
   type CalendarEvent,
   type DateTimeRange,
 } from '@/components/shared'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn, getErrorMessage, formatShortDate, formatDuration, resolveFileUrl } from '@/lib'
-import { RESOURCE_TYPE, BOOKING_TYPE, BOOKING_TYPE_CONFIG } from '@/constants'
+import { RESOURCE_TYPE, BOOKING_TYPE, BOOKING_TYPE_CONFIG, BOOKING_STATUS } from '@/constants'
 import type { ResourceType, Vehicle, Room, BookingType } from '@/types'
 import {
   createBookingSchema,
@@ -204,7 +206,10 @@ export const BookingForm = () => {
                 {subtitle}
               </p>
             </div>
-            <ResourceStatusBadge status={selected.status} />
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              <ResourceStatusBadge status={selected.status} />
+              {isVehicle && (selected as Vehicle).isSpdActive && <SpdActiveBadge />}
+            </div>
             <button
               type="button"
               onClick={() => setShowPicker(true)}
@@ -418,9 +423,12 @@ export const BookingForm = () => {
 
           {isVehicle && (
             <div className="mb-5">
-              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-secondary)]">
-                Jenis Perjalanan <span className="text-[var(--danger)]">*</span>
-              </label>
+              <div className="mb-1.5 flex items-center justify-between gap-2">
+                <label className="block text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-secondary)]">
+                  Jenis Perjalanan <span className="text-[var(--danger)]">*</span>
+                </label>
+                <BookingTypeBadge bookingType={bookingType} status={BOOKING_STATUS.PENDING} />
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 {([BOOKING_TYPE.NON_SPD, BOOKING_TYPE.SPD] as const).map((bt) => {
                   const active = bookingType === bt
