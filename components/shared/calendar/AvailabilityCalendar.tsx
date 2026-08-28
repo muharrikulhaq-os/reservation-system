@@ -15,9 +15,10 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
+import { BookingTypeBadge } from '../badge/StatusBadge'
 import { useBookings } from '@/modules/booking/hooks/useBookings'
 import { BOOKING_STATUS, BOOKING_STATUS_CONFIG } from '@/constants'
-import type { BookingStatus, ResourceStatus } from '@/types'
+import type { BookingStatus, BookingType, ResourceStatus } from '@/types'
 import { cn } from '@/lib/utils'
 
 // ─────────────────────────────────────────
@@ -33,6 +34,13 @@ export interface CalendarEvent {
   endTime: string // "18:00"
   startDate: string // ISO full - untuk cek overlap
   endDate: string // ISO full
+  // Detail tambahan - hanya terisi untuk event 'booking' dari hasil fetch
+  // internal (bukan dari prop `data`), dipakai untuk memperkaya tooltip.
+  bookingType?: BookingType
+  resourceType?: 'VEHICLE' | 'ROOM'
+  userName?: string
+  userDepartment?: string
+  driverName?: string | null
 }
 
 export interface CalendarDayData {
@@ -300,6 +308,11 @@ export const AvailabilityCalendar = ({
           endTime: formatTime(b.endDate),
           startDate: b.startDate,
           endDate: b.endDate,
+          bookingType: b.bookingType,
+          resourceType: b.resource?.type,
+          userName: b.user?.name,
+          userDepartment: b.user?.department,
+          driverName: b.assignedDriver?.name ?? null,
         })
         if (blocks) {
           existing.isAvailable = false
@@ -736,18 +749,41 @@ export const AvailabilityCalendar = ({
                         </p>
                         <p className="truncate text-xs text-[var(--text-secondary)]">
                           {event.title}
+                          {event.userDepartment && (
+                            <span className="text-[var(--text-disabled)]">
+                              {' '}
+                              · {event.userDepartment}
+                            </span>
+                          )}
                         </p>
-                        {event.status && (
-                          <span
-                            className="mt-1 inline-block rounded-full px-1.5 py-0.5 text-[9px] font-medium"
-                            style={{
-                              backgroundColor: getStatusBg(event.status),
-                              color: getStatusColor(event.status),
-                            }}
-                          >
-                            {getStatusLabel(event.status)}
-                          </span>
-                        )}
+                        {event.type === 'booking' &&
+                          event.resourceType === 'VEHICLE' &&
+                          event.driverName && (
+                            <p className="truncate text-xs text-[var(--text-secondary)]">
+                              Supir: {event.driverName}
+                            </p>
+                          )}
+                        <div className="mt-1 flex flex-wrap items-center gap-1">
+                          {event.status && (
+                            <span
+                              className="inline-block rounded-full px-1.5 py-0.5 text-[9px] font-medium"
+                              style={{
+                                backgroundColor: getStatusBg(event.status),
+                                color: getStatusColor(event.status),
+                              }}
+                            >
+                              {getStatusLabel(event.status)}
+                            </span>
+                          )}
+                          {event.type === 'booking' &&
+                            event.resourceType === 'VEHICLE' &&
+                            event.bookingType && (
+                              <BookingTypeBadge
+                                bookingType={event.bookingType}
+                                status={event.status as BookingStatus}
+                              />
+                            )}
+                        </div>
                       </div>
                     </div>
                   ))}
