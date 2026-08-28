@@ -33,6 +33,10 @@ export interface Vehicle {
   status: ResourceStatus
   photoUrl: string | null
   energyType: VehicleEnergyType
+  // true bila sedang diklaim booking SPD hari ini (hari kalender penuh,
+  // terlepas dari jam booking-nya) - beda dari `status` yang tidak
+  // membedakan sebab pemakaian.
+  isSpdActive: boolean
 }
 
 // Subset untuk nested di booking response

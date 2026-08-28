@@ -162,12 +162,21 @@ export const bookingColumns: ColumnDef<Booking, unknown>[] = [
                 </span>
               )}
               {isVehicle && booking.bookingType === "SPD" && (
-                <span
-                  className="inline-flex items-center rounded-full bg-indigo-50 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-600"
-                  title="Perjalanan jauh / dinas resmi"
-                >
-                  SPD
-                </span>
+                booking.status === BOOKING_STATUS.ONGOING || booking.status === BOOKING_STATUS.APPROVED ? (
+                  <span
+                    className="inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 py-0.5 text-[9px] font-semibold text-[var(--danger)]"
+                    title="Kendaraan & supir tidak bisa dibooking lain selama SPD ini berlangsung"
+                  >
+                    <Zap className="h-2.5 w-2.5" /> Digunakan SPD
+                  </span>
+                ) : (
+                  <span
+                    className="inline-flex items-center rounded-full bg-indigo-50 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-600"
+                    title="Perjalanan jauh / dinas resmi"
+                  >
+                    SPD
+                  </span>
+                )
               )}
             </div>
             <span className="text-xs text-[var(--text-secondary)]">

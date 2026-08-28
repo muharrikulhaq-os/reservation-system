@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { Search, Car, Building2, Check, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Car, Building2, Check, ChevronLeft, ChevronRight, Zap } from 'lucide-react'
 import { InputText, IconButton } from '@/components/ui-custom'
 import { SafeImage } from '@/components/shared/media/SafeImage'
 import { cn, resolveFileUrl } from '@/lib'
@@ -180,8 +180,16 @@ const ResourcePickerCard = ({
             {(resource as Room).location} · {(resource as Room).capacity} orang
           </p>
         )}
-        <div className="mt-2">
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
           <ResourceStatusBadge status={resource.status} className="px-2 py-0.5 text-[10px]" />
+          {isVehicle && (resource as Vehicle).isSpdActive && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-[var(--danger)]"
+              title="Kendaraan sedang bertugas SPD hari ini - tidak bisa dibooking"
+            >
+              <Zap className="h-2.5 w-2.5" /> Digunakan SPD
+            </span>
+          )}
         </div>
       </div>
     </button>
