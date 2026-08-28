@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card } from '@/components/common'
-import { AvailabilityCalendar, BookingStatusBadge, UserAvatar } from '@/components/shared'
+import { AvailabilityCalendar, BookingStatusBadge, BookingTypeBadge, UserAvatar } from '@/components/shared'
 import type { CalendarEvent, DateTimeRange } from '@/components/shared'
 import { AppButton, InputTextArea } from '@/components/ui-custom'
 import { cn, getErrorMessage } from '@/lib'
@@ -191,7 +191,12 @@ export const BookingMergePanel = ({
                     {c.user.department}
                   </p>
                 </div>
-                <BookingStatusBadge status={c.status} />
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <BookingStatusBadge status={c.status} />
+                  {c.resource.type === RESOURCE_TYPE.VEHICLE && (
+                    <BookingTypeBadge bookingType={c.bookingType} status={c.status} />
+                  )}
+                </div>
               </div>
 
               {/* Resource + Driver - dari booking yang sudah approved */}

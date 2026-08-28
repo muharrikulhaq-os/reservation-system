@@ -13,10 +13,10 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardHeader, AdminOnly } from '@/components/common'
-import { UserAvatar, Badge, BookingStatusBadge } from '@/components/shared'
+import { UserAvatar, Badge, BookingStatusBadge, BookingTypeBadge } from '@/components/shared'
 import { AppButton, InputText } from '@/components/ui-custom'
 import { formatDate, getErrorMessage, resolveFileUrl } from '@/lib'
-import { ROLE } from '@/constants'
+import { ROLE, RESOURCE_TYPE } from '@/constants'
 import type { RoleName } from '@/types'
 import { useBookings } from '@/modules/booking'
 import {
@@ -163,7 +163,12 @@ export const UserDetail = ({ userId }: UserDetailProps) => {
                       {formatDate(b.startDate)}
                     </p>
                   </div>
-                  <BookingStatusBadge status={b.status} />
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <BookingStatusBadge status={b.status} />
+                    {b.resource.type === RESOURCE_TYPE.VEHICLE && (
+                      <BookingTypeBadge bookingType={b.bookingType} status={b.status} />
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>

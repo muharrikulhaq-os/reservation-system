@@ -1,6 +1,7 @@
+import { Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { BOOKING_STATUS_CONFIG, RESOURCE_STATUS_CONFIG } from '@/constants'
-import type { BookingStatus, ResourceStatus } from '@/types'
+import type { BookingStatus, BookingType, ResourceStatus } from '@/types'
 
 // ─────────────────────────────────────────
 // BOOKING STATUS BADGE
@@ -34,6 +35,63 @@ export const BookingStatusBadge = ({
         />
       )}
       {cfg.label}
+    </span>
+  )
+}
+
+// ─────────────────────────────────────────
+// BOOKING TYPE BADGE (SPD / Non-SPD)
+// Dipasangkan dengan BookingStatusBadge di mana pun status booking
+// ditampilkan (VEHICLE saja - SPD tidak berlaku untuk ruangan, jangan
+// dirender untuk booking ruangan di sisi pemanggil). "Digunakan SPD"
+// (merah) khusus status ONGOING/APPROVED - itu saat kendaraan & supirnya
+// benar-benar terklaim penuh, lihat aturan day-exclusivity SPD di backend.
+// ─────────────────────────────────────────
+
+interface BookingTypeBadgeProps {
+  bookingType: BookingType
+  status: BookingStatus
+  className?: string
+}
+
+export const BookingTypeBadge = ({ bookingType, status, className }: BookingTypeBadgeProps) => {
+  if (bookingType !== 'SPD') {
+    return (
+      <span
+        className={cn(
+          'inline-flex items-center rounded-full bg-[var(--bg-subtle)] px-2 py-0.5',
+          'text-[10px] font-semibold whitespace-nowrap text-[var(--text-secondary)]',
+          className,
+        )}
+        title="Perjalanan dekat / pemakaian umum"
+      >
+        Non-SPD
+      </span>
+    )
+  }
+
+  const active = status === 'ONGOING' || status === 'APPROVED'
+  return active ? (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5',
+        'text-[10px] font-semibold whitespace-nowrap text-[var(--danger)]',
+        className,
+      )}
+      title="Kendaraan & supir tidak bisa dibooking lain selama SPD ini berlangsung"
+    >
+      <Zap className="h-2.5 w-2.5" /> Digunakan SPD
+    </span>
+  ) : (
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5',
+        'text-[10px] font-semibold whitespace-nowrap text-indigo-600',
+        className,
+      )}
+      title="Perjalanan jauh / dinas resmi"
+    >
+      SPD
     </span>
   )
 }

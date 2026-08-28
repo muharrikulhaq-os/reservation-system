@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowRightLeft, Building2, Car, Eye, GitMerge, X, Zap } from "lucide-react";
 import { UserAvatar } from "@/components/shared/avatar/Avatar";
-import { BookingStatusBadge } from "@/components/shared/badge/StatusBadge";
+import { BookingStatusBadge, BookingTypeBadge } from "@/components/shared/badge/StatusBadge";
 import { SafeImage } from "@/components/shared/media/SafeImage";
 import { UserProfileButton } from "@/components/shared/user-profile/UserProfileButton";
 import {
@@ -161,23 +161,6 @@ export const bookingColumns: ColumnDef<Booking, unknown>[] = [
                   <Zap className="h-2.5 w-2.5" /> Kandidat Merge
                 </span>
               )}
-              {isVehicle && booking.bookingType === "SPD" && (
-                booking.status === BOOKING_STATUS.ONGOING || booking.status === BOOKING_STATUS.APPROVED ? (
-                  <span
-                    className="inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 py-0.5 text-[9px] font-semibold text-[var(--danger)]"
-                    title="Kendaraan & supir tidak bisa dibooking lain selama SPD ini berlangsung"
-                  >
-                    <Zap className="h-2.5 w-2.5" /> Digunakan SPD
-                  </span>
-                ) : (
-                  <span
-                    className="inline-flex items-center rounded-full bg-indigo-50 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-600"
-                    title="Perjalanan jauh / dinas resmi"
-                  >
-                    SPD
-                  </span>
-                )
-              )}
             </div>
             <span className="text-xs text-[var(--text-secondary)]">
               {isVehicle ? "Kendaraan" : "Ruangan"}
@@ -210,8 +193,18 @@ export const bookingColumns: ColumnDef<Booking, unknown>[] = [
 
   ch.accessor("status", {
     header: "Status",
-    size: 130,
-    cell: ({ getValue }) => <BookingStatusBadge status={getValue()} />,
+    size: 150,
+    cell: ({ getValue, row }) => {
+      const booking = row.original;
+      return (
+        <div className="flex flex-col items-start gap-1">
+          <BookingStatusBadge status={getValue()} />
+          {booking.resource.type === RESOURCE_TYPE.VEHICLE && (
+            <BookingTypeBadge bookingType={booking.bookingType} status={booking.status} />
+          )}
+        </div>
+      );
+    },
   }),
 
   ch.display({

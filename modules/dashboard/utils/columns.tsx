@@ -3,9 +3,10 @@
 import Link from 'next/link'
 import { UserAvatar } from '@/components/shared/avatar/Avatar'
 import { UserProfileButton } from '@/components/shared/user-profile/UserProfileButton'
-import { BookingStatusBadge } from '@/components/shared/badge/StatusBadge'
+import { BookingStatusBadge, BookingTypeBadge } from '@/components/shared/badge/StatusBadge'
 import { createColumnHelper, type ColumnDef } from '@/components/shared/table/DataTable'
 import { formatDate } from '@/lib'
+import { RESOURCE_TYPE } from '@/constants'
 import type { Booking } from '@/types'
 
 // ─────────────────────────────────────────
@@ -51,8 +52,18 @@ export const recentBookingColumns: ColumnDef<Booking, unknown>[] = [
 
   ch.accessor('status', {
     header: 'Status',
-    size: 130,
-    cell: ({ getValue }) => <BookingStatusBadge status={getValue()} />,
+    size: 150,
+    cell: ({ getValue, row }) => {
+      const booking = row.original
+      return (
+        <div className="flex flex-col items-start gap-1">
+          <BookingStatusBadge status={getValue()} />
+          {booking.resource.type === RESOURCE_TYPE.VEHICLE && (
+            <BookingTypeBadge bookingType={booking.bookingType} status={booking.status} />
+          )}
+        </div>
+      )
+    },
   }),
 
   ch.display({

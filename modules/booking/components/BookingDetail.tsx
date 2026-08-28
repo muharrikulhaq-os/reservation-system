@@ -35,6 +35,7 @@ import {
 import {
   AvailabilityCalendar,
   BookingStatusBadge,
+  BookingTypeBadge,
   Badge,
   UserAvatar,
   StarRating,
@@ -198,9 +199,7 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
               className="px-3 py-1 text-sm"
             />
             {isVehicle && (
-              <Badge variant={booking.bookingType === "SPD" ? "info" : "default"}>
-                {booking.bookingType === "SPD" ? "SPD" : "Non-SPD"}
-              </Badge>
+              <BookingTypeBadge bookingType={booking.bookingType} status={booking.status} />
             )}
           </div>
 
