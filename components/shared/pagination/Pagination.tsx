@@ -129,6 +129,7 @@ export const Pagination = ({
 
       <div className="flex items-center gap-1">
         <AppButton
+          type="button"
           variant="secondary"
           size="icon-sm"
           onClick={() => onPageChange(currentPage - 1)}
@@ -149,6 +150,7 @@ export const Pagination = ({
           ) : (
             <button
               key={item}
+              type="button"
               onClick={() => onPageChange(item)}
               aria-current={item === currentPage ? 'page' : undefined}
               className={cn(
@@ -164,6 +166,7 @@ export const Pagination = ({
         )}
 
         <AppButton
+          type="button"
           variant="secondary"
           size="icon-sm"
           onClick={() => onPageChange(currentPage + 1)}
