@@ -17,7 +17,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { BookingTypeBadge } from '../badge/StatusBadge'
 import { useBookings } from '@/modules/booking/hooks/useBookings'
-import { BOOKING_STATUS, BOOKING_STATUS_CONFIG } from '@/constants'
+import { BOOKING_STATUS, BOOKING_STATUS_CONFIG, BOOKING_TYPE } from '@/constants'
 import type { BookingStatus, BookingType, ResourceStatus } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -287,9 +287,15 @@ export const AvailabilityCalendar = ({
     for (const b of bookings) {
       const start = startOfDay(new Date(b.startDate))
       const end = startOfDay(new Date(b.endDate))
+      // Hanya SPD yang mengklaim seharian penuh (vehicle & driver tidak
+      // bisa dibooking lain di hari itu sama sekali - lihat aturan
+      // day-exclusivity SPD di backend). NON_SPD (termasuk semua booking
+      // ruangan) tetap dianggap tersedia di tanggal yang sama - konflik jam
+      // presisinya ditangani lewat isBlocking()/collectConflicts() saat
+      // user memilih jam, bukan dengan menutup seluruh hari.
       const blocks =
-        b.status === BOOKING_STATUS.APPROVED ||
-        b.status === BOOKING_STATUS.ONGOING
+        b.bookingType === BOOKING_TYPE.SPD &&
+        (b.status === BOOKING_STATUS.APPROVED || b.status === BOOKING_STATUS.ONGOING)
 
       for (let d = start; d.getTime() <= end.getTime(); d = addDays(d, 1)) {
         const key = toKey(d)
