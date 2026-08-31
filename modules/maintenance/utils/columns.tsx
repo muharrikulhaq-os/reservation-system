@@ -8,7 +8,8 @@ import {
   type ColumnDef,
 } from '@/components/shared/table/DataTable'
 import { AppButton } from '@/components/ui-custom'
-import { formatDate, formatCurrency } from '@/lib'
+import { SafeImage } from '@/components/shared/media/SafeImage'
+import { formatDate, formatCurrency, resolveFileUrl } from '@/lib'
 import {
   isMaintenanceCompleted,
   maintenanceStatusCfg,
@@ -71,8 +72,13 @@ export const maintenanceColumns: ColumnDef<MaintenanceRecord, unknown>[] = [
     header: 'Kendaraan',
     cell: ({ row }) => (
       <div className="flex items-center gap-2.5">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
-          <Car className="h-4 w-4" />
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
+          <SafeImage
+            src={resolveFileUrl(row.original.vehiclePhotoUrl)}
+            alt={row.original.vehicleName}
+            className="h-full w-full object-cover"
+            fallback={<Car className="h-4 w-4" />}
+          />
         </span>
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-[var(--text-primary)]">

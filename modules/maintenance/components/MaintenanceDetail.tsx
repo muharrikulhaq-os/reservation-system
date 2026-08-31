@@ -50,6 +50,8 @@ export const MaintenanceDetail = ({ id }: { id: number }) => {
   const photos = (data.proofPhotos ?? [])
     .map((p) => resolveFileUrl(p))
     .filter((u): u is string => !!u)
+  // Foto kendaraan aslinya - kalau kosong/gagal dimuat, SafeImage jatuh ke ikon
+  const vehiclePhoto = resolveFileUrl(data.vehiclePhotoUrl)
 
   return (
     <div className="flex flex-col gap-6">
@@ -86,9 +88,26 @@ export const MaintenanceDetail = ({ id }: { id: number }) => {
         />
 
         <div className="mb-4 flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
-            <Car className="h-5 w-5" />
-          </span>
+          {vehiclePhoto ? (
+            <button
+              type="button"
+              onClick={() => setPreviewUrl(vehiclePhoto)}
+              aria-label="Perbesar foto kendaraan"
+              className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-[var(--border-card)]"
+            >
+              <SafeImage
+                src={vehiclePhoto}
+                alt={data.vehicleName}
+                className="h-full w-full object-cover"
+                fallbackClassName="bg-[var(--bg-subtle)] text-[var(--text-secondary)]"
+                fallback={<Car className="h-5 w-5" />}
+              />
+            </button>
+          ) : (
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
+              <Car className="h-5 w-5" />
+            </span>
+          )}
           <span className="rounded-full bg-[var(--bg-subtle)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-primary)]">
             {maintenanceTypeLabel(data.type)}
           </span>
@@ -147,7 +166,7 @@ export const MaintenanceDetail = ({ id }: { id: number }) => {
           {previewUrl && (
             <SafeImage
               src={previewUrl}
-              alt="Preview bukti pekerjaan"
+              alt="Preview foto"
               className="max-h-[80vh] w-full rounded-xl object-contain"
               fallbackClassName="h-64 w-full rounded-xl bg-[var(--bg-subtle)] text-[var(--text-disabled)]"
               fallback={<ImageOff className="h-10 w-10" />}

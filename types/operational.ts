@@ -93,6 +93,7 @@ export interface MaintenanceRecord {
   vehicleId: number
   vehicleName: string
   plateNumber: string
+  vehiclePhotoUrl: string | null
   maintenanceTypeId: number | null
   type: string           // mis. "routine" | "repair"
   status: string         // mis. "pending" | "completed"
