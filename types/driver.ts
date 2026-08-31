@@ -80,6 +80,7 @@ export interface DriverRatingsResult {
 export interface DriverQueryParams {
   page?: number
   limit?: number
+  search?: string
 }
 
 // --- Payloads ---

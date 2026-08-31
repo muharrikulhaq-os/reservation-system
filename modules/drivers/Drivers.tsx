@@ -1,39 +1,22 @@
 'use client'
 
-import { useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
 import { DataTable } from '@/components/shared/table/DataTable'
-import { useDebounce, usePagination } from '@/hooks'
+import { useTableFilter } from '@/hooks'
 import { useDriversPaginated } from './hooks/useDrivers'
 import { driverColumns } from './utils/columns'
 
 // ─────────────────────────────────────────
 // DRIVERS PAGE - daftar driver
-// Pagination dilakukan server-side.
-// API /drivers belum mendukung search, jadi
-// pencarian disaring di sisi klien - artinya
-// hanya berlaku pada halaman yang sedang tampil.
+// Search dan pagination dua-duanya server-side
+// (GET /drivers?search=) - pencarian menyaring
+// seluruh data, bukan cuma halaman yang tampil.
 // ─────────────────────────────────────────
 
 export const DriversPage = () => {
-  const [search, setSearch] = useState('')
-  const searchDebounced = useDebounce(search)
-  const { page, limit, setPage, setLimit } = usePagination()
+  const { search, setSearch, setPage, setLimit, params } = useTableFilter({})
 
-  const { data, isLoading } = useDriversPaginated({ page, limit })
-
-  const query = searchDebounced.trim().toLowerCase()
-
-  const filtered = useMemo(() => {
-    const list = data?.data ?? []
-    if (!query) return list
-    return list.filter(
-      (d) =>
-        d.name.toLowerCase().includes(query) ||
-        d.employeeId.toLowerCase().includes(query) ||
-        d.email.toLowerCase().includes(query),
-    )
-  }, [data, query])
+  const { data, isLoading } = useDriversPaginated(params)
 
   return (
     <div className="flex flex-col gap-4">
@@ -43,27 +26,22 @@ export const DriversPage = () => {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari driver..."
+            placeholder="Cari nama, NIK, atau email..."
             className="h-9 w-full rounded-lg border border-[var(--border-input)] bg-[var(--bg-card)] pl-9 pr-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-disabled)] focus:border-[var(--primary)] focus:outline-none"
           />
         </div>
-
-        {/* API belum punya endpoint search - beri tahu batasannya */}
-        {query && (
-          <p className="text-xs text-[var(--text-secondary)]">
-            Pencarian hanya menyaring halaman ini.
-          </p>
-        )}
       </div>
 
       <DataTable
-        data={filtered}
+        data={data?.data ?? []}
         columns={driverColumns}
         isLoading={isLoading}
         pagination={data?.pagination}
         onPageChange={setPage}
         onLimitChange={setLimit}
-        emptyMessage="Belum ada driver"
+        emptyMessage={
+          params.search ? 'Driver tidak ditemukan' : 'Belum ada driver'
+        }
       />
     </div>
   )
