@@ -9,6 +9,9 @@ export interface ApiResponse<T> {
   success: boolean
   message: string
   data: T
+  // Hadir kalau endpoint sukses tapi ingin memberi peringatan non-blocking
+  // (mis. jadwal maintenance bentrok booking lain) - lihat MaintenanceForm.
+  warning?: string
 }
 
 export interface ApiErrorResponse {

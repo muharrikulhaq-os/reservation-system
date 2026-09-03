@@ -105,7 +105,12 @@ export const MaintenanceForm = () => {
         odometer: data.odometer,
         totalCost: data.totalCost,
       },
-      { onSuccess: () => router.push('/maintenance') },
+      {
+        onSuccess: (res) => {
+          if (res.warning) alert(res.warning)
+          router.push('/maintenance')
+        },
+      },
     )
 
   return (
