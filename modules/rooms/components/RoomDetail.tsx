@@ -2,15 +2,18 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { MessageSquare, Star } from 'lucide-react'
 import { Card, CardHeader, CardSection, CardDivider, AdminOnly } from '@/components/common'
 import {
   AvailabilityCalendar,
   ResourceStatusBadge,
+  StarRating,
   PhotoUploader,
   AttachmentList,
   StatusChanger,
 } from '@/components/shared'
 import { AppButton } from '@/components/ui-custom'
+import { formatDateTime } from '@/lib'
 import { useAuthStore } from '@/store/auth.store'
 import type { ResourceStatus } from '@/types'
 import {
@@ -22,6 +25,9 @@ import {
   useDeleteRoom,
 } from '../hooks/useRooms'
 import { useDeleteAttachment } from '@/hooks'
+// Impor langsung dari file hook (bukan barrel) untuk menghindari siklus
+// impor rooms ⇄ booking, sama seperti DriverDetailModal.
+import { useRoomRatings } from '@/modules/booking/hooks/useBookings'
 
 // ─────────────────────────────────────────
 // ROOM DETAIL
@@ -37,6 +43,7 @@ export const RoomDetail = ({ roomId }: RoomDetailProps) => {
 
   const { data: room, isLoading } = useRoom(roomId)
   const { data: attachments } = useRoomAttachments(roomId)
+  const { data: ratingsData, isLoading: ratingsLoading } = useRoomRatings(roomId)
 
   const updateStatus = useUpdateRoomStatus()
   const updatePhoto = useUpdateRoomPhoto()
@@ -107,6 +114,65 @@ export const RoomDetail = ({ roomId }: RoomDetailProps) => {
             onUpload={(payload) => uploadAttachment.mutate(payload)}
             onDelete={(id) => deleteAttachment.mutate(id)}
           />
+        </Card>
+
+        {/* Rating ruangan - diisi pemilik booking setelah booking selesai */}
+        <Card>
+          <CardHeader title="Rating Ruangan" />
+
+          <div className="flex items-center gap-3 rounded-xl border border-[var(--border-card)] bg-[var(--bg-subtle)] px-4 py-3">
+            <Star className="h-5 w-5 fill-[#F59E0B] text-[#F59E0B]" />
+            <div>
+              <p className="text-lg font-bold leading-none text-[var(--text-primary)]">
+                {ratingsData?.averageRating != null
+                  ? ratingsData.averageRating.toFixed(1)
+                  : '-'}
+              </p>
+              <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                {ratingsData?.totalRatings ?? 0} ulasan
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">
+              <MessageSquare className="h-3.5 w-3.5" /> Ulasan
+            </p>
+
+            {ratingsLoading ? (
+              <p className="py-4 text-center text-sm text-[var(--text-disabled)]">
+                Memuat…
+              </p>
+            ) : (ratingsData?.ratings.length ?? 0) === 0 ? (
+              <p className="rounded-xl border border-dashed border-[var(--border-card)] bg-[var(--bg-subtle)] px-4 py-6 text-center text-sm text-[var(--text-disabled)]">
+                Belum ada ulasan untuk ruangan ini.
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {ratingsData!.ratings.map((r) => (
+                  <li
+                    key={r.id}
+                    className="rounded-xl border border-[var(--border-card)] p-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <StarRating value={r.rating} />
+                      <span className="text-xs text-[var(--text-disabled)]">
+                        {formatDateTime(r.createdAt)}
+                      </span>
+                    </div>
+                    <p className="mt-1.5 text-xs font-medium text-[var(--text-secondary)]">
+                      {r.ratedBy?.name ?? 'Anonim'}
+                    </p>
+                    {r.review && (
+                      <p className="mt-1 text-sm text-[var(--text-primary)]">
+                        “{r.review}”
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </Card>
       </div>
 

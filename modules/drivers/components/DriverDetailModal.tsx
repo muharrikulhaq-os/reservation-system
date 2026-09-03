@@ -7,13 +7,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Card, CardHeader, AdminOnly } from '@/components/common'
 import { StarRating, UserAvatar } from '@/components/shared'
 import { Badge } from '@/components/shared/badge/StatusBadge'
+import { InputSelect } from '@/components/ui-custom'
 import { formatDateTime } from '@/lib'
 // Impor langsung dari file hook (bukan barrel) untuk menghindari
-// siklus impor drivers ⇄ booking.
+// siklus impor drivers ⇄ booking / vehicles.
 import { useDriverRatings } from '@/modules/booking/hooks/useBookings'
-import type { Driver } from '@/types'
+import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
+import { useSetDriverFixedVehicle } from '../hooks/useDrivers'
+import type { Driver, SelectOption } from '@/types'
 
 // ─────────────────────────────────────────
 // DRIVER DETAIL MODAL
@@ -39,6 +43,18 @@ export const DriverDetailModal = ({ driver, open, onOpenChange }: Props) => {
   const { data, isLoading } = useDriverRatings(open ? driver.id : 0)
   const ratings = data?.ratings ?? []
   const avg = data?.averageRating ?? null
+
+  const { data: vehicles } = useVehicles(open ? { limit: 100 } : undefined)
+  const setFixedVehicle = useSetDriverFixedVehicle()
+
+  // Kendaraan yang belum punya supir tetap lain (atau memang sudah jadi
+  // pasangan tetap supir ini) - selain itu tidak muncul di pilihan.
+  const fixedVehicleOptions: SelectOption[] = (vehicles ?? [])
+    .filter((v) => !v.fixedDriver || v.fixedDriver.id === driver.id)
+    .map((v) => ({ value: v.id, label: `${v.name} (${v.plateNumber})` }))
+
+  const handleFixedVehicleChange = (value: string) =>
+    setFixedVehicle.mutate({ id: driver.id, vehicleId: value ? Number(value) : null })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -88,7 +104,36 @@ export const DriverDetailModal = ({ driver, open, onOpenChange }: Props) => {
                 )
               }
             />
+            <Row
+              label="Kendaraan Tetap"
+              value={
+                driver.fixedVehicle ? (
+                  <span className="rounded-md bg-[var(--primary-light)] px-2 py-0.5 text-xs font-semibold text-[var(--primary)]">
+                    {driver.fixedVehicle.plateNumber}
+                  </span>
+                ) : (
+                  '-'
+                )
+              }
+            />
           </div>
+
+          {/* Kendaraan tetap (admin) */}
+          <AdminOnly>
+            <Card className="mt-4">
+              <CardHeader
+                title="Atur Kendaraan Tetap"
+                description="Supir ini otomatis dipilih saat kendaraan tetapnya dibooking - tidak ada pilihan supir lain"
+              />
+              <InputSelect
+                placeholder="Tidak ada (bebas ditugaskan)"
+                options={fixedVehicleOptions}
+                value={driver.fixedVehicle?.id ?? ''}
+                disabled={setFixedVehicle.isPending}
+                onChange={(e) => handleFixedVehicleChange(e.target.value)}
+              />
+            </Card>
+          </AdminOnly>
 
           {/* Ringkasan rating */}
           <div className="mt-5 flex items-center gap-3 rounded-xl border border-[var(--border-card)] bg-[var(--bg-subtle)] px-4 py-3">

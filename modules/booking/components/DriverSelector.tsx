@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Car, Info, MapPin, Search, Zap } from 'lucide-react'
 import { cn } from '@/lib'
-import { Pagination, UserAvatar } from '@/components/shared'
+import { Pagination, UserAvatar, SpdActiveBadge } from '@/components/shared'
 import { InputText } from '@/components/ui-custom'
 import { useAvailableDrivers } from '@/modules/drivers'
 import type { AvailableDriver, PaginationMeta } from '@/types'
@@ -218,7 +218,7 @@ export const DriverSelector = ({
               </div>
 
               {/* Badge sisa kursi / status */}
-              <div className="shrink-0 text-right">
+              <div className="flex shrink-0 flex-col items-end gap-1 text-right">
                 {isFree ? (
                   <span className="inline-flex items-center rounded-full bg-[var(--bg-subtle)] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-secondary)]">
                     Kosong
@@ -234,6 +234,9 @@ export const DriverSelector = ({
                   >
                     Sisa {remaining} kursi
                   </span>
+                )}
+                {driver.isSpdActive && (
+                  <SpdActiveBadge title="Supir sedang bertugas SPD hari ini" />
                 )}
               </div>
             </div>

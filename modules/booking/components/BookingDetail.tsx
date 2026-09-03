@@ -59,6 +59,7 @@ import {
   useBookingMergeInfo,
   useBookingAttachments,
   useBookingDriverRating,
+  useBookingRoomRating,
   useCancelBooking,
   useReturnReport,
   useStartBooking,
@@ -71,6 +72,7 @@ import { BookingMergePanel } from "./BookingMergePanel";
 import { ReturnReportModal } from "./ReturnReportModal";
 import { StartBookingModal } from "./StartBookingModal";
 import { RateDriverModal } from "./RateDriverModal";
+import { RateRoomModal } from "./RateRoomModal";
 import { TripRecordTabs } from "./TripRecordTabs";
 import { FuelInputModal } from "@/modules/fuel";
 import { DriverProfileButton } from "@/modules/drivers";
@@ -471,6 +473,19 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
             />
           ))}
 
+        {/* Pemilik booking: beri rating ruangan setelah selesai. Room
+            tidak pernah di-merge (merge cuma untuk vehicle), jadi tidak
+            perlu penanganan "digabung" seperti rating driver di atas. */}
+        {currentUserId === booking.user.id &&
+          booking.status === BOOKING_STATUS.COMPLETED &&
+          booking.resource.type === RESOURCE_TYPE.ROOM && (
+            <RoomRatingCard
+              bookingId={booking.id}
+              roomName={booking.resource.name}
+              onSuccess={refetch}
+            />
+          )}
+
         {/* Driver: kirim laporan pengembalian - tetap tersedia saat OVERDUE */}
         {isDriver &&
           isOngoingOrOverdue &&
@@ -672,6 +687,85 @@ const RatingCard = ({
       <RateDriverModal
         bookingId={bookingId}
         driverName={driverName}
+        open={open}
+        onOpenChange={setOpen}
+        onSuccess={onSuccess}
+      />
+    </Card>
+  );
+};
+
+// ─────────────────────────────────────────
+// ROOM RATING CARD (COMPLETED - pemilik booking)
+// Sama seperti RatingCard (driver), tapi target rating-nya ruangan.
+// ─────────────────────────────────────────
+
+const RoomRatingCard = ({
+  bookingId,
+  roomName,
+  onSuccess,
+}: {
+  bookingId: number;
+  roomName?: string;
+  onSuccess?: () => void;
+}) => {
+  const { data: rating, isLoading, isError } = useBookingRoomRating(bookingId);
+  const alreadyRated = !!rating; // 404 → isError, rating undefined
+  const [open, setOpen] = useState(false);
+
+  // Auto-open sekali: hanya jika belum dinilai & belum pernah di-prompt.
+  useEffect(() => {
+    if (isLoading || alreadyRated) return;
+    const key = `booking-room-rating-prompted-${bookingId}`;
+    if (typeof window === "undefined") return;
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, "1");
+    setOpen(true);
+    // isError memastikan query 404 sudah selesai sebelum auto-open
+  }, [isLoading, alreadyRated, isError, bookingId]);
+
+  if (isLoading) return null;
+
+  // Sudah dinilai → kartu read-only
+  if (alreadyRated && rating) {
+    return (
+      <Card>
+        <CardHeader title="Rating Ruangan" />
+        <div className="flex items-center gap-3">
+          <StarRating value={rating.rating} size="h-5 w-5" />
+          <span className="text-sm font-semibold text-[var(--text-primary)]">
+            {rating.rating}/5
+          </span>
+        </div>
+        {rating.review && (
+          <p className="mt-3 rounded-lg bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--text-secondary)]">
+            “{rating.review}”
+          </p>
+        )}
+        <p className="mt-2 text-xs text-[var(--text-disabled)]">
+          Dinilai {formatDateTime(rating.createdAt)}
+        </p>
+      </Card>
+    );
+  }
+
+  // Belum dinilai → prompt
+  return (
+    <Card>
+      <CardHeader title="Rating Ruangan" />
+      <p className="mb-3 text-sm text-[var(--text-secondary)]">
+        Booking selesai. Beri penilaian untuk ruangan ini.
+      </p>
+      <AppButton
+        fullWidth
+        leftIcon={<Star className="h-4 w-4" />}
+        onClick={() => setOpen(true)}
+      >
+        Beri Rating
+      </AppButton>
+      <RateRoomModal
+        bookingId={bookingId}
+        roomName={roomName}
         open={open}
         onOpenChange={setOpen}
         onSuccess={onSuccess}

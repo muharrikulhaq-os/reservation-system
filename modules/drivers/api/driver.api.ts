@@ -69,4 +69,9 @@ export const driverService = {
         { params },
       )
       .then((r) => r.data),
+
+  setFixedVehicle: (id: number, vehicleId: number | null) =>
+    apiClient
+      .patch<ApiResponse<Driver>>(API_ENDPOINTS.DRIVERS.FIXED_VEHICLE(id), { vehicleId })
+      .then((r) => r.data),
 }

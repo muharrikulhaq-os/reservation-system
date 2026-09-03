@@ -37,6 +37,9 @@ export interface Vehicle {
   // terlepas dari jam booking-nya) - beda dari `status` yang tidak
   // membedakan sebab pemakaian.
   isSpdActive: boolean
+  // Supir tetap (permanen, diatur admin) - kalau terisi, booking kendaraan
+  // ini otomatis pakai supir ini, tidak ada pilihan supir lain.
+  fixedDriver: { id: number; name: string } | null
 }
 
 // Subset untuk nested di booking response
@@ -70,6 +73,25 @@ export interface RoomSummary {
   location: string
   capacity: number
   status: ResourceStatus
+}
+
+// --- Room Rating ---
+
+// Satu ulasan pada daftar rating ruangan (GET /bookings/rooms/:id/ratings)
+export interface RoomRating {
+  id: number
+  rating: 1 | 2 | 3 | 4 | 5
+  review: string | null
+  ratedBy: { id: number; name: string }
+  createdAt: string
+}
+
+// Ringkasan + daftar ulasan sebuah ruangan
+export interface RoomRatingsResult {
+  roomId: number
+  totalRatings: number
+  averageRating: number | null
+  ratings: RoomRating[]
 }
 
 // --- Shared Resource ref (dipakai di booking.resource) ---

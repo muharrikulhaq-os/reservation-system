@@ -65,6 +65,11 @@ export const vehicleService = {
       .delete<ApiResponse<null>>(API_ENDPOINTS.VEHICLES.BY_ID(id))
       .then((r) => r.data),
 
+  setFixedDriver: (id: number, driverId: number | null) =>
+    apiClient
+      .patch<ApiResponse<Vehicle>>(API_ENDPOINTS.VEHICLES.FIXED_DRIVER(id), { driverId })
+      .then((r) => r.data),
+
   // ── Categories ────────────────────────
 
   getCategories: () =>

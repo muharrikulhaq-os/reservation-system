@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle, Building2, Car, Clock } from 'lucide-react'
+import { AlertCircle, Building2, Car, Clock, UserCheck } from 'lucide-react'
 import { Card, CardHeader, CardSection } from '@/components/common'
 import { AppButton, InputTextArea, InputNumber } from '@/components/ui-custom'
 import { DriverSelector } from './DriverSelector'
@@ -468,26 +468,47 @@ export const BookingForm = () => {
         </Card>
       )}
 
-      {/* ── c2. Pilih driver - hanya VEHICLE, setelah jadwal ── */}
+      {/* ── c2. Driver - hanya VEHICLE, setelah jadwal ──
+          Kendaraan dengan supir tetap (fixedDriver) otomatis pakai supir itu -
+          tidak ada pilihan lain, jadi DriverSelector diganti info terkunci.
+          Kalau admin perlu ganti supir (mis. berhalangan), itu ditangani lewat
+          alur assign-vehicle admin setelah booking dibuat, bukan di sini. */}
       {isVehicle && selected && scheduleReady && startISO && endISO && (
-        <Card>
-          <CardHeader
-            title="Pilih Driver"
-            description="Kosongkan untuk penugasan otomatis / oleh admin"
-          />
-          <DriverSelector
-            startDate={startISO}
-            endDate={endISO}
-            passengerCount={passengerCount}
-            bookedVehicleCapacity={capacity ?? null}
-            bookedVehiclePlate={
-              isVehicle ? (selected as Vehicle).plateNumber : null
-            }
-            value={selectedDriverId}
-            onChange={setSelectedDriverId}
-            onSuggestedChange={setSuggestedDriverId}
-          />
-        </Card>
+        (selected as Vehicle).fixedDriver ? (
+          <Card>
+            <CardHeader title="Driver" />
+            <div className="flex items-center gap-3 rounded-lg border border-[var(--border-divider)] bg-[var(--bg-subtle)] px-4 py-3">
+              <UserCheck className="h-4 w-4 shrink-0 text-[var(--primary)]" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-[var(--text-primary)]">
+                  {(selected as Vehicle).fixedDriver!.name}
+                </p>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  Supir tetap kendaraan ini - dipilih otomatis
+                </p>
+              </div>
+            </div>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader
+              title="Pilih Driver"
+              description="Kosongkan untuk penugasan otomatis / oleh admin"
+            />
+            <DriverSelector
+              startDate={startISO}
+              endDate={endISO}
+              passengerCount={passengerCount}
+              bookedVehicleCapacity={capacity ?? null}
+              bookedVehiclePlate={
+                isVehicle ? (selected as Vehicle).plateNumber : null
+              }
+              value={selectedDriverId}
+              onChange={setSelectedDriverId}
+              onSuggestedChange={setSuggestedDriverId}
+            />
+          </Card>
+        )
       )}
 
       {/* ── d. Error alert ── */}

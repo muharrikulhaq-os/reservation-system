@@ -103,14 +103,20 @@ export const BookingTypeBadge = ({ bookingType, status, className }: BookingType
 // dari BookingTypeBadge yang menandai jenis SATU booking.
 // ─────────────────────────────────────────
 
-export const SpdActiveBadge = ({ className }: { className?: string }) => (
+export const SpdActiveBadge = ({
+  className,
+  title = 'Kendaraan sedang bertugas SPD hari ini - tidak bisa dibooking',
+}: {
+  className?: string
+  title?: string
+}) => (
   <span
     className={cn(
       'inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5',
       'text-[10px] font-semibold whitespace-nowrap text-[var(--danger)]',
       className,
     )}
-    title="Kendaraan sedang bertugas SPD hari ini - tidak bisa dibooking"
+    title={title}
   >
     <Zap className="h-2.5 w-2.5" /> Digunakan SPD
   </span>

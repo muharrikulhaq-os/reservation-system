@@ -13,6 +13,8 @@ import type {
   BookingStatusResponse,
   DriverRatingResponse,
   DriverRatingsResult,
+  RoomRatingResponse,
+  RoomRatingsResult,
   BookingQueryParams,
   CreateBookingPayload,
   StartBookingPayload,
@@ -20,6 +22,7 @@ import type {
   RejectBookingPayload,
   AssignVehiclePayload,
   RateDriverPayload,
+  RateRoomPayload,
   CreateAttachmentPayload,
   SubstituteResourcePayload,
   MergeBookingPayload,
@@ -116,6 +119,31 @@ export const bookingService = {
     apiClient
       .get<ApiResponse<DriverRatingsResult>>(
         API_ENDPOINTS.BOOKINGS.DRIVER_RATINGS(driverId),
+      )
+      .then((r) => r.data),
+
+  // ── Room Rating ───────────────────────
+
+  rateRoom: (bookingId: number, payload: RateRoomPayload) =>
+    apiClient
+      .post<ApiResponse<RoomRatingResponse>>(
+        API_ENDPOINTS.BOOKINGS.RATE_ROOM(bookingId),
+        payload,
+      )
+      .then((r) => r.data),
+
+  // Rating milik satu booking (404 bila belum dinilai)
+  getBookingRoomRating: (bookingId: number) =>
+    apiClient
+      .get<ApiResponse<RoomRatingResponse>>(
+        API_ENDPOINTS.BOOKINGS.ROOM_RATING_BY_BOOKING(bookingId),
+      )
+      .then((r) => r.data),
+
+  getRoomRatings: (roomId: number) =>
+    apiClient
+      .get<ApiResponse<RoomRatingsResult>>(
+        API_ENDPOINTS.BOOKINGS.ROOM_RATINGS(roomId),
       )
       .then((r) => r.data),
 

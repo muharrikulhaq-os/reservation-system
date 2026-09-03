@@ -225,6 +225,11 @@ export interface RateDriverPayload {
   review?: string
 }
 
+export interface RateRoomPayload {
+  rating: 1 | 2 | 3 | 4 | 5
+  review?: string
+}
+
 export interface CreateGuestBookingPayload {
   guestName: string
   guestEmail: string
@@ -247,6 +252,15 @@ export interface DriverRatingResponse {
   id: number
   bookingId: number
   driverId: number
+  rating: number
+  review: string | null
+  createdAt: string
+}
+
+export interface RoomRatingResponse {
+  id: number
+  bookingId: number
+  roomId: number
   rating: number
   review: string | null
   createdAt: string

@@ -13,6 +13,7 @@ import type {
   RejectBookingPayload,
   AssignVehiclePayload,
   RateDriverPayload,
+  RateRoomPayload,
   CreateAttachmentPayload,
   SubstituteResourcePayload,
   MergeBookingPayload,
@@ -76,6 +77,22 @@ export const useBookingDriverRating = (bookingId: number, enabled = true) =>
   useQuery({
     queryKey: [...QUERY_KEYS.BOOKINGS, bookingId, 'driver-rating'],
     queryFn:  () => bookingService.getBookingRating(bookingId).then((r) => r.data),
+    enabled:  !!bookingId && enabled,
+    retry:    false,
+  })
+
+export const useRoomRatings = (roomId: number) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.BOOKINGS, 'room-ratings', roomId],
+    queryFn:  () => bookingService.getRoomRatings(roomId).then((r) => r.data),
+    enabled:  !!roomId,
+  })
+
+// Rating milik satu booking ruangan - 404 = belum dinilai (jangan retry)
+export const useBookingRoomRating = (bookingId: number, enabled = true) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.BOOKINGS, bookingId, 'room-rating'],
+    queryFn:  () => bookingService.getBookingRoomRating(bookingId).then((r) => r.data),
     enabled:  !!bookingId && enabled,
     retry:    false,
   })
@@ -162,6 +179,15 @@ export const useRateDriver = () => {
   return useMutation({
     mutationFn: ({ bookingId, payload }: { bookingId: number; payload: RateDriverPayload }) =>
       bookingService.rateDriver(bookingId, payload),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.BOOKINGS }),
+  })
+}
+
+export const useRateRoom = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ bookingId, payload }: { bookingId: number; payload: RateRoomPayload }) =>
+      bookingService.rateRoom(bookingId, payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.BOOKINGS }),
   })
 }

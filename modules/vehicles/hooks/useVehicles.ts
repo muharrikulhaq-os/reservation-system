@@ -110,6 +110,20 @@ export const useDeleteVehicle = () => {
   })
 }
 
+// Sinkron dua arah dengan driver (mengubah kolom yang sama di backend) -
+// invalidate DRIVERS juga supaya form/daftar supir ikut ter-update.
+export const useSetVehicleFixedDriver = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, driverId }: { id: number; driverId: number | null }) =>
+      vehicleService.setFixedDriver(id, driverId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.VEHICLES })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.DRIVERS })
+    },
+  })
+}
+
 // ── Category Mutations ────────────────────
 
 export const useCreateVehicleCategory = () => {

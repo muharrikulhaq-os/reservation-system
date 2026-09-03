@@ -12,10 +12,10 @@ import {
   StatusChanger,
   Badge,
 } from '@/components/shared'
-import { AppButton } from '@/components/ui-custom'
+import { AppButton, InputSelect } from '@/components/ui-custom'
 import { formatOdometer } from '@/lib'
 import { useAuthStore } from '@/store/auth.store'
-import type { ResourceStatus } from '@/types'
+import type { ResourceStatus, SelectOption } from '@/types'
 import {
   useVehicle,
   useVehicleAttachments,
@@ -23,8 +23,12 @@ import {
   useUpdateVehiclePhoto,
   useUploadVehicleAttachment,
   useDeleteVehicle,
+  useSetVehicleFixedDriver,
 } from '../hooks/useVehicles'
 import { useDeleteAttachment } from '@/hooks'
+// Impor langsung dari file hook (bukan barrel) untuk menghindari siklus
+// impor vehicles ⇄ drivers.
+import { useDrivers } from '@/modules/drivers/hooks/useDrivers'
 
 // ─────────────────────────────────────────
 // VEHICLE DETAIL
@@ -46,6 +50,8 @@ export const VehicleDetail = ({ vehicleId }: VehicleDetailProps) => {
   const uploadAttachment = useUploadVehicleAttachment(vehicleId)
   const deleteAttachment = useDeleteAttachment()
   const deleteVehicle = useDeleteVehicle()
+  const setFixedDriver = useSetVehicleFixedDriver()
+  const { data: drivers } = useDrivers({ limit: 100 })
 
   if (isLoading) {
     return (
@@ -65,6 +71,15 @@ export const VehicleDetail = ({ vehicleId }: VehicleDetailProps) => {
 
   const handleStatusChange = (status: ResourceStatus) =>
     updateStatus.mutate({ id: vehicle.id, payload: { status } })
+
+  // Supir aktif yang belum punya kendaraan tetap lain (atau memang sudah
+  // jadi supir tetap kendaraan ini) - selain itu tidak muncul di pilihan.
+  const fixedDriverOptions: SelectOption[] = (drivers ?? [])
+    .filter((d) => d.isActive && (!d.fixedVehicle || d.fixedVehicle.id === vehicle.id))
+    .map((d) => ({ value: d.id, label: d.name }))
+
+  const handleFixedDriverChange = (value: string) =>
+    setFixedDriver.mutate({ id: vehicle.id, driverId: value ? Number(value) : null })
 
   const handleDelete = () => {
     if (!confirm(`Hapus kendaraan "${vehicle.name}"?`)) return
@@ -129,6 +144,23 @@ export const VehicleDetail = ({ vehicleId }: VehicleDetailProps) => {
               currentStatus={vehicle.status}
               loading={updateStatus.isPending}
               onStatusChange={handleStatusChange}
+            />
+          </Card>
+        </AdminOnly>
+
+        {/* Supir tetap (admin) */}
+        <AdminOnly>
+          <Card>
+            <CardHeader
+              title="Supir Tetap"
+              description="Kendaraan ini otomatis pakai supir ini saat dibooking - tidak ada pilihan supir lain"
+            />
+            <InputSelect
+              placeholder="Tidak ada (bebas dipilih saat booking)"
+              options={fixedDriverOptions}
+              value={vehicle.fixedDriver?.id ?? ''}
+              disabled={setFixedDriver.isPending}
+              onChange={(e) => handleFixedDriverChange(e.target.value)}
             />
           </Card>
         </AdminOnly>

@@ -110,3 +110,15 @@ export const useReleaseDriverFromVehicle = () => {
     },
   })
 }
+
+export const useSetDriverFixedVehicle = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, vehicleId }: { id: number; vehicleId: number | null }) =>
+      driverService.setFixedVehicle(id, vehicleId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.DRIVERS })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.VEHICLES })
+    },
+  })
+}

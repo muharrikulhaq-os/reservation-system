@@ -16,6 +16,9 @@ export interface Driver {
   phoneNumber: string
   isActive: boolean
   assignedPlate: string | null // null jika belum assigned ke kendaraan
+  // Kendaraan tetap (permanen, diatur admin) - beda dari assignedPlate yang
+  // mengikuti booking aktif. null jika supir ini tidak punya kendaraan tetap.
+  fixedVehicle: { id: number; plateNumber: string } | null
 }
 
 // Subset untuk nested di booking response
@@ -40,6 +43,9 @@ export interface AvailableDriver {
   overlappingPassengers: number // penumpang dari booking lain yang overlap
   remainingSeats: number | null // sisa kursi (null jika supir kosong)
   overlappingPurpose: string    // tujuan booking overlap (kosong jika tidak ada)
+  // true bila supir ini sedang terkunci tugas SPD hari ini (hari kalender
+  // penuh) - badge "Digunakan SPD" di daftar pemilihan supir.
+  isSpdActive: boolean
 }
 
 export interface AvailableDriverParams {
