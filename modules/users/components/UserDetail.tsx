@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { AlertCircle, KeyRound, Trash2 } from 'lucide-react'
+import { AlertCircle, KeyRound, MessageSquare, Star, Trash2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -13,12 +13,14 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardHeader, AdminOnly } from '@/components/common'
-import { UserAvatar, Badge, BookingStatusBadge, BookingTypeBadge } from '@/components/shared'
+import { UserAvatar, Badge, BookingStatusBadge, BookingTypeBadge, StarRating } from '@/components/shared'
 import { AppButton, InputText } from '@/components/ui-custom'
-import { formatDate, getErrorMessage, resolveFileUrl } from '@/lib'
+import { formatDate, formatDateTime, getErrorMessage, resolveFileUrl } from '@/lib'
 import { ROLE, RESOURCE_TYPE } from '@/constants'
 import type { RoleName } from '@/types'
-import { useBookings } from '@/modules/booking'
+import { useBookings, useRoomRatings } from '@/modules/booking'
+// Impor langsung dari file hook (bukan barrel) untuk menghindari siklus impor.
+import { useRoomKeepers } from '@/modules/room-keepers/hooks/useRoomKeepers'
 import {
   useUser,
   useToggleUserActive,
@@ -60,6 +62,17 @@ export const UserDetail = ({ userId }: UserDetailProps) => {
     { enabled: !!user },
   )
 
+  // Kalau user ini room keeper: cari record room_keeper-nya (tidak ada
+  // endpoint by-userId, jadi dicari dari daftar - kecil, aman) buat tampilkan
+  // ruangan yang dikelola + ringkasan rating.
+  const { data: roomKeepersList } = useRoomKeepers()
+  const roomKeeperRecord = user
+    ? roomKeepersList?.find((rk) => rk.userId === user.id)
+    : undefined
+  const { data: rkRatings, isLoading: rkRatingsLoading } = useRoomRatings(
+    roomKeeperRecord?.id ?? 0,
+  )
+
   if (isLoading) {
     return (
       <p className="py-16 text-center text-sm text-[var(--text-secondary)]">
@@ -77,6 +90,7 @@ export const UserDetail = ({ userId }: UserDetailProps) => {
   }
 
   const isDriver = user.role.name === ROLE.DRIVER
+  const isRoomKeeper = user.role.name === ROLE.ROOM_KEEPER
   const bookingList = bookings?.data ?? []
 
   const handleDelete = () => {
@@ -258,6 +272,86 @@ export const UserDetail = ({ userId }: UserDetailProps) => {
               <AppButton variant="link" size="sm" asChild>
                 <Link href="/drivers">Lihat data driver</Link>
               </AppButton>
+            </div>
+          </Card>
+        )}
+
+        {isRoomKeeper && roomKeeperRecord && (
+          <Card>
+            <CardHeader title="Informasi Room Keeper" />
+
+            {/* Ruangan yang dikelola */}
+            <div className="mb-4">
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-secondary)]">
+                Ruangan Dikelola
+              </p>
+              {roomKeeperRecord.rooms.length === 0 ? (
+                <p className="text-sm text-[var(--text-disabled)]">
+                  Belum ada ruangan yang ditugaskan.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  {roomKeeperRecord.rooms.map((rm) => (
+                    <span
+                      key={rm.id}
+                      className="rounded-full bg-[var(--bg-subtle)] px-2.5 py-0.5 text-xs font-medium text-[var(--text-primary)]"
+                    >
+                      {rm.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Ringkasan rating - rating dari pemesan ruangan masuk ke sini,
+                bukan ke ruangannya. */}
+            <div className="flex items-center gap-3 rounded-xl border border-[var(--border-card)] bg-[var(--bg-subtle)] px-4 py-3">
+              <Star className="h-5 w-5 fill-[#F59E0B] text-[#F59E0B]" />
+              <div>
+                <p className="text-lg font-bold leading-none text-[var(--text-primary)]">
+                  {rkRatings?.averageRating != null
+                    ? rkRatings.averageRating.toFixed(1)
+                    : '-'}
+                </p>
+                <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                  {rkRatings?.totalRatings ?? 0} ulasan
+                </p>
+              </div>
+            </div>
+
+            {/* Daftar ulasan */}
+            <div className="mt-4">
+              <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">
+                <MessageSquare className="h-3.5 w-3.5" /> Ulasan
+              </p>
+              {rkRatingsLoading ? (
+                <p className="py-4 text-center text-sm text-[var(--text-disabled)]">
+                  Memuat…
+                </p>
+              ) : (rkRatings?.ratings.length ?? 0) === 0 ? (
+                <p className="rounded-xl border border-dashed border-[var(--border-card)] bg-[var(--bg-subtle)] px-4 py-6 text-center text-sm text-[var(--text-disabled)]">
+                  Belum ada ulasan.
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {rkRatings!.ratings.map((r) => (
+                    <li key={r.id} className="rounded-xl border border-[var(--border-card)] p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <StarRating value={r.rating} />
+                        <span className="text-xs text-[var(--text-disabled)]">
+                          {formatDateTime(r.createdAt)}
+                        </span>
+                      </div>
+                      <p className="mt-1.5 text-xs font-medium text-[var(--text-secondary)]">
+                        {r.ratedBy?.name ?? 'Anonim'}
+                      </p>
+                      {r.review && (
+                        <p className="mt-1 text-sm text-[var(--text-primary)]">“{r.review}”</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </Card>
         )}

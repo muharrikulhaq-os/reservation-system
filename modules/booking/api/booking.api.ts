@@ -140,10 +140,11 @@ export const bookingService = {
       )
       .then((r) => r.data),
 
-  getRoomRatings: (roomId: number) =>
+  // Rating ditujukan ke room keeper, bukan ruangan - lihat catatan di types/resource.ts.
+  getRoomRatings: (roomKeeperId: number) =>
     apiClient
       .get<ApiResponse<RoomRatingsResult>>(
-        API_ENDPOINTS.BOOKINGS.ROOM_RATINGS(roomId),
+        API_ENDPOINTS.BOOKINGS.ROOM_RATINGS(roomKeeperId),
       )
       .then((r) => r.data),
 

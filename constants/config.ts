@@ -60,6 +60,9 @@ export const QUERY_KEYS = {
   // Drivers
   DRIVERS: ["drivers"] as const,
 
+  // Room Keepers
+  ROOM_KEEPERS: ["room-keepers"] as const,
+
   // Fuel
   FUEL: ["fuel-expenses"] as const,
   FUEL_TYPES: ["fuel-types"] as const,

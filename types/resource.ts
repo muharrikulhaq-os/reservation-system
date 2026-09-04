@@ -65,6 +65,10 @@ export interface Room {
   capacity: number
   status: ResourceStatus
   photoUrl: string | null
+  // Room keeper penanggung jawab ruangan ini (opsional) - beda dari supir
+  // tetap kendaraan, satu room keeper boleh bertanggung jawab atas lebih
+  // dari satu ruangan (N:1, bukan 1:1).
+  roomKeeper: { id: number; name: string } | null
 }
 
 export interface RoomSummary {
@@ -76,8 +80,11 @@ export interface RoomSummary {
 }
 
 // --- Room Rating ---
+// Rating ditujukan ke ROOM KEEPER, bukan ruangannya - lihat GetRoomKeeperIDByResourceID
+// di backend. Satu room keeper bisa punya banyak ruangan, jadi rating-nya
+// terkumpul lintas semua ruangan yang dia kelola.
 
-// Satu ulasan pada daftar rating ruangan (GET /bookings/rooms/:id/ratings)
+// Satu ulasan pada daftar rating room keeper (GET /bookings/room-keepers/:id/ratings)
 export interface RoomRating {
   id: number
   rating: 1 | 2 | 3 | 4 | 5
@@ -86,9 +93,9 @@ export interface RoomRating {
   createdAt: string
 }
 
-// Ringkasan + daftar ulasan sebuah ruangan
+// Ringkasan + daftar ulasan seorang room keeper
 export interface RoomRatingsResult {
-  roomId: number
+  roomKeeperId: number
   totalRatings: number
   averageRating: number | null
   ratings: RoomRating[]

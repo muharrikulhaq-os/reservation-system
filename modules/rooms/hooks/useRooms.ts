@@ -102,6 +102,18 @@ export const useDeleteRoom = () => {
   })
 }
 
+export const useSetRoomKeeper = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, roomKeeperId }: { id: number; roomKeeperId: number | null }) =>
+      roomService.setRoomKeeper(id, roomKeeperId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.ROOMS })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.ROOM_KEEPERS })
+    },
+  })
+}
+
 export const useUploadRoomAttachment = (roomId: number) => {
   const qc = useQueryClient()
   return useMutation({

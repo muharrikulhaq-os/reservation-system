@@ -60,6 +60,11 @@ export const roomService = {
       .delete<ApiResponse<null>>(API_ENDPOINTS.ROOMS.BY_ID(id))
       .then((r) => r.data),
 
+  setRoomKeeper: (id: number, roomKeeperId: number | null) =>
+    apiClient
+      .patch<ApiResponse<Room>>(API_ENDPOINTS.ROOMS.ROOM_KEEPER(id), { roomKeeperId })
+      .then((r) => r.data),
+
   // ── Attachments ───────────────────────
 
   getAttachments: (roomId: number) =>

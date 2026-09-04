@@ -1,21 +1,21 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { MessageSquare, Star } from 'lucide-react'
+import { toast } from 'sonner'
 import { Card, CardHeader, CardSection, CardDivider, AdminOnly } from '@/components/common'
 import {
   AvailabilityCalendar,
   ResourceStatusBadge,
-  StarRating,
   PhotoUploader,
   AttachmentList,
   StatusChanger,
 } from '@/components/shared'
-import { AppButton } from '@/components/ui-custom'
-import { formatDateTime } from '@/lib'
+import { AppButton, InputSelect } from '@/components/ui-custom'
+import { getErrorMessage } from '@/lib'
 import { useAuthStore } from '@/store/auth.store'
-import type { ResourceStatus } from '@/types'
+import type { ResourceStatus, SelectOption } from '@/types'
 import {
   useRoom,
   useRoomAttachments,
@@ -23,11 +23,12 @@ import {
   useUpdateRoomPhoto,
   useUploadRoomAttachment,
   useDeleteRoom,
+  useSetRoomKeeper,
 } from '../hooks/useRooms'
 import { useDeleteAttachment } from '@/hooks'
 // Impor langsung dari file hook (bukan barrel) untuk menghindari siklus
-// impor rooms ⇄ booking, sama seperti DriverDetailModal.
-import { useRoomRatings } from '@/modules/booking/hooks/useBookings'
+// impor rooms ⇄ room-keepers.
+import { useRoomKeepers } from '@/modules/room-keepers/hooks/useRoomKeepers'
 
 // ─────────────────────────────────────────
 // ROOM DETAIL
@@ -43,13 +44,24 @@ export const RoomDetail = ({ roomId }: RoomDetailProps) => {
 
   const { data: room, isLoading } = useRoom(roomId)
   const { data: attachments } = useRoomAttachments(roomId)
-  const { data: ratingsData, isLoading: ratingsLoading } = useRoomRatings(roomId)
+  // isActive difilter di sisi FE, bukan lewat param query - endpoint
+  // GET /room-keepers backend belum menerima filter isActive (sama seperti
+  // GET /drivers), jadi cukup ambil semua lalu saring di sini.
+  const { data: roomKeepers } = useRoomKeepers()
 
   const updateStatus = useUpdateRoomStatus()
   const updatePhoto = useUpdateRoomPhoto()
   const uploadAttachment = useUploadRoomAttachment(roomId)
   const deleteAttachment = useDeleteAttachment()
   const deleteRoom = useDeleteRoom()
+  const setRoomKeeper = useSetRoomKeeper()
+
+  // Pilihan room keeper - draft lokal, baru dikirim ke server saat tombol
+  // "Simpan" ditekan (bukan langsung tersimpan begitu dropdown berubah).
+  const [roomKeeperDraft, setRoomKeeperDraft] = useState<number | ''>('')
+  useEffect(() => {
+    setRoomKeeperDraft(room?.roomKeeper?.id ?? '')
+  }, [room?.roomKeeper?.id])
 
   if (isLoading) {
     return (
@@ -69,6 +81,25 @@ export const RoomDetail = ({ roomId }: RoomDetailProps) => {
 
   const handleStatusChange = (status: ResourceStatus) =>
     updateStatus.mutate({ id: room.id, payload: { status } })
+
+  // Satu room keeper boleh bertanggung jawab atas lebih dari satu ruangan
+  // (N:1) - jadi semua room keeper aktif muncul di pilihan, tidak difilter
+  // seperti supir tetap kendaraan.
+  const roomKeeperOptions: SelectOption[] = (roomKeepers ?? [])
+    .filter((rk) => rk.isActive)
+    .map((rk) => ({ value: rk.id, label: rk.name }))
+
+  const roomKeeperDirty = roomKeeperDraft !== (room.roomKeeper?.id ?? '')
+
+  const handleSaveRoomKeeper = () => {
+    setRoomKeeper.mutate(
+      { id: room.id, roomKeeperId: roomKeeperDraft ? Number(roomKeeperDraft) : null },
+      {
+        onSuccess: () => toast.success('Room keeper berhasil disimpan.'),
+        onError: (err) => toast.error(getErrorMessage(err)),
+      },
+    )
+  }
 
   const handleDelete = () => {
     if (!confirm(`Hapus ruangan "${room.name}"?`)) return
@@ -116,64 +147,6 @@ export const RoomDetail = ({ roomId }: RoomDetailProps) => {
           />
         </Card>
 
-        {/* Rating ruangan - diisi pemilik booking setelah booking selesai */}
-        <Card>
-          <CardHeader title="Rating Ruangan" />
-
-          <div className="flex items-center gap-3 rounded-xl border border-[var(--border-card)] bg-[var(--bg-subtle)] px-4 py-3">
-            <Star className="h-5 w-5 fill-[#F59E0B] text-[#F59E0B]" />
-            <div>
-              <p className="text-lg font-bold leading-none text-[var(--text-primary)]">
-                {ratingsData?.averageRating != null
-                  ? ratingsData.averageRating.toFixed(1)
-                  : '-'}
-              </p>
-              <p className="mt-1 text-xs text-[var(--text-secondary)]">
-                {ratingsData?.totalRatings ?? 0} ulasan
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-4">
-            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">
-              <MessageSquare className="h-3.5 w-3.5" /> Ulasan
-            </p>
-
-            {ratingsLoading ? (
-              <p className="py-4 text-center text-sm text-[var(--text-disabled)]">
-                Memuat…
-              </p>
-            ) : (ratingsData?.ratings.length ?? 0) === 0 ? (
-              <p className="rounded-xl border border-dashed border-[var(--border-card)] bg-[var(--bg-subtle)] px-4 py-6 text-center text-sm text-[var(--text-disabled)]">
-                Belum ada ulasan untuk ruangan ini.
-              </p>
-            ) : (
-              <ul className="space-y-3">
-                {ratingsData!.ratings.map((r) => (
-                  <li
-                    key={r.id}
-                    className="rounded-xl border border-[var(--border-card)] p-3"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <StarRating value={r.rating} />
-                      <span className="text-xs text-[var(--text-disabled)]">
-                        {formatDateTime(r.createdAt)}
-                      </span>
-                    </div>
-                    <p className="mt-1.5 text-xs font-medium text-[var(--text-secondary)]">
-                      {r.ratedBy?.name ?? 'Anonim'}
-                    </p>
-                    {r.review && (
-                      <p className="mt-1 text-sm text-[var(--text-primary)]">
-                        “{r.review}”
-                      </p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </Card>
       </div>
 
       {/* ── Kolom kanan (40%) ── */}
@@ -187,6 +160,34 @@ export const RoomDetail = ({ roomId }: RoomDetailProps) => {
               loading={updateStatus.isPending}
               onStatusChange={handleStatusChange}
             />
+          </Card>
+        </AdminOnly>
+
+        {/* Room keeper (admin) */}
+        <AdminOnly>
+          <Card>
+            <CardHeader
+              title="Room Keeper"
+              description="Penanggung jawab ruangan ini - satu room keeper boleh mengelola lebih dari satu ruangan. Rating dari pemesan masuk ke room keeper, bukan ruangannya."
+            />
+            <InputSelect
+              placeholder="Belum ada room keeper"
+              options={roomKeeperOptions}
+              value={roomKeeperDraft}
+              disabled={setRoomKeeper.isPending}
+              onChange={(e) =>
+                setRoomKeeperDraft(e.target.value ? Number(e.target.value) : '')
+              }
+            />
+            <AppButton
+              className="mt-3"
+              size="sm"
+              loading={setRoomKeeper.isPending}
+              disabled={!roomKeeperDirty || setRoomKeeper.isPending}
+              onClick={handleSaveRoomKeeper}
+            >
+              Simpan
+            </AppButton>
           </Card>
         </AdminOnly>
 
