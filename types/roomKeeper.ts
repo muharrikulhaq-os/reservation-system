@@ -13,6 +13,7 @@ export interface RoomKeeper {
   phoneNumber: string
   isActive: boolean
   // Ruangan yang jadi tanggung jawab room keeper ini - bisa lebih dari satu.
+  // Selalu array (bisa kosong), baik dari list maupun detail endpoint.
   rooms: { id: number; name: string; location: string }[]
 }
 

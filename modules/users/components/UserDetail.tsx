@@ -20,7 +20,7 @@ import { ROLE, RESOURCE_TYPE } from '@/constants'
 import type { RoleName } from '@/types'
 import { useBookings, useRoomRatings } from '@/modules/booking'
 // Impor langsung dari file hook (bukan barrel) untuk menghindari siklus impor.
-import { useRoomKeepers } from '@/modules/room-keepers/hooks/useRoomKeepers'
+import { useRoomKeepers, useRoomKeeper } from '@/modules/room-keepers/hooks/useRoomKeepers'
 import {
   useUser,
   useToggleUserActive,
@@ -62,13 +62,15 @@ export const UserDetail = ({ userId }: UserDetailProps) => {
     { enabled: !!user },
   )
 
-  // Kalau user ini room keeper: cari record room_keeper-nya (tidak ada
-  // endpoint by-userId, jadi dicari dari daftar - kecil, aman) buat tampilkan
-  // ruangan yang dikelola + ringkasan rating.
+  // Kalau user ini room keeper: cari ID room_keeper-nya dari daftar (tidak
+  // ada endpoint by-userId), lalu ambil detail lengkapnya - baris daftar
+  // tidak menyertakan "rooms" (cuma endpoint detail per-ID yang punya),
+  // jadi tidak cukup dipakai langsung.
   const { data: roomKeepersList } = useRoomKeepers()
-  const roomKeeperRecord = user
-    ? roomKeepersList?.find((rk) => rk.userId === user.id)
+  const roomKeeperId = user
+    ? roomKeepersList?.find((rk) => rk.userId === user.id)?.id
     : undefined
+  const { data: roomKeeperRecord } = useRoomKeeper(roomKeeperId ?? 0)
   const { data: rkRatings, isLoading: rkRatingsLoading } = useRoomRatings(
     roomKeeperRecord?.id ?? 0,
   )
