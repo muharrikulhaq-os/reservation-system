@@ -1,7 +1,9 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Card, CardHeader, CardSection, CardDivider, AdminOnly } from '@/components/common'
 import {
   AvailabilityCalendar,
@@ -13,7 +15,7 @@ import {
   Badge,
 } from '@/components/shared'
 import { AppButton, InputSelect } from '@/components/ui-custom'
-import { formatOdometer } from '@/lib'
+import { formatOdometer, getErrorMessage } from '@/lib'
 import { useAuthStore } from '@/store/auth.store'
 import type { ResourceStatus, SelectOption } from '@/types'
 import {
@@ -53,6 +55,13 @@ export const VehicleDetail = ({ vehicleId }: VehicleDetailProps) => {
   const setFixedDriver = useSetVehicleFixedDriver()
   const { data: drivers } = useDrivers({ limit: 100 })
 
+  // Pilihan supir tetap - draft lokal, baru dikirim ke server saat tombol
+  // "Simpan" ditekan (bukan langsung tersimpan begitu dropdown berubah).
+  const [fixedDriverDraft, setFixedDriverDraft] = useState<number | ''>('')
+  useEffect(() => {
+    setFixedDriverDraft(vehicle?.fixedDriver?.id ?? '')
+  }, [vehicle?.fixedDriver?.id])
+
   if (isLoading) {
     return (
       <p className="py-16 text-center text-sm text-[var(--text-secondary)]">
@@ -78,8 +87,17 @@ export const VehicleDetail = ({ vehicleId }: VehicleDetailProps) => {
     .filter((d) => d.isActive && (!d.fixedVehicle || d.fixedVehicle.id === vehicle.id))
     .map((d) => ({ value: d.id, label: d.name }))
 
-  const handleFixedDriverChange = (value: string) =>
-    setFixedDriver.mutate({ id: vehicle.id, driverId: value ? Number(value) : null })
+  const fixedDriverDirty = fixedDriverDraft !== (vehicle.fixedDriver?.id ?? '')
+
+  const handleSaveFixedDriver = () => {
+    setFixedDriver.mutate(
+      { id: vehicle.id, driverId: fixedDriverDraft ? Number(fixedDriverDraft) : null },
+      {
+        onSuccess: () => toast.success('Supir tetap berhasil disimpan.'),
+        onError: (err) => toast.error(getErrorMessage(err)),
+      },
+    )
+  }
 
   const handleDelete = () => {
     if (!confirm(`Hapus kendaraan "${vehicle.name}"?`)) return
@@ -158,10 +176,21 @@ export const VehicleDetail = ({ vehicleId }: VehicleDetailProps) => {
             <InputSelect
               placeholder="Tidak ada (bebas dipilih saat booking)"
               options={fixedDriverOptions}
-              value={vehicle.fixedDriver?.id ?? ''}
+              value={fixedDriverDraft}
               disabled={setFixedDriver.isPending}
-              onChange={(e) => handleFixedDriverChange(e.target.value)}
+              onChange={(e) =>
+                setFixedDriverDraft(e.target.value ? Number(e.target.value) : '')
+              }
             />
+            <AppButton
+              className="mt-3"
+              size="sm"
+              loading={setFixedDriver.isPending}
+              disabled={!fixedDriverDirty || setFixedDriver.isPending}
+              onClick={handleSaveFixedDriver}
+            >
+              Simpan
+            </AppButton>
           </Card>
         </AdminOnly>
 

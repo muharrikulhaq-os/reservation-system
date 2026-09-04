@@ -1,6 +1,8 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { MessageSquare, Star } from 'lucide-react'
+import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -10,8 +12,8 @@ import {
 import { Card, CardHeader, AdminOnly } from '@/components/common'
 import { StarRating, UserAvatar } from '@/components/shared'
 import { Badge } from '@/components/shared/badge/StatusBadge'
-import { InputSelect } from '@/components/ui-custom'
-import { formatDateTime } from '@/lib'
+import { AppButton, InputSelect } from '@/components/ui-custom'
+import { formatDateTime, getErrorMessage } from '@/lib'
 // Impor langsung dari file hook (bukan barrel) untuk menghindari
 // siklus impor drivers ⇄ booking / vehicles.
 import { useDriverRatings } from '@/modules/booking/hooks/useBookings'
@@ -53,8 +55,24 @@ export const DriverDetailModal = ({ driver, open, onOpenChange }: Props) => {
     .filter((v) => !v.fixedDriver || v.fixedDriver.id === driver.id)
     .map((v) => ({ value: v.id, label: `${v.name} (${v.plateNumber})` }))
 
-  const handleFixedVehicleChange = (value: string) =>
-    setFixedVehicle.mutate({ id: driver.id, vehicleId: value ? Number(value) : null })
+  // Pilihan kendaraan tetap - draft lokal, baru dikirim ke server saat
+  // tombol "Simpan" ditekan (bukan langsung tersimpan begitu dropdown berubah).
+  const [fixedVehicleDraft, setFixedVehicleDraft] = useState<number | ''>('')
+  useEffect(() => {
+    if (open) setFixedVehicleDraft(driver.fixedVehicle?.id ?? '')
+  }, [open, driver.fixedVehicle?.id])
+
+  const fixedVehicleDirty = fixedVehicleDraft !== (driver.fixedVehicle?.id ?? '')
+
+  const handleSaveFixedVehicle = () => {
+    setFixedVehicle.mutate(
+      { id: driver.id, vehicleId: fixedVehicleDraft ? Number(fixedVehicleDraft) : null },
+      {
+        onSuccess: () => toast.success('Kendaraan tetap berhasil disimpan.'),
+        onError: (err) => toast.error(getErrorMessage(err)),
+      },
+    )
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -128,10 +146,21 @@ export const DriverDetailModal = ({ driver, open, onOpenChange }: Props) => {
               <InputSelect
                 placeholder="Tidak ada (bebas ditugaskan)"
                 options={fixedVehicleOptions}
-                value={driver.fixedVehicle?.id ?? ''}
+                value={fixedVehicleDraft}
                 disabled={setFixedVehicle.isPending}
-                onChange={(e) => handleFixedVehicleChange(e.target.value)}
+                onChange={(e) =>
+                  setFixedVehicleDraft(e.target.value ? Number(e.target.value) : '')
+                }
               />
+              <AppButton
+                className="mt-3"
+                size="sm"
+                loading={setFixedVehicle.isPending}
+                disabled={!fixedVehicleDirty || setFixedVehicle.isPending}
+                onClick={handleSaveFixedVehicle}
+              >
+                Simpan
+              </AppButton>
             </Card>
           </AdminOnly>
 
