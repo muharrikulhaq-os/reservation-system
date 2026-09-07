@@ -103,7 +103,17 @@ jobs:
           # while still running.
           pm2 stop NextFrontend
           pnpm install --frozen-lockfile
+          if ($LASTEXITCODE -ne 0) { throw "pnpm install failed with code $LASTEXITCODE" }
           pnpm build
+          # pnpm build's own exit code is unreliable here (turbopack/next can
+          # exit 0 on some failures) - the real signal is whether the build
+          # actually wrote a fresh BUILD_ID. Without this check, a silently
+          # failed build fell through to `pm2 restart` on the STALE
+          # .next/standalone from the previous deploy, the health check below
+          # still passed (old server kept responding), and the whole job
+          # reported "Succeeded" while nothing new actually shipped.
+          if ($LASTEXITCODE -ne 0) { throw "pnpm build failed with code $LASTEXITCODE" }
+          if (-not (Test-Path .next\BUILD_ID)) { throw "pnpm build did not produce .next\BUILD_ID" }
           # output: standalone does NOT include static assets or public/ -
           # both must always be copied in manually, standalone server.js
           # serves neither on its own.
@@ -113,6 +123,7 @@ jobs:
           # --update-env can't drop it if PORT isn't in this shell already.
           $env:PORT = "80"
           pm2 restart NextFrontend --update-env
+          if ($LASTEXITCODE -ne 0) { throw "pm2 restart failed with code $LASTEXITCODE" }
           pm2 save
           Start-Sleep -Seconds 3
           $resp = Invoke-WebRequest -Uri http://localhost:80/ -UseBasicParsing -TimeoutSec 5
