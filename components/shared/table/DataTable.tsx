@@ -9,6 +9,7 @@ import {
   type ColumnDef,
   type TableOptions,
   type SortingState,
+  type OnChangeFn,
 } from '@tanstack/react-table'
 import { useState } from 'react'
 import { ChevronsUpDown, ChevronUp, ChevronDown } from 'lucide-react'
@@ -67,6 +68,13 @@ interface DataTableProps<TData> {
   enableSorting?: boolean
   className?:     string
   tableOptions?:  Partial<TableOptions<TData>>
+  // Server-side sorting (opsional). Kalau manualSorting true, state sorting
+  // dikontrol dari luar (biasanya dari useTableFilter.setSort) dan
+  // getSortedRowModel TIDAK dipakai - server yang mengurutkan datanya,
+  // DataTable cuma menampilkan urutan yang sudah dikirim dari API.
+  manualSorting?:    boolean
+  sorting?:          SortingState
+  onSortingChange?:  (sorting: SortingState) => void
 }
 
 // ─────────────────────────────────────────
@@ -84,16 +92,31 @@ export const DataTable = <TData,>({
   enableSorting  = false,
   className,
   tableOptions,
+  manualSorting,
+  sorting: sortingProp,
+  onSortingChange: onSortingChangeProp,
 }: DataTableProps<TData>) => {
-  const [sorting, setSorting] = useState<SortingState>([])
+  const [internalSorting, setInternalSorting] = useState<SortingState>([])
+  const sorting = manualSorting ? (sortingProp ?? []) : internalSorting
+
+  const handleSortingChange: OnChangeFn<SortingState> = (updater) => {
+    const next = typeof updater === 'function' ? updater(sorting) : updater
+    if (manualSorting) {
+      onSortingChangeProp?.(next)
+    } else {
+      setInternalSorting(next)
+    }
+  }
 
   const table = useReactTable({
     data,
     columns,
     state:               { sorting },
-    onSortingChange:     setSorting,
+    onSortingChange:     handleSortingChange,
     getCoreRowModel:     getCoreRowModel(),
-    getSortedRowModel:   enableSorting ? getSortedRowModel() : undefined,
+    getSortedRowModel:   enableSorting && !manualSorting ? getSortedRowModel() : undefined,
+    manualSorting:       manualSorting,
+    enableSorting:       enableSorting || manualSorting,
     manualPagination:    !!pagination,
     ...tableOptions,
   })

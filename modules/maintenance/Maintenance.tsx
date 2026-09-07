@@ -23,7 +23,7 @@ const isCompleted = (m: MaintenanceRecord) => isMaintenanceCompleted(m.status)
 const costOf = (m: MaintenanceRecord) => (m.totalCost ? Number(m.totalCost) || 0 : 0)
 
 export const Maintenance = () => {
-  const { filters, setFilter, params, setPage, setLimit } = useTableFilter({
+  const { filters, setFilter, sortBy, sortOrder, setSort, params, setPage, setLimit } = useTableFilter({
     status: undefined as 'ongoing' | 'completed' | undefined,
   })
 
@@ -108,6 +108,9 @@ export const Maintenance = () => {
         pagination={data?.pagination}
         onPageChange={setPage}
         onLimitChange={setLimit}
+        manualSorting
+        sorting={sortBy ? [{ id: sortBy, desc: sortOrder === 'desc' }] : []}
+        onSortingChange={(s) => setSort(s[0]?.id, s[0]?.desc ? 'desc' : 'asc')}
         emptyMessage="Belum ada data maintenance"
       />
     </div>

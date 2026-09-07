@@ -100,6 +100,7 @@ export const fuelColumns: ColumnDef<FuelExpense, unknown>[] = [
   }),
 
   ch.accessor('vehicleId', {
+    id: 'vehicleName',
     header: 'Kendaraan',
     cell: ({ getValue }) => <VehicleCell vehicleId={getValue()} />,
   }),
@@ -122,6 +123,7 @@ export const fuelColumns: ColumnDef<FuelExpense, unknown>[] = [
     id: 'jumlah',
     header: 'Jumlah',
     size: 100,
+    enableSorting: false,
     cell: ({ row }) => {
       const f = row.original
       const text =
@@ -138,6 +140,7 @@ export const fuelColumns: ColumnDef<FuelExpense, unknown>[] = [
     id: 'harga',
     header: 'Harga/Unit',
     size: 120,
+    enableSorting: false,
     cell: ({ row }) => {
       const f = row.original
       const price = f.fuelType === ENERGY_TYPE.LISTRIK ? (f.pricePerKwh ?? 0) : (f.pricePerLiter ?? 0)
@@ -163,6 +166,7 @@ export const fuelColumns: ColumnDef<FuelExpense, unknown>[] = [
     id: 'odometer',
     header: 'Odometer',
     size: 140,
+    enableSorting: false,
     cell: ({ row }) => {
       const f = row.original
       if (f.odometerBefore == null && f.odometerAfter == null) {
@@ -180,6 +184,7 @@ export const fuelColumns: ColumnDef<FuelExpense, unknown>[] = [
     id: 'actions',
     size: 70,
     header: '',
+    enableSorting: false,
     cell: ({ row }) => <RowActions row={row.original} />,
   }),
 ] as ColumnDef<FuelExpense, unknown>[]

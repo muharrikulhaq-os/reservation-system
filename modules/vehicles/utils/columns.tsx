@@ -85,6 +85,7 @@ export const vehicleColumns: ColumnDef<Vehicle, unknown>[] = [
     id: 'actions',
     size: 120,
     header: '',
+    enableSorting: false,
     cell: ({ row }) => (
       <div className="flex items-center justify-end gap-3">
         <Link

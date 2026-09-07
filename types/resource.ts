@@ -136,6 +136,8 @@ export interface VehicleQueryParams {
   search?: string
   categoryId?: number
   status?: ResourceStatus
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
 }
 
 export interface RoomQueryParams {
@@ -143,6 +145,8 @@ export interface RoomQueryParams {
   limit?: number
   search?: string
   status?: ResourceStatus
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
 }
 
 // --- Payloads ---

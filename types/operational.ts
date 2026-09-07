@@ -81,6 +81,8 @@ export interface FuelExpenseParams {
   vehicleId?: number
   fuelType?: EnergyType
   bookingId?: number
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
 }
 
 // ─────────────────────────────────────────
@@ -137,6 +139,8 @@ export interface MaintenanceParams {
   vehicleId?: number
   page?: number
   limit?: number
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
 }
 
 // ─────────────────────────────────────────

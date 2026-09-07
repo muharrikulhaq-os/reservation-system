@@ -14,7 +14,7 @@ import { driverColumns } from './utils/columns'
 // ─────────────────────────────────────────
 
 export const DriversPage = () => {
-  const { search, setSearch, setPage, setLimit, params } = useTableFilter({})
+  const { search, setSearch, sortBy, sortOrder, setSort, setPage, setLimit, params } = useTableFilter({})
 
   const { data, isLoading } = useDriversPaginated(params)
 
@@ -42,6 +42,9 @@ export const DriversPage = () => {
         emptyMessage={
           params.search ? 'Driver tidak ditemukan' : 'Belum ada driver'
         }
+        manualSorting
+        sorting={sortBy ? [{ id: sortBy, desc: sortOrder === 'desc' }] : []}
+        onSortingChange={(s) => setSort(s[0]?.id, s[0]?.desc ? 'desc' : 'asc')}
       />
     </div>
   )

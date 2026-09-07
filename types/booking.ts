@@ -178,6 +178,9 @@ export interface BookingQueryParams {
   driverId?: number
   startDate?: string // RFC3339
   endDate?: string
+  search?: string
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
 }
 
 export interface GuestBookingQueryParams {

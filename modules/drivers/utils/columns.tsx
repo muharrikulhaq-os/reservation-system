@@ -71,6 +71,7 @@ export const driverColumns: ColumnDef<Driver, unknown>[] = [
   ch.accessor('assignedPlate', {
     header: 'Kendaraan',
     size: 130,
+    enableSorting: false,
     cell: ({ getValue }) => {
       const plate = getValue()
       return plate ? (
@@ -98,6 +99,7 @@ export const driverColumns: ColumnDef<Driver, unknown>[] = [
     id: 'actions',
     size: 70,
     header: '',
+    enableSorting: false,
     cell: ({ row }) => <DriverRowActions driver={row.original} />,
   }),
 ] as ColumnDef<Driver, unknown>[]

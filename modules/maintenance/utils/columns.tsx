@@ -104,6 +104,7 @@ export const maintenanceColumns: ColumnDef<MaintenanceRecord, unknown>[] = [
 
   ch.accessor('description', {
     header: 'Deskripsi',
+    enableSorting: false,
     cell: ({ getValue }) => (
       <span className="line-clamp-1 max-w-[220px] text-sm text-[var(--text-secondary)]">
         {getValue()}
@@ -144,6 +145,7 @@ export const maintenanceColumns: ColumnDef<MaintenanceRecord, unknown>[] = [
   ch.accessor('createdBy', {
     header: 'Dicatat',
     size: 140,
+    enableSorting: false,
     cell: ({ getValue }) => (
       <span className="text-sm text-[var(--text-secondary)]">{getValue() ?? '-'}</span>
     ),
@@ -153,6 +155,7 @@ export const maintenanceColumns: ColumnDef<MaintenanceRecord, unknown>[] = [
     id: 'actions',
     size: 100,
     header: '',
+    enableSorting: false,
     cell: ({ row }) => <RowActions row={row.original} />,
   }),
 ] as ColumnDef<MaintenanceRecord, unknown>[]

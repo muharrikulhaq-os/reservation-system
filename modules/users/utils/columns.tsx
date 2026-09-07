@@ -61,7 +61,6 @@ export const userColumns = ({
     ch.accessor('email', {
       header: 'Email',
       size: 220,
-      enableSorting: false,
       cell: ({ getValue }) => (
         <span className="block max-w-[200px] truncate text-sm text-[var(--text-secondary)]">
           {getValue()}
@@ -73,7 +72,6 @@ export const userColumns = ({
       id: 'department',
       header: 'Departemen',
       size: 160,
-      enableSorting: false,
       cell: ({ getValue }) => (
         <span className="text-sm text-[var(--text-secondary)]">
           {getValue() as string}
@@ -85,7 +83,6 @@ export const userColumns = ({
       id: 'role',
       header: 'Role',
       size: 120,
-      enableSorting: false,
       cell: ({ getValue }) => {
         const role = getValue() as RoleName
         return <Badge variant={ROLE_BADGE[role] ?? 'muted'}>{role}</Badge>
@@ -95,7 +92,6 @@ export const userColumns = ({
     ch.accessor('isActive', {
       header: 'Status',
       size: 120,
-      enableSorting: false,
       cell: ({ getValue }) => {
         const active = getValue()
         return (
@@ -124,6 +120,7 @@ export const userColumns = ({
       id: 'actions',
       header: '',
       size: 130,
+      enableSorting: false,
       cell: ({ row }) => (
         <div className="flex items-center justify-end gap-1">
           <AppButton variant="link" size="sm" asChild>

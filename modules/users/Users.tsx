@@ -42,7 +42,7 @@ import { DepartmentManageModal } from './components/DepartmentManageModal'
 // ─────────────────────────────────────────
 
 export const Users = () => {
-  const { search, setSearch, filters, setFilter, page, setPage, setLimit, params } =
+  const { search, setSearch, filters, setFilter, sortBy, sortOrder, setSort, page, setPage, setLimit, params } =
     useTableFilter({
       roleId: undefined as number | undefined,
       departmentId: undefined as number | undefined,
@@ -202,7 +202,9 @@ export const Users = () => {
         pagination={data?.pagination}
         onPageChange={setPage}
         onLimitChange={setLimit}
-        enableSorting
+        manualSorting
+        sorting={sortBy ? [{ id: sortBy, desc: sortOrder === 'desc' }] : []}
+        onSortingChange={(s) => setSort(s[0]?.id, s[0]?.desc ? 'desc' : 'asc')}
         emptyMessage="Belum ada pengguna"
       />
 

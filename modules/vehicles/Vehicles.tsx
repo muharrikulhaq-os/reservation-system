@@ -26,7 +26,7 @@ const STATUS_TABS: { value: string; label: string }[] = [
 ]
 
 export const VehiclesPage = () => {
-  const { search, setSearch, filters, setFilter, setPage, setLimit, params } = useTableFilter({
+  const { search, setSearch, filters, setFilter, sortBy, sortOrder, setSort, setPage, setLimit, params } = useTableFilter({
     status: undefined as ResourceStatus | undefined,
     categoryId: undefined as number | undefined,
   })
@@ -120,6 +120,9 @@ export const VehiclesPage = () => {
           onPageChange={setPage}
           onLimitChange={setLimit}
           emptyMessage="Belum ada kendaraan"
+          manualSorting
+          sorting={sortBy ? [{ id: sortBy, desc: sortOrder === 'desc' }] : []}
+          onSortingChange={(s) => setSort(s[0]?.id, s[0]?.desc ? 'desc' : 'asc')}
         />
       ) : (
         <CardGrid

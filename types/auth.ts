@@ -233,4 +233,6 @@ export interface UserQueryParams {
   roleId?: number
   departmentId?: number
   isActive?: boolean
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
 }

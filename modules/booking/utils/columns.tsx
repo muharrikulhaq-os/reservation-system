@@ -66,6 +66,7 @@ export const bookingColumns: ColumnDef<Booking, unknown>[] = [
   ch.accessor("id", {
     header: "ID",
     size: 70,
+    enableSorting: false,
     cell: ({ getValue }) => (
       <span className="text-sm font-semibold text-[var(--text-primary)]">
         #{getValue()}
@@ -211,6 +212,7 @@ export const bookingColumns: ColumnDef<Booking, unknown>[] = [
     id: "actions",
     size: 90,
     header: "",
+    enableSorting: false,
     cell: ({ row }) => <RowActions booking={row.original} />,
   }),
 ] as ColumnDef<Booking, unknown>[];

@@ -26,7 +26,7 @@ const STATUS_TABS: { value: string; label: string }[] = [
 ]
 
 export const RoomsPage = () => {
-  const { search, setSearch, filters, setFilter, setPage, setLimit, params } = useTableFilter({
+  const { search, setSearch, filters, setFilter, sortBy, sortOrder, setSort, setPage, setLimit, params } = useTableFilter({
     status: undefined as ResourceStatus | undefined,
   })
 
@@ -99,6 +99,9 @@ export const RoomsPage = () => {
           onPageChange={setPage}
           onLimitChange={setLimit}
           emptyMessage="Belum ada ruangan"
+          manualSorting
+          sorting={sortBy ? [{ id: sortBy, desc: sortOrder === 'desc' }] : []}
+          onSortingChange={(s) => setSort(s[0]?.id, s[0]?.desc ? 'desc' : 'asc')}
         />
       ) : (
         <CardGrid

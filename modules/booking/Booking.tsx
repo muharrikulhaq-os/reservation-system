@@ -40,7 +40,7 @@ export const BookingPage = () => {
     ? RESOURCE_TYPE.ROOM
     : undefined;
 
-  const { search, setSearch, filters, setFilter, setPage, setLimit, params } =
+  const { search, setSearch, filters, setFilter, sortBy, sortOrder, setSort, setPage, setLimit, params } =
     useTableFilter({
       status: undefined as BookingStatus | undefined,
       resourceType: defaultResourceType,
@@ -131,6 +131,9 @@ export const BookingPage = () => {
           onPageChange={setPage}
           onLimitChange={setLimit}
           emptyMessage="Belum ada booking"
+          manualSorting
+          sorting={sortBy ? [{ id: sortBy, desc: sortOrder === 'desc' }] : []}
+          onSortingChange={(s) => setSort(s[0]?.id, s[0]?.desc ? 'desc' : 'asc')}
         />
       </div>
     </div>

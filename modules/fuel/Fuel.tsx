@@ -20,7 +20,7 @@ const isThisMonth = (iso: string) => {
 }
 
 export const Fuel = () => {
-  const { filters, setFilter, params, setPage, setLimit } = useTableFilter({
+  const { filters, setFilter, sortBy, sortOrder, setSort, params, setPage, setLimit } = useTableFilter({
     vehicleId: undefined as number | undefined,
     fuelType: undefined as EnergyType | undefined,
   })
@@ -125,6 +125,9 @@ export const Fuel = () => {
         pagination={data?.pagination}
         onPageChange={setPage}
         onLimitChange={setLimit}
+        manualSorting
+        sorting={sortBy ? [{ id: sortBy, desc: sortOrder === 'desc' }] : []}
+        onSortingChange={(s) => setSort(s[0]?.id, s[0]?.desc ? 'desc' : 'asc')}
         emptyMessage="Belum ada catatan pengisian"
       />
     </div>
