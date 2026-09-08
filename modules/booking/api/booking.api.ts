@@ -13,6 +13,7 @@ import type {
   BookingStatusResponse,
   DriverRatingResponse,
   DriverRatingsResult,
+  PendingDriverRating,
   RoomRatingResponse,
   RoomRatingsResult,
   BookingQueryParams,
@@ -119,6 +120,15 @@ export const bookingService = {
     apiClient
       .get<ApiResponse<DriverRatingsResult>>(
         API_ENDPOINTS.BOOKINGS.DRIVER_RATINGS(driverId),
+      )
+      .then((r) => r.data),
+
+  // Booking kendaraan milik user login yang sudah selesai tapi belum
+  // dinilai - dipakai untuk modal pengingat rating otomatis saat login.
+  getPendingDriverRatings: () =>
+    apiClient
+      .get<ApiResponse<PendingDriverRating[]>>(
+        API_ENDPOINTS.BOOKINGS.PENDING_DRIVER_RATINGS,
       )
       .then((r) => r.data),
 

@@ -28,6 +28,7 @@ export const NOTIFICATION_TYPE_CONFIG: Record<string, NotificationTypeConfig> = 
   RETURN_REPORT:      { label: 'Laporan Pengembalian',icon: 'FileCheck',     color: '#0284C7' },
   OVERTIME_RECORDED:  { label: 'Overtime Tercatat',   icon: 'Clock',         color: '#D97706' },
   DRIVER_RATED:       { label: 'Penilaian Diterima',  icon: 'Star',          color: '#D97706' },
+  RATE_DRIVER_PROMPT: { label: 'Beri Rating Driver',  icon: 'Star',          color: '#D97706' },
 } as const
 
 export const DEFAULT_NOTIFICATION_CONFIG: NotificationTypeConfig = {

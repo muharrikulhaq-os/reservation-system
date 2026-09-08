@@ -74,6 +74,7 @@ export const API_ENDPOINTS = {
   // ── Bookings ────────────────────────────
   BOOKINGS: {
     BASE:            `${API_PREFIX}/bookings`,
+    PENDING_DRIVER_RATINGS: `${API_PREFIX}/bookings/pending-driver-ratings`,
     BY_ID:           (id: number) => `${API_PREFIX}/bookings/${id}`,
     CANCEL:          (id: number) => `${API_PREFIX}/bookings/${id}/cancel`,
     APPROVE:         (id: number) => `${API_PREFIX}/bookings/${id}/approve`,

@@ -269,6 +269,17 @@ export interface RoomRatingResponse {
   createdAt: string
 }
 
+// Booking kendaraan milik user ini yang sudah COMPLETED, punya supir, tapi
+// belum dinilai - dipakai untuk modal pengingat rating otomatis saat login.
+export interface PendingDriverRating {
+  bookingId: number
+  resourceName: string
+  driverName: string
+  startDate: string
+  endDate: string
+  returnedAt: string | null
+}
+
 export interface DriverRatingSummary {
   id: number
   bookingId: number

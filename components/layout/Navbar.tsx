@@ -8,6 +8,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { UserAvatar } from "@/components/shared/avatar/Avatar";
 import { ReleaseNotesModal, useReleaseNotes } from "@/components/shared/ReleaseNotesModal";
 import { NotificationBell } from "@/modules/notifications";
+import { PendingRatingPrompt } from "@/modules/booking";
 
 // ─────────────────────────────────────────
 // PAGE TITLE MAP
@@ -116,6 +117,7 @@ export const Navbar = () => {
       </div>
       
       <ReleaseNotesModal open={showModal} onOpenChange={setShowModal} />
+      <PendingRatingPrompt />
     </header>
   );
 };

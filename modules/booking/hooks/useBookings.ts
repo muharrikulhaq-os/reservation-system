@@ -65,6 +65,16 @@ export const useBookingMergeInfo = (bookingId: number) =>
     enabled:  !!bookingId,
   })
 
+// Booking kendaraan milik user login yang sudah COMPLETED tapi belum
+// dinilai - dipakai untuk modal pengingat rating otomatis saat login.
+// Diinvalidasi otomatis oleh useRateDriver (invalidate broad QUERY_KEYS.BOOKINGS).
+export const usePendingDriverRatings = (options?: { enabled?: boolean }) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.BOOKINGS, 'pending-driver-ratings'],
+    queryFn:  () => bookingService.getPendingDriverRatings().then((r) => r.data),
+    enabled:  options?.enabled ?? true,
+  })
+
 export const useDriverRatings = (driverId: number) =>
   useQuery({
     queryKey: [...QUERY_KEYS.BOOKINGS, 'driver-ratings', driverId],
