@@ -7,7 +7,7 @@ import { DataTable, createColumnHelper, type ColumnDef, Badge } from '@/componen
 import { InputSelect } from '@/components/ui-custom'
 import { useDebounce } from '@/hooks'
 import { PAGINATION } from '@/constants'
-import { formatDateTime } from '@/lib'
+import { formatDateTime, parseUserAgent } from '@/lib'
 import type { AuditLog, ReportDateParams } from '@/types'
 import { useAuditLogs } from '../../hooks/useReports'
 
@@ -56,6 +56,20 @@ const auditColumns: ColumnDef<AuditLog, unknown>[] = [
     cell: ({ getValue }) => (
       <span className="text-sm text-[var(--text-secondary)]">{getValue()}</span>
     ),
+  }),
+  ch.display({
+    id: 'device',
+    header: 'IP / Device',
+    size: 170,
+    cell: ({ row }) => {
+      const { ipAddress, userAgent } = row.original
+      return (
+        <div className="flex flex-col" title={userAgent ?? undefined}>
+          <span className="text-sm text-[var(--text-primary)]">{ipAddress ?? '-'}</span>
+          <span className="text-xs text-[var(--text-disabled)]">{parseUserAgent(userAgent)}</span>
+        </div>
+      )
+    },
   }),
   ch.accessor('description', {
     header: 'Deskripsi',

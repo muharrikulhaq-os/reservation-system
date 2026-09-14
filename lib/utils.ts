@@ -172,6 +172,30 @@ export const resolveFileUrl = (
   return `${base}${path}`;
 };
 
+/** Ringkasan singkat dari User-Agent mentah, mis. "Chrome · Windows" - dipakai
+ * audit log untuk menunjukkan device/browser tanpa menampilkan string UA
+ * penuh yang panjang. Deteksi ringan berbasis substring, bukan library
+ * UA-parser lengkap - cukup untuk kasus umum. */
+export const parseUserAgent = (ua: string | null | undefined): string => {
+  if (!ua) return "-";
+
+  let browser = "Browser lain";
+  if (/Edg\//.test(ua)) browser = "Edge";
+  else if (/OPR\//.test(ua)) browser = "Opera";
+  else if (/Chrome\//.test(ua)) browser = "Chrome";
+  else if (/Firefox\//.test(ua)) browser = "Firefox";
+  else if (/Safari\//.test(ua)) browser = "Safari";
+
+  let os = "OS lain";
+  if (/Windows/.test(ua)) os = "Windows";
+  else if (/Mac OS X/.test(ua)) os = "macOS";
+  else if (/Android/.test(ua)) os = "Android";
+  else if (/iPhone|iPad|iOS/.test(ua)) os = "iOS";
+  else if (/Linux/.test(ua)) os = "Linux";
+
+  return `${browser} · ${os}`;
+};
+
 /**
  * URL koneksi WebSocket notifikasi (ws/wss + token via query param, karena
  * WebSocket browser & React Native tidak bisa set header Authorization saat

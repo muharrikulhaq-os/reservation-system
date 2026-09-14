@@ -275,6 +275,8 @@ export interface AuditLog {
   entityId: number | null
   description: string | null
   createdAt: string
+  ipAddress: string | null
+  userAgent: string | null
 }
 
 export interface AuditLogQueryParams {
