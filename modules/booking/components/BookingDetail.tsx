@@ -76,6 +76,7 @@ import { RateRoomModal } from "./RateRoomModal";
 import { TripRecordTabs } from "./TripRecordTabs";
 import { FuelInputModal } from "@/modules/fuel";
 import { DriverProfileButton } from "@/modules/drivers";
+import { useVehicle } from "@/modules/vehicles/hooks/useVehicles";
 
 // ─────────────────────────────────────────
 // BOOKING DETAIL
@@ -107,6 +108,10 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
   const { data: mergeInfo } = useBookingMergeInfo(bookingId);
   const { data: attachments } = useBookingAttachments(bookingId);
   const { data: returnReport } = useReturnReport(bookingId);
+  // Odometer faktual kendaraan - dipakai buat prefill/floor "Mulai
+  // Perjalanan" & "Laporan Pengembalian" (booking.assignedVehicle cuma
+  // ringkasan, tidak bawa currentOdometer, jadi perlu fetch terpisah).
+  const { data: assignedVehicle } = useVehicle(booking?.assignedVehicle?.id ?? 0);
 
   const isAdmin = useAuthStore((s) => s.isAdmin());
   const isDriver = useAuthStore((s) => s.isDriver());
@@ -429,7 +434,11 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           !!booking.assignedDriver && (
             <Card>
               <CardHeader title="Mulai Perjalanan" />
-              <StartBookingModal bookingId={booking.id} onSuccess={refetch} />
+              <StartBookingModal
+                bookingId={booking.id}
+                currentOdometer={assignedVehicle?.currentOdometer}
+                onSuccess={refetch}
+              />
             </Card>
           )}
 
@@ -492,7 +501,11 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           booking.resource.type === RESOURCE_TYPE.VEHICLE && (
             <Card>
               <CardHeader title="Laporan Pengembalian" />
-              <ReturnReportModal bookingId={booking.id} onSuccess={refetch} />
+              <ReturnReportModal
+                bookingId={booking.id}
+                minOdometer={booking.odometerStart ?? assignedVehicle?.currentOdometer}
+                onSuccess={refetch}
+              />
             </Card>
           )}
 

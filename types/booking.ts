@@ -112,6 +112,7 @@ export interface ReturnReport {
   }
   note: string
   location: string
+  odometer: number | null
   submittedAt: string
   photos: ReturnReportPhoto[]
 }
@@ -119,6 +120,7 @@ export interface ReturnReport {
 export interface SubmitReturnReportPayload {
   note: string
   location: string
+  odometer?: number
   photos?: File[] // multipart
 }
 

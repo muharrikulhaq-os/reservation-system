@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { AlertCircle, AlertTriangle, Play } from 'lucide-react'
 import {
   Dialog,
@@ -29,6 +29,13 @@ export const StartBookingModal = ({
   const [open, setOpen] = useState(false)
   const [odometer, setOdometer] = useState<number | undefined>(currentOdometer)
   const [photo, setPhoto] = useState<File | null>(null)
+
+  // currentOdometer datang dari fetch terpisah (bisa belum siap saat modal
+  // ini mount) - sinkronkan begitu nilainya tersedia, useState initial value
+  // saja tidak cukup karena cuma dipakai sekali di mount pertama.
+  useEffect(() => {
+    if (currentOdometer != null) setOdometer((prev) => prev ?? currentOdometer)
+  }, [currentOdometer])
 
   const start = useStartBooking()
 
@@ -78,9 +85,14 @@ export const StartBookingModal = ({
           <InputNumber
             label="Odometer Sekarang"
             required
-            min={0}
+            min={currentOdometer ?? 0}
             value={odometer ?? ''}
             onChange={setOdometer}
+            hint={
+              currentOdometer != null
+                ? `Catatan terakhir kendaraan: ${currentOdometer.toLocaleString('id-ID')} km`
+                : undefined
+            }
           />
 
           <InputFile

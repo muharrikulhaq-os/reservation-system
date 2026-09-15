@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { AppButton, InputText, InputTextArea, InputFile } from '@/components/ui-custom'
+import { AppButton, InputText, InputTextArea, InputFile, InputNumber } from '@/components/ui-custom'
 import { getErrorMessage } from '@/lib'
 import { useSubmitReturnReport } from '../hooks/useBookings'
 
@@ -20,29 +20,37 @@ import { useSubmitReturnReport } from '../hooks/useBookings'
 
 interface ReturnReportModalProps {
   bookingId: number
+  // Floor untuk odometer akhir - idealnya odometer awal trip ini
+  // (booking.odometerStart), fallback ke odometer kendaraan saat ini kalau
+  // trip ini tidak punya catatan awal. Data faktual harus tetap naik.
+  minOdometer?: number
   onSuccess?: () => void
 }
 
-export const ReturnReportModal = ({ bookingId, onSuccess }: ReturnReportModalProps) => {
+export const ReturnReportModal = ({ bookingId, minOdometer, onSuccess }: ReturnReportModalProps) => {
   const [open, setOpen] = useState(false)
   const [note, setNote] = useState('')
   const [location, setLocation] = useState('')
+  const [odometer, setOdometer] = useState<number | undefined>()
   const [photos, setPhotos] = useState<File[]>([])
 
   const submit = useSubmitReturnReport()
 
-  const canSubmit = note.trim().length > 0 && location.trim().length > 0
+  const odoInvalid = odometer != null && minOdometer != null && odometer < minOdometer
+  const canSubmit =
+    note.trim().length > 0 && location.trim().length > 0 && odometer != null && !odoInvalid
 
   const handleSubmit = async () => {
     if (!canSubmit) return
     try {
       await submit.mutateAsync({
         bookingId,
-        payload: { note: note.trim(), location: location.trim(), photos },
+        payload: { note: note.trim(), location: location.trim(), odometer, photos },
       })
       setOpen(false)
       setNote('')
       setLocation('')
+      setOdometer(undefined)
       setPhotos([])
       onSuccess?.()
     } catch {
@@ -90,6 +98,16 @@ export const ReturnReportModal = ({ bookingId, onSuccess }: ReturnReportModalPro
             placeholder="Kantor Pusat, Jl. Sudirman No. 1"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
+          />
+
+          <InputNumber
+            label="Odometer Akhir"
+            required
+            min={minOdometer ?? 0}
+            value={odometer ?? ''}
+            onChange={setOdometer}
+            error={odoInvalid ? `Tidak boleh kurang dari odometer awal trip (${minOdometer?.toLocaleString('id-ID')} km)` : undefined}
+            hint={minOdometer != null ? `Odometer awal trip: ${minOdometer.toLocaleString('id-ID')} km` : undefined}
           />
 
           <InputFile

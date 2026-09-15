@@ -204,6 +204,18 @@ export const TripRecordTabs = ({ booking, linkedBookingIds = [] }: TripRecordTab
                 }
               />
 
+              {report.odometer != null && (
+                <FieldBlock
+                  label="Odometer Akhir"
+                  value={
+                    <span className="flex items-center gap-1.5">
+                      <Gauge className="h-4 w-4 text-[var(--text-secondary)]" />
+                      {formatNumber(report.odometer)} km
+                    </span>
+                  }
+                />
+              )}
+
               {report.photos.length > 0 && (
                 <div>
                   <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-secondary)]">

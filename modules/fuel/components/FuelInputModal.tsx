@@ -326,20 +326,24 @@ export const FuelInputModal = ({
             </div>
           )}
 
-          {/* Odometer */}
+          {/* Odometer - "Awal" dikunci ke data faktual kendaraan (currentOdometer),
+              tidak bisa diketik bebas, supaya jadi satu-satunya sumber kebenaran
+              yang sama dipakai saat start trip / laporan pengembalian. */}
           <div className="grid grid-cols-2 gap-3">
             <InputNumber
               label="Odometer Awal"
               min={0}
               value={odometerBefore ?? ''}
               onChange={setOdometerBefore}
+              disabled
+              hint={selectedVehicle ? undefined : 'Pilih kendaraan dulu'}
             />
             <InputNumber
               label="Odometer Akhir"
-              min={0}
+              min={odometerBefore ?? 0}
               value={odometerAfter ?? ''}
               onChange={setOdometerAfter}
-              error={odoInvalid ? 'Harus lebih besar dari awal' : undefined}
+              error={odoInvalid ? 'Harus lebih besar dari odometer awal' : undefined}
             />
           </div>
 

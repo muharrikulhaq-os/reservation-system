@@ -201,6 +201,9 @@ export const bookingService = {
     const form = new FormData()
     form.append('note', payload.note)
     form.append('location', payload.location)
+    if (payload.odometer != null) {
+      form.append('odometer', String(payload.odometer))
+    }
     if (payload.photos) {
       payload.photos.forEach((photo) => form.append('photos[]', photo))
     }
