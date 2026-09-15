@@ -115,7 +115,7 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
         {
           onSuccess: () => {
             onSuccess?.()
-            router.push(`/users/${initialData!.id}`)
+            router.back()
           },
         },
       )

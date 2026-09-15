@@ -81,7 +81,6 @@ export const OverviewSection = ({ range }: { range: ReportDateParams }) => {
             xKey="period"
             formatX={formatPeriodShort}
             lines={[
-              { key: 'count', label: 'Total', color: 'var(--primary)' },
               { key: 'vehicle', label: 'Kendaraan', color: 'var(--info)' },
               { key: 'room', label: 'Ruangan', color: 'var(--success)' },
             ]}

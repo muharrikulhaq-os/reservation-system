@@ -129,6 +129,11 @@ export const userColumns = ({
             </Link>
           </AppButton>
           <AdminOnly>
+            <AppButton variant="link" size="sm" asChild>
+              <Link href={`/users/${row.original.id}/edit`}>Edit</Link>
+            </AppButton>
+          </AdminOnly>
+          <AdminOnly>
             <AppButton
               variant="ghost"
               size="icon-sm"
