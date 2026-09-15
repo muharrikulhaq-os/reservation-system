@@ -133,6 +133,7 @@ export interface CreateUserPayload {
 }
 
 export interface UpdateUserPayload {
+  employeeId?: string
   name?: string
   email?: string
   roleId?: number

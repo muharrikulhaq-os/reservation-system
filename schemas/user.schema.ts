@@ -22,9 +22,10 @@ export const createUserSchema = z.object({
   phoneNumber: z.string().optional(),
 })
 
-// --- Update User (tanpa password & employeeId) ---
+// --- Update User (tanpa password) ---
 
 export const updateUserSchema = z.object({
+  employeeId: z.string().min(1, 'Employee ID wajib diisi'),
   name: z.string().min(1, 'Nama wajib diisi'),
   email: z.string().min(1, 'Email wajib diisi').email('Format email tidak valid'),
   roleId: z.number({ error: 'Pilih role' }).int().positive('Pilih role'),

@@ -48,8 +48,8 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
     setError,
     formState: { errors },
   } = useForm<CreateUserFormData>({
-    // Resolver dipilih sesuai mode; field ekstra (password/employeeId)
-    // diabaikan oleh updateUserSchema saat edit.
+    // Resolver dipilih sesuai mode; field ekstra (password) diabaikan
+    // oleh updateUserSchema saat edit.
     resolver: zodResolver(
       isEdit ? updateUserSchema : createUserSchema,
     ) as unknown as Resolver<CreateUserFormData>,
@@ -105,6 +105,7 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
     if (isEdit) {
       updateMutation.mutate(
         {
+          employeeId: data.employeeId,
           name: data.name,
           email: data.email,
           roleId: data.roleId,
@@ -138,12 +139,11 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
         />
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          {/* Row 1: employeeId (create-only / disabled saat edit) + name */}
+          {/* Row 1: employeeId + name */}
           <InputText
             label="Employee ID"
             required
             placeholder="cth. EMP-001"
-            disabled={isEdit}
             error={errors.employeeId?.message}
             {...register('employeeId')}
           />
