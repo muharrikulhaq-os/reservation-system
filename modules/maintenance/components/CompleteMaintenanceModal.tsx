@@ -15,7 +15,7 @@ import {
   InputTextArea,
   InputFile,
 } from '@/components/ui-custom'
-import { getErrorMessage, formatDate } from '@/lib'
+import { getErrorMessage, formatDate, wibHM, wibToISO, wibYMD } from '@/lib'
 import { MAINTENANCE_STATUS } from '@/constants'
 import type { MaintenanceRecord } from '@/types'
 import { useUpdateMaintenance, useCompleteMaintenance } from '../hooks/useMaintenance'
@@ -27,12 +27,8 @@ interface CompleteMaintenanceModalProps {
   onSuccess?: () => void
 }
 
-const todayYMD = () => {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
-    d.getDate(),
-  ).padStart(2, '0')}`
-}
+// Tanggal WIB hari ini, bukan zona browser.
+const todayYMD = () => wibYMD(new Date())
 
 export const CompleteMaintenanceModal = ({
   maintenance,
@@ -55,12 +51,13 @@ export const CompleteMaintenanceModal = ({
   const canSubmit = !!endDate && !!cost && photos.length > 0
 
   // endDate WAJIB > startDate (CHECK chk_maintenance_dates). Pakai tanggal terpilih
-  // + jam sekarang; jika tetap <= startDate, dorong 1 menit setelah startDate.
+  // + jam sekarang (keduanya WIB); jika tetap <= startDate, dorong 1 menit
+  // setelah startDate.
   const buildEndIso = () => {
     const start = new Date(maintenance.startDate)
     const now = new Date()
-    const [y, m, d] = endDate.split('-').map(Number)
-    let end = new Date(y, m - 1, d, now.getHours(), now.getMinutes(), now.getSeconds())
+    const seconds = String(now.getUTCSeconds()).padStart(2, '0')
+    let end = new Date(wibToISO(endDate, wibHM(now), seconds))
     if (end.getTime() <= start.getTime()) {
       end = new Date(start.getTime() + 60_000)
     }
@@ -139,7 +136,7 @@ export const CompleteMaintenanceModal = ({
             <InputDate
               label="Tanggal Selesai"
               required
-              min={maintenance.startDate.slice(0, 10)}
+              min={wibYMD(maintenance.startDate)}
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
             />

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { CalendarRange, ChevronDown, ChevronUp } from 'lucide-react'
 import { CardSection } from '@/components/common'
 import { InputDate, InputSelect } from '@/components/ui-custom'
-import { cn, formatShortDate } from '@/lib'
+import { cn, formatShortDate, wibToISO, wibYMD } from '@/lib'
 import type { SelectOption } from '@/types'
 
 // ─────────────────────────────────────────
@@ -43,10 +43,14 @@ const PRESET_LABEL: Record<Preset, string> = {
   '12m': '12 Bulan Terakhir',
 }
 
-// ISO → "YYYY-MM-DD" untuk <input type="date">
-const toDateValue = (iso: string) => (iso ? iso.slice(0, 10) : '')
-// "YYYY-MM-DD" → ISO (awal hari, UTC)
-const toIso = (value: string) => (value ? new Date(value).toISOString() : '')
+// ISO → "YYYY-MM-DD" (tanggal WIB) untuk <input type="date">. Dulu
+// `iso.slice(0, 10)` = tanggal UTC: awal bulan WIB ("...-30T17:00:00Z")
+// tampil sebagai tanggal sebelumnya.
+const toDateValue = (iso: string) => (iso ? wibYMD(iso) : '')
+// "YYYY-MM-DD" → ISO: DARI = 00:00 WIB, SAMPAI = 23:59:59 WIB supaya data
+// pada tanggal terakhir ikut terhitung.
+const toStartIso = (value: string) => (value ? wibToISO(value) : '')
+const toEndIso = (value: string) => (value ? wibToISO(value, '23:59', '59') : '')
 
 export const DateRangeFilter = ({
   startDate,
@@ -101,14 +105,14 @@ export const DateRangeFilter = ({
         <InputDate
           label="DARI"
           value={toDateValue(startDate)}
-          onChange={(e) => onStartChange(toIso(e.target.value))}
+          onChange={(e) => onStartChange(toStartIso(e.target.value))}
         />
       </div>
       <div className="w-40">
         <InputDate
           label="SAMPAI"
           value={toDateValue(endDate)}
-          onChange={(e) => onEndChange(toIso(e.target.value))}
+          onChange={(e) => onEndChange(toEndIso(e.target.value))}
         />
       </div>
 

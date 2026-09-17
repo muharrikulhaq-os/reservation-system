@@ -16,7 +16,7 @@ import { UserAvatar, SafeImage, UserProfileButton } from '@/components/shared'
 import { AppButton } from '@/components/ui-custom'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { StatCard } from '@/modules/dashboard/components/StatCard'
-import { formatDate, resolveFileUrl } from '@/lib'
+import { formatDate, isSameWibDay, resolveFileUrl, wibMonthBounds } from '@/lib'
 import { BOOKING_STATUS, RESOURCE_TYPE } from '@/constants'
 import type { Booking } from '@/types'
 import {
@@ -29,23 +29,10 @@ import {
 // Helpers
 // ─────────────────────────────────────────
 
-const isToday = (iso: string | null) => {
-  if (!iso) return false
-  const d = new Date(iso)
-  const now = new Date()
-  return (
-    d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate()
-  )
-}
+// "Hari ini" & "bulan ini" menurut WIB, bukan zona browser.
+const isToday = (iso: string | null) => !!iso && isSameWibDay(iso, new Date())
 
-const monthBounds = () => {
-  const now = new Date()
-  const start = new Date(now.getFullYear(), now.getMonth(), 1)
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
-  return { start: start.toISOString(), end: end.toISOString() }
-}
+const monthBounds = () => wibMonthBounds()
 
 // ─────────────────────────────────────────
 // APPROVAL QUEUE (admin)
