@@ -32,12 +32,15 @@ const DAY_MS = 86_400_000
 // Preset → rentang tanggal [start, end]
 const presetRange = (preset: Preset): { start: string; end: string } => {
   const now = new Date()
-  const end = now.toISOString()
   const p = wibParts(now)
   let start: Date
+  let end = now
   switch (preset) {
     case 'today':
+      // Seharian penuh WIB (00:00-23:59:59), sama dengan preset "Hari Ini"
+      // di mobile - booking yang dijadwalkan nanti sore tetap ikut terhitung.
       start = fromWib(p.year, p.month, p.day)
+      end = fromWib(p.year, p.month, p.day, 23, 59, 59)
       break
     case '7d':
       start = new Date(now.getTime() - 7 * DAY_MS)
@@ -52,7 +55,7 @@ const presetRange = (preset: Preset): { start: string; end: string } => {
       start = fromWib(p.year - 1, p.month, p.day, p.hour, p.minute, p.second)
       break
   }
-  return { start: start.toISOString(), end }
+  return { start: start.toISOString(), end: end.toISOString() }
 }
 
 const TABS = [
