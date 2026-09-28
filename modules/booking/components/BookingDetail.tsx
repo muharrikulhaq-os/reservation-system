@@ -7,9 +7,11 @@ import {
   AlertTriangle,
   ArrowRightLeft,
   Ban,
+  CalendarX,
   Car,
   Check,
   CheckCircle,
+  Circle,
   Clock,
   DoorOpen,
   Download,
@@ -50,7 +52,12 @@ import {
   resolveFileUrl,
   formatFileSize,
 } from "@/lib";
-import { BOOKING_STATUS, RESOURCE_TYPE, ACTIVITY_ACTION_CONFIG } from "@/constants";
+import {
+  BOOKING_STATUS,
+  RESOURCE_TYPE,
+  ACTIVITY_ACTION_CONFIG,
+  ACTIVITY_ACTION_FALLBACK,
+} from "@/constants";
 import type { BookingActivityAction } from "@/types";
 import { useAuthStore } from "@/store/auth.store";
 import {
@@ -96,10 +103,13 @@ const ACTIVITY_ICON: Record<BookingActivityAction, React.ComponentType<{ classNa
   START: Play,
   COMPLETE: CheckCircle,
   RATE_DRIVER: Star,
+  RATE_ROOM: Star,
   SUBSTITUTE_RESOURCE: ArrowRightLeft,
   MERGE: Merge,
   SUBMIT_RETURN_REPORT: FileCheck,
   OVERDUE: AlertTriangle,
+  EXPIRED: CalendarX,
+  IGNORED: CalendarX,
 };
 
 export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
@@ -515,8 +525,13 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
             <CardHeader title="Riwayat Aktivitas" />
             <ol className="relative ml-3 space-y-5 border-l border-[var(--border-divider)] pl-6">
               {activity.map((item) => {
-                const cfg = ACTIVITY_ACTION_CONFIG[item.action];
-                const Icon = ACTIVITY_ICON[item.action];
+                // Timeline dibaca langsung dari audit_logs, jadi action-nya
+                // tidak dijamin ada di map ini (backend bisa menulis action
+                // baru sebelum frontend di-deploy). Tanpa fallback, cfg
+                // undefined → cfg.color melempar dan seluruh halaman detail
+                // gagal dirender.
+                const cfg = ACTIVITY_ACTION_CONFIG[item.action] ?? ACTIVITY_ACTION_FALLBACK;
+                const Icon = ACTIVITY_ICON[item.action] ?? Circle;
                 return (
                   <li key={item.id} className="relative">
                     <span

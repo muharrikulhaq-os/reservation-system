@@ -180,9 +180,22 @@ export const ACTIVITY_ACTION_CONFIG = {
   ASSIGN:              { label: 'Driver & Kendaraan Ditugaskan', icon: 'UserCheck',      color: '#2D2CE8' },
   START:               { label: 'Dimulai',                       icon: 'Play',           color: '#0284C7' },
   COMPLETE:            { label: 'Selesai',                       icon: 'CheckCircle',    color: '#16A34A' },
-  RATE_DRIVER:         { label: 'Rating Diberikan',              icon: 'Star',           color: '#D97706' },
+  RATE_DRIVER:         { label: 'Rating Supir Diberikan',        icon: 'Star',           color: '#D97706' },
+  RATE_ROOM:           { label: 'Rating Ruangan Diberikan',      icon: 'Star',           color: '#D97706' },
   SUBSTITUTE_RESOURCE: { label: 'Resource Dialihkan',            icon: 'ArrowRightLeft', color: '#7C3AED' },
   MERGE:               { label: 'Booking Digabungkan',           icon: 'Merge',          color: '#0284C7' },
   SUBMIT_RETURN_REPORT:{ label: 'Laporan Pengembalian Dikirim',  icon: 'FileCheck',      color: '#0284C7' },
   OVERDUE:             { label: 'Terlambat Dikembalikan',       icon: 'AlertTriangle',  color: '#D97706' },
+  EXPIRED:             { label: 'Hangus (Tidak Dimulai)',        icon: 'CalendarX',      color: '#9CA3AF' },
+  IGNORED:             { label: 'Hangus (Tanpa Respons Admin)',  icon: 'CalendarX',      color: '#9CA3AF' },
 } as const satisfies Record<BookingActivityAction, { label: string; icon: string; color: string }>
+
+// Fallback untuk action yang belum dikenal frontend. Timeline dibaca langsung
+// dari audit_logs, jadi backend bisa mulai menulis action baru sebelum build
+// frontend menyusul - tanpa fallback, lookup ke ACTIVITY_ACTION_CONFIG
+// menghasilkan undefined dan render halaman detail booking langsung error.
+export const ACTIVITY_ACTION_FALLBACK = {
+  label: 'Aktivitas',
+  icon: 'Circle',
+  color: '#6B7280',
+} as const

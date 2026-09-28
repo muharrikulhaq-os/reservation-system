@@ -39,7 +39,13 @@ export type BookingActivityAction =
   | 'START'
   | 'COMPLETE'
   | 'RATE_DRIVER'
+  | 'RATE_ROOM'
   | 'SUBSTITUTE_RESOURCE'
   | 'MERGE'
   | 'SUBMIT_RETURN_REPORT'
   | 'OVERDUE'
+  // Transisi otomatis berbasis waktu (dipicu sistem, tanpa aktor) - booking
+  // yang sudah disetujui tapi tidak pernah dimulai, dan booking yang tidak
+  // pernah direspons admin sampai jadwalnya terlewat.
+  | 'EXPIRED'
+  | 'IGNORED'
