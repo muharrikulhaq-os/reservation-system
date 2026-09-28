@@ -99,13 +99,25 @@ export const DriverDetailModal = ({ driver, open, onOpenChange }: Props) => {
               </p>
             </div>
             <div className="ml-auto shrink-0">
-              {driver.isActive ? (
+              {/* Akun nonaktif menang atas status supir - lihat catatan di
+                  kolom Status pada daftar driver. */}
+              {!driver.userIsActive ? (
+                <Badge variant="muted">Akun Nonaktif</Badge>
+              ) : driver.isActive ? (
                 <Badge variant="success">Aktif</Badge>
               ) : (
                 <Badge variant="muted">Nonaktif</Badge>
               )}
             </div>
           </div>
+
+          {!driver.userIsActive && (
+            <p className="rounded-xl border border-[var(--border-card)] bg-[var(--bg-subtle)] px-4 py-3 text-xs text-[var(--text-secondary)]">
+              Akun pengguna supir ini dinonaktifkan, jadi ia tidak akan muncul
+              sebagai pilihan saat membuat booking meski status supirnya aktif.
+              Aktifkan kembali akunnya dari menu Pengguna.
+            </p>
+          )}
 
           <div className="divide-y divide-[var(--border-divider)]">
             <Row label="Telepon" value={driver.phoneNumber || '-'} />

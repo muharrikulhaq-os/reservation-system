@@ -86,9 +86,15 @@ export const driverColumns: ColumnDef<Driver, unknown>[] = [
 
   ch.accessor('isActive', {
     header: 'Status',
-    size: 110,
-    cell: ({ getValue }) =>
-      getValue() ? (
+    size: 150,
+    // Akun nonaktif diprioritaskan tampil: supir dengan isActive true tapi
+    // akun user nonaktif tetap TIDAK bisa dipilih saat membuat booking, jadi
+    // menampilkan "Aktif" saja bikin admin bingung kenapa supirnya hilang
+    // dari daftar pilihan.
+    cell: ({ row, getValue }) =>
+      !row.original.userIsActive ? (
+        <Badge variant="muted">Akun Nonaktif</Badge>
+      ) : getValue() ? (
         <Badge variant="success">Aktif</Badge>
       ) : (
         <Badge variant="muted">Nonaktif</Badge>

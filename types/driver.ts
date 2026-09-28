@@ -14,7 +14,14 @@ export interface Driver {
   profilePhoto?: string | null
   licenseNumber: string
   phoneNumber: string
+  // Status supir (menu Driver) - "boleh ditugaskan".
   isActive: boolean
+  // Status akun user-nya (menu Pengguna) - "akun masih hidup". Dua flag ini
+  // TERPISAH di database dan tidak saling mengikuti; supir hanya bisa dipilih
+  // saat membuat booking kalau KEDUANYA true. Jadi isActive true tapi
+  // userIsActive false = tampak aktif di daftar driver, tapi memang sengaja
+  // tidak muncul sebagai pilihan supir.
+  userIsActive: boolean
   assignedPlate: string | null // null jika belum assigned ke kendaraan
   // Kendaraan tetap (permanen, diatur admin) - beda dari assignedPlate yang
   // mengikuti booking aktif. null jika supir ini tidak punya kendaraan tetap.
