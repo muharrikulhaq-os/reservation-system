@@ -13,10 +13,10 @@
 
 import { useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { QUERY_KEYS, API_ENDPOINTS } from '@/constants'
-import { buildWsUrl } from '@/lib'
+import { QUERY_KEYS, API_ENDPOINTS, DATA_CHANGED_EVENT } from '@/constants'
+import { buildWsUrl, createTopicInvalidator } from '@/lib'
 import { useAuthStore } from '@/store/auth.store'
-import type { NotificationSocketMessage } from '@/types'
+import type { DataChangedSocketMessage, NotificationSocketMessage } from '@/types'
 
 const RECONNECT_BASE_DELAY_MS = 1_000
 const RECONNECT_MAX_DELAY_MS = 30_000
@@ -43,22 +43,35 @@ export const useNotificationSocket = (options?: UseNotificationSocketOptions) =>
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null
     let attempt = 0
     let cleanedUp = false
+    let hasConnected = false
+    // DATA_CHANGED → invalidate hanya query yang bergantung pada topiknya.
+    const invalidator = createTopicInvalidator(qc)
 
     const connect = () => {
       socket = new WebSocket(buildWsUrl(API_ENDPOINTS.NOTIFICATIONS.WS, accessToken))
 
       socket.onopen = () => {
         attempt = 0
+        // Tersambung ULANG: event selama terputus bisa terlewat → anggap
+        // semua data basi (yang tampil di-fetch, sisanya saat dibuka).
+        if (hasConnected) invalidator.push()
+        hasConnected = true
       }
 
       socket.onmessage = (event) => {
-        // Backend (WritePump) bisa menggabung beberapa pesan yang di-queue
-        // jadi satu frame teks, dipisah "\n" - jangan asumsikan satu frame
-        // = satu JSON.
+        // Server lama (WritePump) menggabung pesan antrean jadi satu frame
+        // dipisah "\n"; server baru mengirim satu JSON per frame.
         const lines = String(event.data).split('\n').filter(Boolean)
         for (const line of lines) {
           try {
-            const msg = JSON.parse(line) as NotificationSocketMessage
+            const parsed = JSON.parse(line) as
+              | NotificationSocketMessage
+              | DataChangedSocketMessage
+            if (parsed.type === DATA_CHANGED_EVENT) {
+              invalidator.push((parsed as DataChangedSocketMessage).topics)
+              continue
+            }
+            const msg = parsed as NotificationSocketMessage
             qc.invalidateQueries({ queryKey: QUERY_KEYS.NOTIFICATIONS })
             qc.invalidateQueries({ queryKey: QUERY_KEYS.NOTIFICATIONS_UNREAD_COUNT })
             onMessageRef.current?.(msg)
@@ -84,6 +97,7 @@ export const useNotificationSocket = (options?: UseNotificationSocketOptions) =>
 
     return () => {
       cleanedUp = true
+      invalidator.dispose()
       if (reconnectTimer) clearTimeout(reconnectTimer)
       socket?.close()
     }

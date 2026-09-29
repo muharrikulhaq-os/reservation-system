@@ -44,6 +44,23 @@ export interface SaveDeviceTokenPayload {
 // (createAndSend), bukan lewat struct/sqlc.
 // ─────────────────────────────────────────
 
+/** Topik data pada event DATA_CHANGED (kontrak backend & mobile). */
+export type SyncTopic =
+  | 'booking'
+  | 'vehicle'
+  | 'room'
+  | 'driver'
+  | 'user'
+  | 'roomKeeper'
+  | 'fuel'
+  | 'maintenance'
+
+/** Sinyal perubahan data (bukan notifikasi untuk pengguna). */
+export interface DataChangedSocketMessage {
+  type: 'DATA_CHANGED'
+  topics: SyncTopic[]
+}
+
 export interface NotificationSocketMessage {
   type: string
   title: string

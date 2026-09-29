@@ -179,6 +179,11 @@ useQuery({ queryKey: ['bookings'] })
 useQuery({ queryKey: [...QUERY_KEYS.BOOKINGS, params] })
 ```
 
+### Sinkronisasi realtime — DATA_CHANGED
+Backend mengirim `{ type: "DATA_CHANGED", topics }` lewat WebSocket ke semua klien setiap ada request tulis sukses (dari web, mobile, atau pengguna lain). `useNotificationSocket` meng-invalidate query key yang terdaftar untuk topik itu di `SYNC_TOPIC_QUERY_KEYS` (`constants/sync.ts`) — query yang tampil di-fetch ulang, sisanya saat dibuka. Tanpa polling.
+- Query key **baru** yang menampilkan data server → daftarkan di topik yang memengaruhinya (termasuk data turunan).
+- `onSuccess` mutasi tetap invalidate key-nya sendiri (respons instan di tab ini); event socket menangani tab/perangkat lain.
+
 ### Form — selalu RHF + Zod
 ```ts
 const form = useForm<BookingFormData>({

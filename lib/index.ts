@@ -16,3 +16,6 @@ export * from "./utils";
 
 // zona waktu - semua tampilan & input tanggal/jam memakai WIB
 export * from "./wib";
+
+// sinkronisasi data realtime - invalidasi query per topik DATA_CHANGED
+export * from "./dataSync";
