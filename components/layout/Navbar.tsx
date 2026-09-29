@@ -5,6 +5,7 @@ import { Search, HelpCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
+import { useSyncAuthUser } from "@/hooks";
 import { UserAvatar } from "@/components/shared/avatar/Avatar";
 import { ReleaseNotesModal, useReleaseNotes } from "@/components/shared/ReleaseNotesModal";
 import { NotificationBell } from "@/modules/notifications";
@@ -78,6 +79,8 @@ export const Navbar = () => {
   const title = usePageTitle();
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  // Nama/role di header ikut /auth/me (berubah tanpa reload).
+  useSyncAuthUser();
   const { showModal, setShowModal } = useReleaseNotes();
 
   return (

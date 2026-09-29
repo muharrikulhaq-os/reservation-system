@@ -16,6 +16,8 @@ interface AuthStore {
   // Actions
   setAuth: (user: AuthUser, accessToken: string, refreshToken: string) => void
   setAccessToken: (token: string) => void
+  // Perbarui data user tanpa menyentuh token (sinkron dari /auth/me)
+  updateUser: (user: AuthUser) => void
   clearAuth: () => void
 
   // Helpers
@@ -40,6 +42,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     tokenStorage.setAccess(token)
     set({ accessToken: token })
   },
+
+  updateUser: (user) => set({ user }),
 
   clearAuth: () => {
     tokenStorage.clearAll()

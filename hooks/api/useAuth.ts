@@ -2,6 +2,7 @@
 // AUTH HOOKS - dengan cookie sync & store
 // ─────────────────────────────────────────
 
+import { useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { QUERY_KEYS } from '@/constants'
@@ -9,6 +10,7 @@ import { authService } from '@/services'
 import { tokenStorage, syncTokensToCookies, clearTokenCookies } from '@/lib'
 import { useAuthStore } from '@/store/auth.store'
 import type {
+  AuthUser,
   LoginPayload,
   ChangePasswordPayload,
   ForgotPasswordPayload,
@@ -24,6 +26,46 @@ export const useMe = () =>
     queryFn:  () => authService.getMe().then((r) => r.data),
     retry:    false,
   })
+
+/**
+ * Jaga user di auth store (dibaca Navbar/Sidebar) tetap sama dengan
+ * /auth/me. Store hanya diisi sekali saat halaman dimuat, jadi tanpa ini
+ * perubahan nama/role/departemen akun sendiri (mis. oleh admin lain) baru
+ * terlihat setelah reload. AUTH_ME ikut di-invalidate topik `user`
+ * (constants/sync.ts). Pasang SEKALI di layout terproteksi.
+ */
+export const useSyncAuthUser = () => {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const { data } = useQuery({
+    queryKey: QUERY_KEYS.AUTH_ME,
+    queryFn: () => authService.getMe().then((r) => r.data),
+    enabled: isAuthenticated,
+    retry: false,
+  })
+
+  useEffect(() => {
+    if (!data) return
+    const { user, accessToken, updateUser } = useAuthStore.getState()
+    if (!user) return
+    const next: AuthUser = {
+      id: data.id,
+      employeeId: data.employeeId,
+      name: data.name,
+      email: data.email,
+      role: data.role.name,
+      department: data.department.name,
+    }
+    const changed = (Object.keys(next) as (keyof AuthUser)[]).some(
+      (k) => next[k] !== user[k],
+    )
+    if (!changed) return
+    updateUser(next)
+    // Cookie role dipakai proxy.ts untuk gating rute.
+    if (next.role !== user.role && accessToken) {
+      syncTokensToCookies(accessToken, next.role)
+    }
+  }, [data])
+}
 
 // ── Mutations ────────────────────────────
 

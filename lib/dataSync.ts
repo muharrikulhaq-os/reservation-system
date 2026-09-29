@@ -1,57 +1,84 @@
 // ─────────────────────────────────────────
 // DATA SYNC - invalidasi query per topik (lihat constants/sync.ts)
-// Bebas window/document: dipakai hook socket yang juga siap React Native.
+// Bebas window/document: siap dipakai ulang di React Native.
+//
+// Dua sumber perubahan, satu jalur invalidasi:
+// - LOKAL  : respons request tulis membawa header X-Data-Changed (topik dari
+//            backend) → interceptor axios → invalidate segera. Tidak
+//            bergantung pada WebSocket dan tidak perlu daftar key per mutasi.
+// - REMOTE : event WebSocket DATA_CHANGED dari tab/perangkat/pengguna lain
+//            → digabung sebentar lalu invalidate. Event dengan `origin` =
+//            CLIENT_ID diabaikan (sudah ditangani jalur lokal).
 // ─────────────────────────────────────────
 
-import type { QueryClient } from "@tanstack/react-query";
 import { DATA_SYNC_DEBOUNCE_MS, SYNC_TOPIC_QUERY_KEYS } from "@/constants";
 import type { SyncTopic } from "@/types";
+import { queryClient } from "./queryClient";
+
+/** Id acak per tab - dikirim sebagai header X-Client-Id. */
+export const CLIENT_ID: string =
+  globalThis.crypto?.randomUUID?.() ??
+  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 
 const ALL_TOPICS = Object.keys(SYNC_TOPIC_QUERY_KEYS) as SyncTopic[];
 
 const isSyncTopic = (t: unknown): t is SyncTopic =>
   typeof t === "string" && t in SYNC_TOPIC_QUERY_KEYS;
 
-export interface TopicInvalidator {
-  /** Tandai topik berubah; kosong/tak dikenal = semua topik. */
-  push: (topics?: readonly unknown[]) => void;
-  dispose: () => void;
-}
+/** "booking,vehicle" (header X-Data-Changed) → topik yang dikenal. */
+export const parseSyncTopicsHeader = (value: unknown): SyncTopic[] =>
+  typeof value === "string"
+    ? value.split(",").map((t) => t.trim()).filter(isSyncTopic)
+    : [];
 
-/**
- * Gabungkan event DATA_CHANGED beruntun lalu invalidate query terkait sekali.
- * `cancelRefetch: false`: bila query sedang fetch (mis. baru di-invalidate
- * onSuccess mutasi di tab ini), jangan batalkan & fetch dobel.
- */
-export const createTopicInvalidator = (qc: QueryClient): TopicInvalidator => {
-  const pending = new Set<SyncTopic>();
-  let timer: ReturnType<typeof setTimeout> | null = null;
+const pending = new Set<SyncTopic>();
+let timer: ReturnType<typeof setTimeout> | null = null;
+let dueAt = Number.POSITIVE_INFINITY;
 
-  const flush = () => {
-    timer = null;
-    const keys = new Map<string, readonly unknown[]>();
-    for (const topic of pending) {
-      for (const key of SYNC_TOPIC_QUERY_KEYS[topic]) {
-        keys.set(JSON.stringify(key), key);
-      }
+const flush = () => {
+  timer = null;
+  dueAt = Number.POSITIVE_INFINITY;
+  const keys = new Map<string, readonly unknown[]>();
+  for (const topic of pending) {
+    for (const key of SYNC_TOPIC_QUERY_KEYS[topic]) {
+      keys.set(JSON.stringify(key), key);
     }
-    pending.clear();
-    for (const queryKey of keys.values()) {
-      qc.invalidateQueries({ queryKey }, { cancelRefetch: false });
-    }
-  };
+  }
+  pending.clear();
+  for (const queryKey of keys.values()) {
+    // cancelRefetch:false - query yang SUDAH sedang fetch (mis. baru
+    // di-invalidate onSuccess mutasi) tidak dibatalkan & di-fetch dobel.
+    queryClient.invalidateQueries({ queryKey }, { cancelRefetch: false });
+  }
+};
 
-  return {
-    push: (topics) => {
-      const known = (topics ?? []).filter(isSyncTopic);
-      for (const t of known.length > 0 ? known : ALL_TOPICS) pending.add(t);
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(flush, DATA_SYNC_DEBOUNCE_MS);
-    },
-    dispose: () => {
-      if (timer) clearTimeout(timer);
-      timer = null;
-      pending.clear();
-    },
-  };
+const schedule = (delayMs: number) => {
+  const due = Date.now() + delayMs;
+  if (timer && dueAt <= due) return; // jadwal yang ada sudah lebih awal
+  if (timer) clearTimeout(timer);
+  dueAt = due;
+  timer = setTimeout(flush, delayMs);
+};
+
+const add = (topics: readonly unknown[] | undefined) => {
+  const known = (topics ?? []).filter(isSyncTopic);
+  for (const t of known.length > 0 ? known : ALL_TOPICS) pending.add(t);
+};
+
+export const dataSync = {
+  /**
+   * Perubahan dari request tulis tab ini. Dijalankan di task berikutnya
+   * (setelah onSuccess mutasi sempat me-refetch key-nya sendiri), sehingga
+   * key tersebut tidak di-fetch dua kali.
+   */
+  pushLocal: (topics: readonly SyncTopic[]) => {
+    if (topics.length === 0) return;
+    add(topics);
+    schedule(0);
+  },
+  /** Perubahan dari luar (WebSocket). Kosong/tak dikenal = semua topik. */
+  pushRemote: (topics?: readonly unknown[]) => {
+    add(topics);
+    schedule(DATA_SYNC_DEBOUNCE_MS);
+  },
 };

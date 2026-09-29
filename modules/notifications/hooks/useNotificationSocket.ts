@@ -14,7 +14,7 @@
 import { useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEYS, API_ENDPOINTS, DATA_CHANGED_EVENT } from '@/constants'
-import { buildWsUrl, createTopicInvalidator } from '@/lib'
+import { buildWsUrl, CLIENT_ID, dataSync } from '@/lib'
 import { useAuthStore } from '@/store/auth.store'
 import type { DataChangedSocketMessage, NotificationSocketMessage } from '@/types'
 
@@ -31,6 +31,10 @@ export const useNotificationSocket = (options?: UseNotificationSocketOptions) =>
   const accessToken = useAuthStore((s) => s.accessToken)
   const qc = useQueryClient()
 
+  // Bertahan lintas reconnect karena token berganti (silent refresh): setiap
+  // sambungan ULANG berarti event selama terputus bisa terlewat.
+  const hasConnectedRef = useRef(false)
+
   // Ref agar callback terbaru terpakai tanpa memicu reconnect effect.
   const onMessageRef = useRef(options?.onMessage)
   onMessageRef.current = options?.onMessage
@@ -43,9 +47,6 @@ export const useNotificationSocket = (options?: UseNotificationSocketOptions) =>
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null
     let attempt = 0
     let cleanedUp = false
-    let hasConnected = false
-    // DATA_CHANGED → invalidate hanya query yang bergantung pada topiknya.
-    const invalidator = createTopicInvalidator(qc)
 
     const connect = () => {
       socket = new WebSocket(buildWsUrl(API_ENDPOINTS.NOTIFICATIONS.WS, accessToken))
@@ -54,8 +55,8 @@ export const useNotificationSocket = (options?: UseNotificationSocketOptions) =>
         attempt = 0
         // Tersambung ULANG: event selama terputus bisa terlewat → anggap
         // semua data basi (yang tampil di-fetch, sisanya saat dibuka).
-        if (hasConnected) invalidator.push()
-        hasConnected = true
+        if (hasConnectedRef.current) dataSync.pushRemote()
+        hasConnectedRef.current = true
       }
 
       socket.onmessage = (event) => {
@@ -68,7 +69,10 @@ export const useNotificationSocket = (options?: UseNotificationSocketOptions) =>
               | NotificationSocketMessage
               | DataChangedSocketMessage
             if (parsed.type === DATA_CHANGED_EVENT) {
-              invalidator.push((parsed as DataChangedSocketMessage).topics)
+              const change = parsed as DataChangedSocketMessage
+              // Perubahan dari tab ini sudah di-invalidate lewat header
+              // X-Data-Changed (interceptor axios) - jangan fetch dua kali.
+              if (change.origin !== CLIENT_ID) dataSync.pushRemote(change.topics)
               continue
             }
             const msg = parsed as NotificationSocketMessage
@@ -97,7 +101,6 @@ export const useNotificationSocket = (options?: UseNotificationSocketOptions) =>
 
     return () => {
       cleanedUp = true
-      invalidator.dispose()
       if (reconnectTimer) clearTimeout(reconnectTimer)
       socket?.close()
     }

@@ -16,7 +16,10 @@ export const DATA_CHANGED_EVENT = "DATA_CHANGED" as const;
 
 // Topik = data yang DITULIS; daftar di bawah menyertakan data TURUNAN yang
 // ikut berubah di server (mis. status kendaraan saat booking dimulai,
-// ringkasan dashboard, dan semua laporan).
+// ringkasan dashboard, dan laporan - audit log mencatat setiap perubahan,
+// jadi SEMUA topik menyertakan ["reports"]).
+// Dipakai untuk perubahan LOKAL (header X-Data-Changed) maupun REMOTE
+// (WebSocket) - satu daftar untuk semua menu.
 export const SYNC_TOPIC_QUERY_KEYS: Record<SyncTopic, readonly QueryKey[]> = {
   booking: [
     QUERY_KEYS.BOOKINGS,
@@ -49,9 +52,12 @@ export const SYNC_TOPIC_QUERY_KEYS: Record<SyncTopic, readonly QueryKey[]> = {
     QUERY_KEYS.USERS,
     QUERY_KEYS.DRIVERS,
     QUERY_KEYS.ROOM_KEEPERS,
+    // Profil sendiri → Navbar/Sidebar ikut (lihat useSyncAuthUser).
     QUERY_KEYS.AUTH_ME,
+    QUERY_KEYS.DASHBOARD,
+    ["reports"],
   ],
-  roomKeeper: [QUERY_KEYS.ROOM_KEEPERS, QUERY_KEYS.ROOMS],
+  roomKeeper: [QUERY_KEYS.ROOM_KEEPERS, QUERY_KEYS.ROOMS, ["reports"]],
   fuel: [
     QUERY_KEYS.FUEL,
     QUERY_KEYS.FUEL_TYPES,

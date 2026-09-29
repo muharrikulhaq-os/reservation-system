@@ -180,9 +180,12 @@ useQuery({ queryKey: [...QUERY_KEYS.BOOKINGS, params] })
 ```
 
 ### Sinkronisasi realtime — DATA_CHANGED
-Backend mengirim `{ type: "DATA_CHANGED", topics }` lewat WebSocket ke semua klien setiap ada request tulis sukses (dari web, mobile, atau pengguna lain). `useNotificationSocket` meng-invalidate query key yang terdaftar untuk topik itu di `SYNC_TOPIC_QUERY_KEYS` (`constants/sync.ts`) — query yang tampil di-fetch ulang, sisanya saat dibuka. Tanpa polling.
+Setiap request tulis sukses → backend menyebut topik yang berubah (`booking`, `vehicle`, ...). Web meng-invalidate SEMUA query key topik itu di `SYNC_TOPIC_QUERY_KEYS` (`constants/sync.ts`) — query yang tampil di-fetch ulang, sisanya saat dibuka. Tanpa polling. Jalurnya (`lib/dataSync.ts`):
+- **Tab ini:** header respons `X-Data-Changed` → interceptor axios → invalidasi segera. Berlaku otomatis untuk SEMUA mutasi (tidak perlu menambah key lintas modul di `onSuccess`).
+- **Tab/perangkat/pengguna lain:** event WebSocket `DATA_CHANGED` → `useNotificationSocket`. Event dengan `origin` = `CLIENT_ID` (header `X-Client-Id` tab ini) diabaikan supaya tidak fetch dua kali.
 - Query key **baru** yang menampilkan data server → daftarkan di topik yang memengaruhinya (termasuk data turunan).
-- `onSuccess` mutasi tetap invalidate key-nya sendiri (respons instan di tab ini); event socket menangani tab/perangkat lain.
+- `onSuccess` mutasi cukup invalidate key-nya sendiri (respons instan).
+- Data server **jangan** disalin ke Zustand/`useState` — kalau terpaksa, sinkronkan dari query (contoh: `useSyncAuthUser` untuk user di Navbar/Sidebar).
 
 ### Form — selalu RHF + Zod
 ```ts

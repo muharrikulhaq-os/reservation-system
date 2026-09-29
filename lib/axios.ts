@@ -13,6 +13,7 @@ import axios, {
 } from 'axios'
 import { APP_CONFIG, API_ENDPOINTS, TOKEN_CONFIG } from '@/constants'
 import { tokenStorage } from './token'
+import { CLIENT_ID, dataSync, parseSyncTopicsHeader } from './dataSync'
 import type { ApiResponse, RefreshTokenResponse } from '@/types'
 
 // ── Cookie helpers (untuk middleware) ────
@@ -73,10 +74,24 @@ apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = tokenStorage.getAccess()
     if (token) config.headers.Authorization = `Bearer ${token}`
+    // Backend meneruskannya sebagai `origin` event DATA_CHANGED, supaya tab
+    // ini mengabaikan event miliknya sendiri (lihat lib/dataSync.ts).
+    config.headers['X-Client-Id'] = CLIENT_ID
     return config
   },
   (error) => Promise.reject(error),
 )
+
+// ── Data Sync ────────────────────────────
+// Request tulis sukses → backend menyebut topik yang berubah di header
+// X-Data-Changed → invalidate SEMUA menu yang memakai data tersebut, bukan
+// hanya key yang di-invalidate onSuccess mutasi.
+
+apiClient.interceptors.response.use((response) => {
+  const topics = parseSyncTopicsHeader(response.headers['x-data-changed'])
+  if (topics.length > 0) dataSync.pushLocal(topics)
+  return response
+})
 
 // ── Response Interceptor ─────────────────
 

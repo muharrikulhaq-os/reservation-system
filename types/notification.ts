@@ -59,6 +59,8 @@ export type SyncTopic =
 export interface DataChangedSocketMessage {
   type: 'DATA_CHANGED'
   topics: SyncTopic[]
+  /** X-Client-Id pengirim perubahan (bila dikirim). */
+  origin?: string
 }
 
 export interface NotificationSocketMessage {
