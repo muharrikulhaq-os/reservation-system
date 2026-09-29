@@ -5,7 +5,7 @@ import { PageHeader, StatCard } from '@/components/shared'
 import { DataTable } from '@/components/shared/table/DataTable'
 import { AppButton, InputSelect } from '@/components/ui-custom'
 import { useTableFilter } from '@/hooks'
-import { formatCurrency, formatNumber } from '@/lib'
+import { formatCurrency, formatNumber, isSameWibMonth } from '@/lib'
 import { ENERGY_TYPE } from '@/constants'
 import type { EnergyType, SelectOption } from '@/types'
 import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
@@ -13,11 +13,8 @@ import { useFuelExpenses } from './hooks/useFuel'
 import { fuelColumns } from './utils/columns'
 import { FuelInputModal } from './components/FuelInputModal'
 
-const isThisMonth = (iso: string) => {
-  const d = new Date(iso)
-  const now = new Date()
-  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
-}
+// Bulan WIB, bukan zona browser.
+const isThisMonth = (iso: string) => isSameWibMonth(iso, new Date())
 
 export const Fuel = () => {
   const { filters, setFilter, sortBy, sortOrder, setSort, params, setPage, setLimit } = useTableFilter({

@@ -6,18 +6,15 @@ import { PageHeader, StatCard } from '@/components/shared'
 import { DataTable } from '@/components/shared/table/DataTable'
 import { AppButton, InputSelect } from '@/components/ui-custom'
 import { useTableFilter } from '@/hooks'
-import { formatCurrency } from '@/lib'
+import { formatCurrency, isSameWibMonth } from '@/lib'
 import { isMaintenanceCompleted } from '@/constants'
 import type { MaintenanceRecord, SelectOption } from '@/types'
 import { useMaintenanceRecords } from './hooks/useMaintenance'
 import { maintenanceColumns } from './utils/columns'
 
-const isThisMonth = (iso: string | null) => {
-  if (!iso) return false
-  const d = new Date(iso)
-  const now = new Date()
-  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
-}
+// Bulan WIB, bukan zona browser.
+const isThisMonth = (iso: string | null) =>
+  !!iso && isSameWibMonth(iso, new Date())
 
 const isCompleted = (m: MaintenanceRecord) => isMaintenanceCompleted(m.status)
 const costOf = (m: MaintenanceRecord) => (m.totalCost ? Number(m.totalCost) || 0 : 0)

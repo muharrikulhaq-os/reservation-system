@@ -13,3 +13,6 @@ export { tokenStorage } from "./token";
 
 // utilities
 export * from "./utils";
+
+// zona waktu - semua tampilan & input tanggal/jam memakai WIB
+export * from "./wib";

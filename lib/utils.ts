@@ -6,6 +6,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { isAxiosError } from "axios";
+import { WIB_TIME_ZONE, wibHM, wibYMD } from "./wib";
 
 // ── Shadcn / Tailwind ────────────────────
 
@@ -35,11 +36,15 @@ export const getErrorMessage = (
 };
 
 // ── Date Formatting ──────────────────────
+// Semua formatter memakai WIB tetap (lihat lib/wib.ts). Tanpa `timeZone`,
+// Intl memakai zona browser: komputer ber-zona lain menampilkan jam lain
+// dari mobile untuk booking yang sama.
 
 const dateFormatter = new Intl.DateTimeFormat("id-ID", {
   day: "2-digit",
   month: "long",
   year: "numeric",
+  timeZone: WIB_TIME_ZONE,
 });
 
 const dateTimeFormatter = new Intl.DateTimeFormat("id-ID", {
@@ -48,12 +53,14 @@ const dateTimeFormatter = new Intl.DateTimeFormat("id-ID", {
   year: "numeric",
   hour: "2-digit",
   minute: "2-digit",
+  timeZone: WIB_TIME_ZONE,
 });
 
 const shortDateFormatter = new Intl.DateTimeFormat("id-ID", {
   day: "2-digit",
   month: "short",
   year: "numeric",
+  timeZone: WIB_TIME_ZONE,
 });
 
 type DateInput = string | number | Date | null | undefined;
@@ -102,15 +109,19 @@ export const formatDuration = (
   return `${hours} jam ${minutes} menit`;
 };
 
-/** Format ISO ke value input datetime-local - "" jika invalid */
+/** Format ISO ke value input datetime-local (jam WIB) - "" jika invalid.
+ * Dulu `toISOString().slice(0, 16)` = jam UTC, 7 jam lebih awal. */
 export const toDatetimeLocal = (iso: DateInput): string => {
   const d = parseDate(iso);
-  return d ? d.toISOString().slice(0, 16) : "";
+  return d ? `${wibYMD(d)}T${wibHM(d)}` : "";
 };
 
-/** Format datetime-local value ke RFC3339 untuk API */
-export const toRFC3339 = (datetimeLocal: string): string =>
-  new Date(datetimeLocal).toISOString();
+/** Format datetime-local value (jam WIB) ke RFC3339 UTC untuk API */
+export const toRFC3339 = (datetimeLocal: string): string => {
+  const [ymd, time = "00:00"] = datetimeLocal.split("T");
+  const withSeconds = time.length === 5 ? `${time}:00` : time;
+  return new Date(`${ymd}T${withSeconds}+07:00`).toISOString();
+};
 
 // ── Number Formatting ────────────────────
 

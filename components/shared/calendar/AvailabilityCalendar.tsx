@@ -18,6 +18,7 @@ import { Separator } from '@/components/ui/separator'
 import { BookingTypeBadge } from '../badge/StatusBadge'
 import { useBookings } from '@/modules/booking/hooks/useBookings'
 import { BOOKING_STATUS, BOOKING_STATUS_CONFIG, BOOKING_TYPE } from '@/constants'
+import { fromWib, wibCalendarDate, wibHM, wibToISO, wibYMD } from '@/lib'
 import type { BookingStatus, BookingType, ResourceStatus } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -69,7 +70,9 @@ export interface AvailabilityCalendarProps {
   onSelectDateTime?: (range: DateTimeRange) => void
   /** Dipanggil saat range yang dipilih bentrok dengan event yang memblokir */
   onConflictDetected?: (conflicts: CalendarEvent[]) => void
+  /** Instant (mis. `new Date()`); tanggal WIB sebelum ini tidak bisa dipilih */
   minDate?: Date
+  /** Instant; tanggal WIB sesudah ini tidak bisa dipilih */
   maxDate?: Date
   showHeader?: boolean
   className?: string
@@ -106,7 +109,11 @@ const monthLabelFmt = new Intl.DateTimeFormat('id-ID', {
   year: 'numeric',
 })
 
-/** YYYY-MM-DD dari komponen tanggal lokal (bukan UTC) */
+// Sel kalender = "tanggal kalender" (Date lokal 00:00, lihat lib/wib.ts).
+// Jadwal booking & "sekarang" adalah instant → selalu diturunkan ke tanggal/
+// jam WIB, bukan getDate()/getHours() zona browser.
+
+/** YYYY-MM-DD dari komponen tanggal kalender (bukan UTC) */
 const toKey = (d: Date) => {
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
@@ -130,15 +137,10 @@ const isBetween = (d: Date, start: Date, end: Date) => {
   return t > startOfDay(start).getTime() && t < startOfDay(end).getTime()
 }
 
-/** "08:00" dari ISO datetime */
-const formatTime = (iso: string) =>
-  new Date(iso).toLocaleTimeString('id-ID', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  })
+/** "08:00" (WIB) dari ISO datetime */
+const formatTime = (iso: string) => wibHM(iso)
 
-/** "Senin, 10 Oktober 2025" dari Date */
+/** "Senin, 10 Oktober 2025" dari tanggal kalender (bukan instant) */
 const formatFullDate = (d: Date) =>
   d.toLocaleDateString('id-ID', {
     weekday: 'long',
@@ -147,7 +149,7 @@ const formatFullDate = (d: Date) =>
     year: 'numeric',
   })
 
-/** "12 Jun 2025" dari Date */
+/** "12 Jun 2025" dari tanggal kalender (bukan instant) */
 const formatShortDate = (d: Date) =>
   d.toLocaleDateString('id-ID', {
     day: 'numeric',
@@ -217,17 +219,14 @@ export const AvailabilityCalendar = ({
   excludeBookingIds,
   allowConflictOverride = false,
 }: AvailabilityCalendarProps) => {
-  const today = startOfDay(new Date())
-
-  // Waktu sekarang - untuk men-disable jam/tanggal yang sudah lewat
+  // Waktu sekarang (WIB) - untuk men-disable jam/tanggal yang sudah lewat
   const now = new Date()
-  const todayStr = toKey(now)
-  const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(
-    now.getMinutes(),
-  ).padStart(2, '0')}`
+  const today = wibCalendarDate(now)
+  const todayStr = wibYMD(now)
+  const currentTime = wibHM(now)
 
   // Bulan yang sedang ditampilkan
-  const initialMonth = selectedDate ?? new Date()
+  const initialMonth = selectedDate ?? today
   const [currentMonth, setCurrentMonth] = useState(
     new Date(initialMonth.getFullYear(), initialMonth.getMonth(), 1),
   )
@@ -248,21 +247,23 @@ export const AvailabilityCalendar = ({
     currentMonth.getMonth(),
     1,
   )
-  const monthEnd = new Date(
+  // Jendela query = bulan itu menurut WIB. monthStart di atas hanya untuk
+  // grid (tanggal kalender lokal), bukan instant.
+  const queryStart = fromWib(
     currentMonth.getFullYear(),
     currentMonth.getMonth() + 1,
-    0,
-    23,
-    59,
-    59,
-  )
+  ).toISOString()
+  const queryEnd = new Date(
+    fromWib(currentMonth.getFullYear(), currentMonth.getMonth() + 2).getTime() -
+      1000,
+  ).toISOString()
 
   const { data: fetched } = useBookings(
     shouldFetch
       ? {
           resourceId,
-          startDate: monthStart.toISOString(),
-          endDate: monthEnd.toISOString(),
+          startDate: queryStart,
+          endDate: queryEnd,
           limit: 100,
         }
       : undefined,
@@ -285,8 +286,8 @@ export const AvailabilityCalendar = ({
       (b) => !excludeBookingIds?.includes(b.id),
     )
     for (const b of bookings) {
-      const start = startOfDay(new Date(b.startDate))
-      const end = startOfDay(new Date(b.endDate))
+      const start = wibCalendarDate(b.startDate)
+      const end = wibCalendarDate(b.endDate)
       // Hanya SPD yang mengklaim seharian penuh (vehicle & driver tidak
       // bisa dibooking lain di hari itu sama sekali - lihat aturan
       // day-exclusivity SPD di backend). NON_SPD (termasuk semua booking
@@ -467,8 +468,8 @@ export const AvailabilityCalendar = ({
   // ── Kalkulasi durasi ──
   const calculatedDuration = useMemo(() => {
     if (!selectedStart || !selectedEnd || !startTime || !endTime) return '-'
-    const start = new Date(`${formatYMD(selectedStart)}T${startTime}:00`)
-    const end = new Date(`${formatYMD(selectedEnd)}T${endTime}:00`)
+    const start = new Date(wibToISO(formatYMD(selectedStart), startTime))
+    const end = new Date(wibToISO(formatYMD(selectedEnd), endTime))
     const ms = end.getTime() - start.getTime()
     if (ms <= 0) return '-'
     const hours = Math.floor(ms / 3_600_000)
@@ -552,10 +553,10 @@ export const AvailabilityCalendar = ({
           const isConflict = conflictKeys.has(key)
 
           const beforeMin = minDate
-            ? startOfDay(cell).getTime() < startOfDay(minDate).getTime()
+            ? startOfDay(cell).getTime() < wibCalendarDate(minDate).getTime()
             : false
           const afterMax = maxDate
-            ? startOfDay(cell).getTime() > startOfDay(maxDate).getTime()
+            ? startOfDay(cell).getTime() > wibCalendarDate(maxDate).getTime()
             : false
 
           // Selected states

@@ -19,7 +19,14 @@ import {
   type DateTimeRange,
 } from '@/components/shared'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { cn, getErrorMessage, formatShortDate, formatDuration, resolveFileUrl } from '@/lib'
+import {
+  cn,
+  getErrorMessage,
+  formatShortDate,
+  formatDuration,
+  resolveFileUrl,
+  wibToISO,
+} from '@/lib'
 import { RESOURCE_TYPE, BOOKING_TYPE, BOOKING_TYPE_CONFIG, BOOKING_STATUS } from '@/constants'
 import type { ResourceType, Vehicle, Room, BookingType } from '@/types'
 import {
@@ -127,31 +134,29 @@ export const BookingForm = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preselectedResourceId, preselectedType, vehicles, rooms])
 
-  // Konfirmasi jadwal dari calendar (tanggal + jam digabung jadi ISO)
+  // Konfirmasi jadwal dari calendar (tanggal + jam WIB digabung jadi ISO UTC).
+  // Dulu `new Date("YYYY-MM-DDTHH:mm:00")` memakai zona browser, jadi komputer
+  // ber-zona selain WIB mengirim jam yang berbeda dari yang dipilih.
   const handleDateTimeSelect = (range: DateTimeRange) => {
     setSchedule(range)
     setConflictAcknowledged(false)
     setValue(
       'startDate',
-      new Date(`${formatYMD(range.startDate)}T${range.startTime}:00`).toISOString(),
+      wibToISO(formatYMD(range.startDate), range.startTime),
       { shouldValidate: true },
     )
     setValue(
       'endDate',
-      new Date(`${formatYMD(range.endDate)}T${range.endTime}:00`).toISOString(),
+      wibToISO(formatYMD(range.endDate), range.endTime),
       { shouldValidate: true },
     )
   }
 
   const startISO = schedule
-    ? new Date(
-        `${formatYMD(schedule.startDate)}T${schedule.startTime}:00`,
-      ).toISOString()
+    ? wibToISO(formatYMD(schedule.startDate), schedule.startTime)
     : null
   const endISO = schedule
-    ? new Date(
-        `${formatYMD(schedule.endDate)}T${schedule.endTime}:00`,
-      ).toISOString()
+    ? wibToISO(formatYMD(schedule.endDate), schedule.endTime)
     : null
 
   const handlePassengerChange = (v: number | undefined) => {

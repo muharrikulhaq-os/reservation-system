@@ -15,7 +15,7 @@ import {
   InputTextArea,
   InputDate,
 } from '@/components/ui-custom'
-import { getErrorMessage, formatDateTime } from '@/lib'
+import { getErrorMessage, formatDateTime, wibToISO, wibYMD } from '@/lib'
 import {
   RESOURCE_STATUS,
   BOOKING_STATUS,
@@ -31,12 +31,8 @@ import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
 import { useBookings } from '@/modules/booking'
 import { useCreateMaintenance } from '../hooks/useMaintenance'
 
-const todayYMD = () => {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
-    d.getDate(),
-  ).padStart(2, '0')}`
-}
+// Tanggal WIB hari ini, bukan zona browser.
+const todayYMD = () => wibYMD(new Date())
 
 const typeOptions: SelectOption[] = MAINTENANCE_TYPE_OPTIONS.map((o) => ({
   value: o.value,
@@ -100,7 +96,9 @@ export const MaintenanceForm = () => {
         status: MAINTENANCE_STATUS.PENDING,
         description: data.description,
         location: data.location,
-        startDate: new Date(data.startDate).toISOString(),
+        // "YYYY-MM-DD" → 00:00 WIB. `new Date("YYYY-MM-DD")` = 00:00 UTC
+        // (07:00 WIB).
+        startDate: wibToISO(data.startDate),
         vendorName: data.vendorName || undefined,
         odometer: data.odometer,
         totalCost: data.totalCost,

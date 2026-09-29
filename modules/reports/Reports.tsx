@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PageHeader } from '@/components/shared'
 import type { ReportDateParams } from '@/types'
+import { fromWib, wibMonthBounds, wibParts } from '@/lib'
 import { DateRangeFilter, DataTableExport } from './components'
 import {
   OverviewSection,
@@ -22,38 +23,39 @@ import { useDepartmentSummary } from './hooks/useReports'
 
 type Preset = 'today' | '7d' | '30d' | '90d' | '12m'
 
-const startOfMonth = () => {
-  const d = new Date()
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString()
-}
-const endOfMonth = () => {
-  const d = new Date()
-  return new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59).toISOString()
-}
+// Bulan & "hari ini" menurut WIB, bukan zona browser.
+const startOfMonth = () => wibMonthBounds().start
+const endOfMonth = () => wibMonthBounds().end
+
+const DAY_MS = 86_400_000
 
 // Preset → rentang tanggal [start, end]
 const presetRange = (preset: Preset): { start: string; end: string } => {
   const now = new Date()
-  const end = now.toISOString()
-  const start = new Date(now)
+  const p = wibParts(now)
+  let start: Date
+  let end = now
   switch (preset) {
     case 'today':
-      start.setHours(0, 0, 0, 0)
+      // Seharian penuh WIB (00:00-23:59:59), sama dengan preset "Hari Ini"
+      // di mobile - booking yang dijadwalkan nanti sore tetap ikut terhitung.
+      start = fromWib(p.year, p.month, p.day)
+      end = fromWib(p.year, p.month, p.day, 23, 59, 59)
       break
     case '7d':
-      start.setDate(now.getDate() - 7)
+      start = new Date(now.getTime() - 7 * DAY_MS)
       break
     case '30d':
-      start.setDate(now.getDate() - 30)
+      start = new Date(now.getTime() - 30 * DAY_MS)
       break
     case '90d':
-      start.setDate(now.getDate() - 90)
+      start = new Date(now.getTime() - 90 * DAY_MS)
       break
     case '12m':
-      start.setMonth(now.getMonth() - 12)
+      start = fromWib(p.year - 1, p.month, p.day, p.hour, p.minute, p.second)
       break
   }
-  return { start: start.toISOString(), end }
+  return { start: start.toISOString(), end: end.toISOString() }
 }
 
 const TABS = [

@@ -20,7 +20,7 @@ import { Card } from '@/components/common'
 import { AvailabilityCalendar, BookingStatusBadge, BookingTypeBadge, UserAvatar } from '@/components/shared'
 import type { CalendarEvent, DateTimeRange } from '@/components/shared'
 import { AppButton, InputTextArea } from '@/components/ui-custom'
-import { cn, getErrorMessage } from '@/lib'
+import { cn, getErrorMessage, isSameWibDay, wibHM, wibToISO } from '@/lib'
 import { BOOKING_STATUS, RESOURCE_TYPE } from '@/constants'
 import type { Booking } from '@/types'
 import {
@@ -44,20 +44,10 @@ interface BookingMergePanelProps {
 const pad = (n: number) => String(n).padStart(2, '0')
 const formatYMD = (d: Date) =>
   `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-const formatTime = (iso: string) => {
-  const d = new Date(iso)
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
-// Dua ISO string di hari kalender LOKAL yang sama?
-const sameLocalDay = (a: string, b: string) => {
-  const x = new Date(a)
-  const y = new Date(b)
-  return (
-    x.getFullYear() === y.getFullYear() &&
-    x.getMonth() === y.getMonth() &&
-    x.getDate() === y.getDate()
-  )
-}
+// Jam & hari selalu WIB, bukan zona browser (lihat lib/wib.ts).
+const formatTime = (iso: string) => wibHM(iso)
+// Dua ISO string di hari kalender WIB yang sama?
+const sameLocalDay = (a: string, b: string) => isSameWibDay(a, b)
 
 export const BookingMergePanel = ({
   booking,
@@ -111,12 +101,14 @@ export const BookingMergePanel = ({
   // "telah dilakukan merge" → status berubah ke APPROVED.
   const handleMerge = async () => {
     if (!selectedBooking || !reason.trim() || !mergeSchedule) return
-    const startDate = new Date(
-      `${formatYMD(mergeSchedule.startDate)}T${mergeSchedule.startTime}:00`,
-    ).toISOString()
-    const endDate = new Date(
-      `${formatYMD(mergeSchedule.endDate)}T${mergeSchedule.endTime}:00`,
-    ).toISOString()
+    const startDate = wibToISO(
+      formatYMD(mergeSchedule.startDate),
+      mergeSchedule.startTime,
+    )
+    const endDate = wibToISO(
+      formatYMD(mergeSchedule.endDate),
+      mergeSchedule.endTime,
+    )
     try {
       await merge.mutateAsync({
         id: selectedBooking.id,
