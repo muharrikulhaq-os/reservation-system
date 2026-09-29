@@ -14,7 +14,7 @@
 import { useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEYS, API_ENDPOINTS, DATA_CHANGED_EVENT } from '@/constants'
-import { buildWsUrl, CLIENT_ID, dataSync } from '@/lib'
+import { buildWsUrl, dataSync } from '@/lib'
 import { useAuthStore } from '@/store/auth.store'
 import type { DataChangedSocketMessage, NotificationSocketMessage } from '@/types'
 
@@ -72,7 +72,7 @@ export const useNotificationSocket = (options?: UseNotificationSocketOptions) =>
               const change = parsed as DataChangedSocketMessage
               // Perubahan dari tab ini sudah di-invalidate lewat header
               // X-Data-Changed (interceptor axios) - jangan fetch dua kali.
-              if (change.origin !== CLIENT_ID) dataSync.pushRemote(change.topics)
+              if (!dataSync.isOwnChange(change.origin)) dataSync.pushRemote(change.topics)
               continue
             }
             const msg = parsed as NotificationSocketMessage

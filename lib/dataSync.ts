@@ -65,6 +65,11 @@ const add = (topics: readonly unknown[] | undefined) => {
   for (const t of known.length > 0 ? known : ALL_TOPICS) pending.add(t);
 };
 
+// Sudah pernah menerima header X-Data-Changed? Bila proxy di depan API
+// ternyata membuang header itu, jalur lokal mati - maka event WebSocket
+// milik tab ini TIDAK boleh diabaikan (lihat isOwnChange).
+let localHeaderSeen = false;
+
 export const dataSync = {
   /**
    * Perubahan dari request tulis tab ini. Dijalankan di task berikutnya
@@ -73,9 +78,16 @@ export const dataSync = {
    */
   pushLocal: (topics: readonly SyncTopic[]) => {
     if (topics.length === 0) return;
+    localHeaderSeen = true;
     add(topics);
     schedule(0);
   },
+  /**
+   * Event DATA_CHANGED berasal dari tab ini DAN jalur lokal terbukti jalan
+   * → aman diabaikan. Selain itu tetap diproses (lebih baik fetch dua kali
+   * daripada menu tertinggal).
+   */
+  isOwnChange: (origin: unknown) => localHeaderSeen && origin === CLIENT_ID,
   /** Perubahan dari luar (WebSocket). Kosong/tak dikenal = semua topik. */
   pushRemote: (topics?: readonly unknown[]) => {
     add(topics);

@@ -47,13 +47,17 @@ export const useSyncAuthUser = () => {
     if (!data) return
     const { user, accessToken, updateUser } = useAuthStore.getState()
     if (!user) return
+    // Defensif: data tak lengkap tidak boleh membuat header crash atau
+    // menghapus role (gating rute) - lewati saja.
+    const role = data.role?.name
+    if (!role) return
     const next: AuthUser = {
       id: data.id,
-      employeeId: data.employeeId,
-      name: data.name,
-      email: data.email,
-      role: data.role.name,
-      department: data.department.name,
+      employeeId: data.employeeId ?? user.employeeId,
+      name: data.name ?? user.name,
+      email: data.email ?? user.email,
+      role,
+      department: data.department?.name ?? user.department,
     }
     const changed = (Object.keys(next) as (keyof AuthUser)[]).some(
       (k) => next[k] !== user[k],
