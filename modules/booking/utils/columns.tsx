@@ -14,6 +14,7 @@ import { AppButton } from "@/components/ui-custom/Appbutton";
 import { formatDate, resolveFileUrl } from "@/lib";
 import { BOOKING_STATUS, RESOURCE_TYPE } from "@/constants";
 import { useCancelBooking } from "../hooks/useBookings";
+import { useAuthStore } from "@/store/auth.store";
 import type { Booking } from "@/types";
 
 // ─────────────────────────────────────────
@@ -24,12 +25,17 @@ import type { Booking } from "@/types";
 const ch = createColumnHelper<Booking>();
 
 // ─────────────────────────────────────────
-// ROW ACTIONS - detail + cancel (saat PENDING)
+// ROW ACTIONS - detail + cancel (PENDING; APPROVED khusus admin)
 // Dipisah jadi komponen agar bisa pakai hook.
 // ─────────────────────────────────────────
 
 const RowActions = ({ booking }: { booking: Booking }) => {
   const { mutate, isPending } = useCancelBooking();
+  const isAdmin = useAuthStore((s) => s.isAdmin());
+  // PENDING: pemilik/admin. APPROVED (belum dimulai): hanya admin.
+  const canCancel =
+    booking.status === BOOKING_STATUS.PENDING ||
+    (isAdmin && booking.status === BOOKING_STATUS.APPROVED);
 
   const handleCancel = () => {
     if (window.confirm("Batalkan booking ini?")) mutate(booking.id);
@@ -46,7 +52,7 @@ const RowActions = ({ booking }: { booking: Booking }) => {
         </AppButton>
       </Link>
 
-      {booking.status === BOOKING_STATUS.PENDING && (
+      {canCancel && (
         <AppButton
           variant="ghost"
           size="icon-sm"
