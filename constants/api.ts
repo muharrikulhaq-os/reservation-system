@@ -124,7 +124,37 @@ export const API_ENDPOINTS = {
   MAINTENANCE: {
     BASE:            `${API_PREFIX}/maintenance`,
     BY_ID:           (id: number) => `${API_PREFIX}/maintenance/${id}`,
-    COMPLETE:        (id: number) => `${API_PREFIX}/maintenance/${id}/complete`,
+    OPTIONS:         `${API_PREFIX}/maintenance/options`,
+    SUBMIT:          (id: number) => `${API_PREFIX}/maintenance/${id}/submit`,
+    SCHEDULE:        (id: number) => `${API_PREFIX}/maintenance/${id}/schedule`,
+    HANDOVER:        (id: number) => `${API_PREFIX}/maintenance/${id}/handover`,
+    RETURN:          (id: number) => `${API_PREFIX}/maintenance/${id}/return`,
+    CANCEL:          (id: number) => `${API_PREFIX}/maintenance/${id}/cancel`,
+    COST:            (id: number) => `${API_PREFIX}/maintenance/${id}/cost`,
+    DOCUMENTS:       (id: number) => `${API_PREFIX}/maintenance/${id}/documents`,
+    DOCUMENT:        (id: number, docId: number) => `${API_PREFIX}/maintenance/${id}/documents/${docId}`,
+    PDF:             (id: number, kind: string) => `${API_PREFIX}/maintenance/${id}/pdf/${kind}`,
+  },
+
+  // ── Vendor / bengkel ────────────────────
+  VENDORS: {
+    BASE:            `${API_PREFIX}/vendors`,
+    BY_ID:           (id: number) => `${API_PREFIX}/vendors/${id}`,
+    TOGGLE:          (id: number) => `${API_PREFIX}/vendors/${id}/toggle-active`,
+  },
+
+  // ── Laporan kendala kendaraan (supir) ───
+  VEHICLE_ISSUES: {
+    BASE:            `${API_PREFIX}/vehicle-issues`,
+    BY_ID:           (id: number) => `${API_PREFIX}/vehicle-issues/${id}`,
+    CONVERT:         (id: number) => `${API_PREFIX}/vehicle-issues/${id}/convert`,
+    DISMISS:         (id: number) => `${API_PREFIX}/vehicle-issues/${id}/dismiss`,
+  },
+
+  // ── Pengaturan dokumen (kop surat) ──────
+  DOCUMENT_SETTINGS: {
+    BASE:            `${API_PREFIX}/document-settings`,
+    LOGO:            `${API_PREFIX}/document-settings/logo`,
   },
 
   // ── Attachments ─────────────────────────

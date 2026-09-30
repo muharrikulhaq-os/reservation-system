@@ -10,8 +10,8 @@ export default function Page() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Buat Maintenance"
-        description="Catat pekerjaan servis atau perbaikan"
+        title="Buat Pengajuan Maintenance"
+        description="Ajukan servis atau perbaikan ke vendor/bengkel"
         backHref="/maintenance"
       />
       <MaintenanceForm />

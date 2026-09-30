@@ -8,7 +8,9 @@ import { AlertCircle, Plus, X } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
 import { AppButton, InputText, InputNumber, InputSelect } from '@/components/ui-custom'
 import { getErrorMessage } from '@/lib'
-import { VEHICLE_ENERGY_TYPE_OPTIONS } from '@/constants'
+import Link from 'next/link'
+import { VEHICLE_ENERGY_TYPE_OPTIONS, VEHICLE_OWNERSHIP_OPTIONS } from '@/constants'
+import { useVendors } from '@/modules/maintenance/hooks/useMaintenance'
 import type { Vehicle, SelectOption } from '@/types'
 import {
   createVehicleSchema,
@@ -43,6 +45,7 @@ export const VehicleForm = ({ initialData, onSuccess }: VehicleFormProps) => {
     register,
     control,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<CreateVehicleFormData>({
     resolver: zodResolver(createVehicleSchema),
@@ -57,8 +60,11 @@ export const VehicleForm = ({ initialData, onSuccess }: VehicleFormProps) => {
           capacity: initialData.capacity,
           categoryId: initialData.category.id,
           energyType: initialData.energyType,
+          ownership: initialData.ownership ?? 'COMPANY',
+          ownerVendorId: initialData.ownerVendor?.id,
+          rentalContractNo: initialData.rentalContractNo ?? '',
         }
-      : { currentOdometer: 0, energyType: 'BBM' },
+      : { currentOdometer: 0, energyType: 'BBM', ownership: 'COMPANY' },
   })
 
   const categoryOptions: SelectOption<number>[] = (categories ?? []).map((c) => ({
@@ -66,13 +72,29 @@ export const VehicleForm = ({ initialData, onSuccess }: VehicleFormProps) => {
     label: c.name,
   }))
 
+  const ownership = watch('ownership')
+  const { data: ownerVendors } = useVendors({ type: 'OWNER', isActive: true })
+  const ownerVendorOptions: SelectOption<number>[] = (ownerVendors ?? []).map((v) => ({
+    value: v.id,
+    label: v.name,
+  }))
+
+  // Kendaraan milik perusahaan tidak mengirim vendor pemilik / no. kontrak.
   const onSubmit = (data: CreateVehicleFormData) =>
-    mutate(data, {
-      onSuccess: () => {
-        onSuccess?.()
-        router.push('/vehicles')
+    mutate(
+      {
+        ...data,
+        ownerVendorId: data.ownership === 'VENDOR' ? data.ownerVendorId : undefined,
+        rentalContractNo:
+          data.ownership === 'VENDOR' ? data.rentalContractNo?.trim() || undefined : undefined,
       },
-    })
+      {
+        onSuccess: () => {
+          onSuccess?.()
+          router.push('/vehicles')
+        },
+      },
+    )
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -180,6 +202,56 @@ export const VehicleForm = ({ initialData, onSuccess }: VehicleFormProps) => {
               />
             )}
           />
+          {/* Row 6: kepemilikan (sewa → vendor pemilik + no. kontrak) */}
+          <Controller
+            control={control}
+            name="ownership"
+            render={({ field }) => (
+              <InputSelect
+                label="Kepemilikan"
+                required
+                options={VEHICLE_OWNERSHIP_OPTIONS}
+                value={field.value ?? 'COMPANY'}
+                onChange={(e) => field.onChange(e.target.value)}
+                hint="Maintenance kendaraan sewa otomatis diajukan ke vendor pemiliknya"
+              />
+            )}
+          />
+          {ownership === 'VENDOR' && (
+            <Controller
+              control={control}
+              name="ownerVendorId"
+              render={({ field }) => (
+                <div>
+                  <InputSelect
+                    label="Vendor Pemilik"
+                    required
+                    placeholder="Pilih vendor"
+                    options={ownerVendorOptions}
+                    value={field.value ?? ''}
+                    onChange={(e) =>
+                      field.onChange(e.target.value ? Number(e.target.value) : undefined)
+                    }
+                    error={errors.ownerVendorId?.message}
+                  />
+                  <Link
+                    href="/maintenance/vendors"
+                    target="_blank"
+                    className="mt-1.5 inline-block text-xs font-medium text-[var(--primary)] hover:underline"
+                  >
+                    + Kelola vendor
+                  </Link>
+                </div>
+              )}
+            />
+          )}
+          {ownership === 'VENDOR' && (
+            <InputText
+              label="No. Kontrak Sewa (opsional)"
+              placeholder="cth. SWA/2026/001"
+              {...register('rentalContractNo')}
+            />
+          )}
           {!isEdit && (
             <Controller
               control={control}

@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 // --- Create Vehicle ---
 
-export const createVehicleSchema = z.object({
+const vehicleBaseSchema = z.object({
   name: z.string().min(1, 'Nama kendaraan wajib diisi'),
   plateNumber: z.string().min(1, 'Plat nomor wajib diisi'),
   brand: z.string().min(1, 'Merek wajib diisi'),
@@ -29,7 +29,16 @@ export const createVehicleSchema = z.object({
     .int()
     .positive('Pilih kategori'),
   energyType: z.enum(['BBM', 'LISTRIK', 'HYBRID'], { error: 'Pilih tipe energi' }),
+  // Kepemilikan: kendaraan sewa wajib memilih vendor pemiliknya.
+  ownership: z.enum(['COMPANY', 'VENDOR']),
+  ownerVendorId: z.number().int().positive().optional(),
+  rentalContractNo: z.string().optional(),
 })
+
+export const createVehicleSchema = vehicleBaseSchema.refine(
+  (v) => v.ownership !== 'VENDOR' || !!v.ownerVendorId,
+  { path: ['ownerVendorId'], message: 'Pilih vendor pemilik kendaraan sewa' },
+)
 
 // --- Update Vehicle (PUT = semua field wajib) ---
 

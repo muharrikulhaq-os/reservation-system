@@ -131,7 +131,7 @@ proxy.ts     # ⚠️ Next.js 16 "middleware" — route protection + role redire
 | Fitur reports | 🟡 Sebagian | 6 tab tampil; beberapa endpoint masih DUMMY (`TODO [BACKEND]`); belum ada link sidebar |
 | Fitur dashboard | ✅ Selesai | `modules/dashboard` |
 | Fitur fuel | 🔲 Belum | Modul `modules/fuel` masih kosong (service root sudah ada) |
-| Fitur maintenance | 🔲 Belum | Modul `modules/maintenance` kosong (service root sudah ada) |
+| Fitur maintenance | ✅ Selesai | Maintenance oleh vendor/bengkel luar (`/maintenance`): DRAFT → SUBMITTED → SCHEDULED → IN_PROGRESS → COMPLETED, PDF surat & berita acara dari backend, dokumen, biaya; `/maintenance/issues` (laporan kendala supir), `/maintenance/vendors` (master vendor); kop surat di `/settings`. Rancangan: booking-system-api `docs/RANCANGAN_MAINTENANCE_VENDOR.md` |
 | Fitur settings / user | 🔲 Belum | Modul `modules/setting` & `modules/user` kosong (service root sudah ada) |
 
 ---

@@ -54,6 +54,7 @@ export type SyncTopic =
   | 'roomKeeper'
   | 'fuel'
   | 'maintenance'
+  | 'vendor'
 
 /** Sinyal perubahan data (bukan notifikasi untuk pengguna). */
 export interface DataChangedSocketMessage {
