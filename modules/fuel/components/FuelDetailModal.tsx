@@ -10,6 +10,7 @@ import {
 import { SafeImage } from '@/components/shared/media/SafeImage'
 import { formatDate, formatCurrency, formatNumber, resolveFileUrl } from '@/lib'
 import { ENERGY_TYPE, ENERGY_TYPE_CONFIG } from '@/constants'
+import { FUEL_REASON_LABEL, formatQty, formatRupiahExact } from '../utils/format'
 import type { FuelExpense } from '@/types'
 import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
 
@@ -71,7 +72,32 @@ export const FuelDetailModal = ({ fuel, open, onOpenChange }: Props) => {
             </span>
           )}
 
+          {fuel.status === 'VOID' && (
+            <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <b>Dibatalkan</b>
+              {fuel.voidedByName ? ` oleh ${fuel.voidedByName}` : ''}
+              {fuel.voidedAt ? ` · ${formatDate(fuel.voidedAt)}` : ''}
+              {fuel.voidReason ? <p className="mt-0.5">Alasan: {fuel.voidReason}</p> : null}
+            </div>
+          )}
+
           <div className="divide-y divide-[var(--border-divider)]">
+            <Row
+              label="Sumber"
+              value={
+                fuel.source === 'VOUCHER'
+                  ? `Voucher ${fuel.voucherCode ?? ''}`
+                  : `Isi langsung${fuel.reason ? ` · ${FUEL_REASON_LABEL[fuel.reason] ?? fuel.reason}` : ''}`
+              }
+            />
+            <Row
+              label="SPBU"
+              value={
+                fuel.stationName
+                  ? `${fuel.stationName}${fuel.isPartnerStation ? ' (mitra)' : ''}`
+                  : '-'
+              }
+            />
             <Row
               label="Kendaraan"
               value={
@@ -106,7 +132,25 @@ export const FuelDetailModal = ({ fuel, open, onOpenChange }: Props) => {
                 />
               </>
             )}
-            <Row label="Total" value={formatCurrency(fuel.totalCost)} />
+            {!isBbm && (fuel.meterStartKwh != null || fuel.batteryBefore != null) && (
+              <Row
+                label="Sumber kWh"
+                value={
+                  fuel.quantitySource === 'METER'
+                    ? `Meter ${formatQty(fuel.meterStartKwh)} → ${formatQty(fuel.meterEndKwh)}`
+                    : fuel.quantitySource === 'ESTIMATE'
+                      ? `Estimasi baterai ${formatQty(fuel.batteryBefore)}% → ${formatQty(fuel.batteryAfter)}%`
+                      : 'Input langsung'
+                }
+              />
+            )}
+            <Row label="Total" value={formatRupiahExact(fuel.totalCost)} />
+            {fuel.ledger?.balanceAfter != null && (
+              <Row
+                label="Saldo"
+                value={`hak +${formatQty(fuel.ledger.accrued)} · keluar ${formatQty(fuel.ledger.debit)} → saldo ${formatQty(fuel.ledger.balanceAfter)} ${isBbm ? 'L' : 'kWh'}`}
+              />
+            )}
             <Row
               label="Odometer"
               value={

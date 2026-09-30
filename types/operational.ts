@@ -53,7 +53,36 @@ export interface FuelExpense {
   note: string | null
   proofPhotoUrl: string | null // URL/path foto bukti pengisian
   createdAt: string
+  // ── Saldo & voucher (rancangan voucher BBM) ──
+  distanceKm?: number
+  source?: FuelFillSource          // DIRECT (isi langsung) | VOUCHER
+  voucherId?: number | null
+  voucherCode?: string | null
+  stationId?: number | null
+  stationName?: string | null      // nama SPBU mitra / SPBU lain
+  isPartnerStation?: boolean
+  reason?: FuelFillReason | null
+  status?: 'ACTIVE' | 'VOID'
+  voidedAt?: string | null
+  voidedByName?: string | null
+  voidReason?: string | null
+  batteryBefore?: number | null
+  batteryAfter?: number | null
+  meterStartKwh?: number | null
+  meterEndKwh?: number | null
+  quantitySource?: 'INPUT' | 'METER' | 'ESTIMATE' | null
+  ledger?: {
+    accrued: number | null
+    debit: number | null
+    balanceAfter: number | null
+    kmPerUnit: number | null
+  }
+  /** Hanya pada respons create: peringatan melebihi hak saldo / tangki. */
+  warnings?: string[] | null
 }
+
+export type FuelFillSource = 'DIRECT' | 'VOUCHER'
+export type FuelFillReason = 'SPD' | 'LONG_TRIP' | 'EMERGENCY' | 'OFFICE' | 'OTHER'
 
 // Payload create fuel (multipart - proofPhoto WAJIB)
 export interface CreateFuelPayload {
@@ -67,11 +96,220 @@ export interface CreateFuelPayload {
   // LISTRIK
   kwh?: number
   pricePerKwh?: number
+  // Listrik - kWh bebas: kwh langsung, ATAU meter awal/akhir, ATAU % baterai
+  meterStartKwh?: number
+  meterEndKwh?: number
+  batteryBefore?: number
+  batteryAfter?: number
   // Common
-  odometerBefore?: number
-  odometerAfter?: number
+  odometer: number     // odometer saat mengisi (WAJIB)
+  stationId?: number   // SPBU mitra
+  stationName?: string // SPBU lain (bukan mitra)
+  reason?: FuelFillReason
   note?: string
   proofPhoto: File // WAJIB
+}
+
+// ─────────────────────────────────────────
+// SALDO BBM, SPBU MITRA, VOUCHER (docs/RANCANGAN_VOUCHER_BBM.md di API)
+// ─────────────────────────────────────────
+
+export interface FuelStation {
+  id: number
+  name: string
+  address: string | null
+  phone: string | null
+  contactPerson: string | null
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface FuelStationPayload {
+  name: string
+  address?: string
+  phone?: string
+  contactPerson?: string
+  isActive?: boolean
+}
+
+export interface FuelProfile {
+  kmPerLiter: number | null
+  tankCapacityLiter: number | null
+  kmPerKwh: number | null
+  batteryCapacityKwh: number | null
+  fuelBaselineOdometer: number
+}
+
+export interface FuelBalance {
+  energy: EnergyType
+  unit: 'L' | 'kWh'
+  kmPerUnit: number | null
+  capacity: number | null
+  checkpointOdometer: number     // odometer kejadian (isi/voucher) terakhir
+  currentOdometer: number
+  pendingKm: number              // jarak sejak kejadian terakhir
+  pendingAccrued: number         // hak dari jarak itu
+  recordedBalance: number        // saldo tercatat di ledger
+  available: number              // saldo + hak tertunda
+  voucherable: number | null     // liter voucher bila terbit sekarang (BBM)
+  hasEntries: boolean
+  warnings: string[] | null
+}
+
+export interface ActiveVoucherInfo {
+  id: number
+  code: string
+  liter: number
+  amount: number
+  validUntil: string
+  stationName: string
+}
+
+export interface VehicleFuelBalance {
+  vehicleId: number
+  vehicleName: string
+  plateNumber: string
+  energyType: 'BBM' | 'LISTRIK' | 'HYBRID'
+  currentOdometer: number
+  fixedDriverId: number | null
+  profile: FuelProfile
+  balances: Partial<Record<EnergyType, FuelBalance>>
+  activeVoucher: ActiveVoucherInfo | null
+  baselineLocked?: boolean
+}
+
+export interface FuelProfilePayload {
+  kmPerLiter?: number | null
+  tankCapacityLiter?: number | null
+  kmPerKwh?: number | null
+  batteryCapacityKwh?: number | null
+  fuelBaselineOdometer?: number
+}
+
+export interface FuelAdjustmentPayload {
+  energy: EnergyType
+  amount: number // + menambah saldo, − mengurangi
+  note: string
+}
+
+export type FuelLedgerType =
+  | 'OPENING' | 'VOUCHER' | 'DIRECT_FILL' | 'VOUCHER_RETURN'
+  | 'VOUCHER_REINSTATE' | 'VOID' | 'ADJUSTMENT'
+
+export interface FuelLedgerEntry {
+  id: number
+  vehicleId: number
+  energy: EnergyType
+  entryType: FuelLedgerType
+  odometer: number | null
+  distanceKm: number | null
+  kmPerUnit: number | null
+  accrued: number
+  debit: number
+  balanceAfter: number
+  fuelExpenseId: number | null
+  reversesId: number | null
+  createdByName: string | null
+  note: string | null
+  createdAt: string
+}
+
+export type FuelVoucherStatus = 'ISSUED' | 'USED' | 'EXPIRED' | 'CANCELLED'
+
+export interface FuelVoucher {
+  id: number
+  code: string
+  vehicleId: number
+  vehicleName: string
+  plateNumber: string
+  fuelTypeId: number
+  fuelTypeName: string
+  stationId: number
+  stationName: string
+  stationAddress: string | null
+  driverId: number | null
+  driverName: string | null
+  driverUserId: number | null
+  bookingId: number | null
+  issuedById: number
+  issuedByName: string
+  odometer: number
+  distanceKm: number
+  kmPerLiter: number
+  accruedLiter: number
+  carriedLiter: number
+  tankCapacityLiter: number | null
+  liter: number
+  pricePerLiter: number
+  amount: number
+  validUntil: string
+  status: FuelVoucherStatus
+  usedAt: string | null
+  usedByName: string | null
+  usedOdometer: number | null
+  receiptPhotoUrl: string | null
+  fuelExpenseId: number | null
+  cancelledAt: string | null
+  cancelledByName: string | null
+  cancelReason: string | null
+  reconciledAt: string | null
+  reconciledByName: string | null
+  invoiceNumber: string | null
+  note: string | null
+  createdAt: string
+}
+
+export interface FuelVoucherPayload {
+  vehicleId: number
+  fuelTypeId: number
+  stationId: number
+  odometer?: number
+  driverId?: number | null
+  bookingId?: number
+  note?: string
+}
+
+export interface FuelVoucherPreview {
+  vehicleId: number
+  vehicleName: string
+  plateNumber: string
+  fuelTypeName: string
+  stationName: string
+  odometer: number
+  checkpointOdometer: number
+  distanceKm: number
+  kmPerLiter: number
+  accruedLiter: number
+  carriedLiter: number
+  availableLiter: number
+  tankCapacityLiter: number
+  liter: number
+  remainingLiter: number
+  cappedByTank: boolean
+  pricePerLiter: number
+  amount: number
+  validUntil: string
+  activeVoucherId?: number
+}
+
+export interface FuelVoucherParams {
+  page?: number
+  limit?: number
+  status?: FuelVoucherStatus
+  vehicleId?: number
+  stationId?: number
+  from?: string
+  to?: string
+  reconciled?: boolean
+  search?: string
+}
+
+export interface FuelVoucherSummary {
+  status: FuelVoucherStatus
+  count: number
+  liter: number
+  amount: number
 }
 
 export interface FuelExpenseParams {

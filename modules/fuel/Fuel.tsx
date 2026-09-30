@@ -1,6 +1,8 @@
 'use client'
 
-import { Fuel as FuelIcon, Droplet, Zap, Receipt } from 'lucide-react'
+import { useState } from 'react'
+import { Fuel as FuelIcon, Droplet, Zap, Receipt, Gauge, Ticket } from 'lucide-react'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { PageHeader, StatCard } from '@/components/shared'
 import { DataTable } from '@/components/shared/table/DataTable'
 import { AppButton, InputSelect } from '@/components/ui-custom'
@@ -12,11 +14,21 @@ import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
 import { useFuelExpenses } from './hooks/useFuel'
 import { fuelColumns } from './utils/columns'
 import { FuelInputModal } from './components/FuelInputModal'
+import { FuelBalanceTab } from './components/FuelBalanceTab'
+import { VoucherTab } from './components/VoucherTab'
+import { useAuthStore } from '@/store/auth.store'
+
+type FuelTab = 'balance' | 'voucher' | 'fill'
+
+const TAB_TRIGGER_CLASS =
+  'gap-1.5 rounded-md px-3 text-sm font-medium text-[var(--text-secondary)] data-[state=active]:bg-[var(--bg-card)] data-[state=active]:text-[var(--primary)] data-[state=active]:shadow-sm'
 
 // Bulan WIB, bukan zona browser.
 const isThisMonth = (iso: string) => isSameWibMonth(iso, new Date())
 
 export const Fuel = () => {
+  const isAdmin = useAuthStore((s) => s.user?.role === 'ADMIN')
+  const [tab, setTab] = useState<FuelTab>(isAdmin ? 'balance' : 'voucher')
   const { filters, setFilter, sortBy, sortOrder, setSort, params, setPage, setLimit } = useTableFilter({
     vehicleId: undefined as number | undefined,
     fuelType: undefined as EnergyType | undefined,
@@ -25,7 +37,9 @@ export const Fuel = () => {
   const { data, isLoading } = useFuelExpenses(params)
   const { data: vehicles } = useVehicles({ limit: 100 })
 
-  const items = data?.data ?? []
+  const allItems = data?.data ?? []
+  // Catatan yang dibatalkan tidak dihitung di ringkasan.
+  const items = allItems.filter((f) => f.status !== 'VOID')
 
   const totalCostMonth = items
     .filter((f) => isThisMonth(f.createdAt))
@@ -51,7 +65,7 @@ export const Fuel = () => {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Bahan Bakar"
-        description="Pencatatan pengisian BBM & listrik kendaraan"
+        description="Saldo BBM berbasis odometer, voucher SPBU mitra, dan pengisian langsung"
         actions={
           <FuelInputModal
             trigger={
@@ -63,6 +77,30 @@ export const Fuel = () => {
         }
       />
 
+      <Tabs value={tab} onValueChange={(v) => setTab(v as FuelTab)}>
+        <TabsList className="mb-2 flex w-fit rounded-lg bg-[var(--bg-subtle)] p-1">
+          {isAdmin && (
+            <TabsTrigger value="balance" className={TAB_TRIGGER_CLASS}>
+              <Gauge className="h-4 w-4" /> Saldo Kendaraan
+            </TabsTrigger>
+          )}
+          <TabsTrigger value="voucher" className={TAB_TRIGGER_CLASS}>
+            <Ticket className="h-4 w-4" /> Voucher
+          </TabsTrigger>
+          <TabsTrigger value="fill" className={TAB_TRIGGER_CLASS}>
+            <Receipt className="h-4 w-4" /> Pengisian
+          </TabsTrigger>
+        </TabsList>
+
+        {isAdmin && (
+          <TabsContent value="balance">
+            <FuelBalanceTab />
+          </TabsContent>
+        )}
+        <TabsContent value="voucher">
+          <VoucherTab />
+        </TabsContent>
+        <TabsContent value="fill" className="flex flex-col gap-6">
       {/* Stat cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -116,7 +154,7 @@ export const Fuel = () => {
       </div>
 
       <DataTable
-        data={items}
+        data={allItems}
         columns={fuelColumns}
         isLoading={isLoading}
         pagination={data?.pagination}
@@ -127,6 +165,8 @@ export const Fuel = () => {
         onSortingChange={(s) => setSort(s[0]?.id, s[0]?.desc ? 'desc' : 'asc')}
         emptyMessage="Belum ada catatan pengisian"
       />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
