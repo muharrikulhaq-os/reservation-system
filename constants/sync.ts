@@ -62,9 +62,8 @@ export const SYNC_TOPIC_QUERY_KEYS: Record<SyncTopic, readonly QueryKey[]> = {
     QUERY_KEYS.FUEL,
     QUERY_KEYS.FUEL_TYPES,
     QUERY_KEYS.SETTINGS,
-    // Odometer dari pengisian BBM bisa memicu maintenance otomatis.
+    // Pengisian BBM memajukan odometer kendaraan.
     QUERY_KEYS.VEHICLES,
-    QUERY_KEYS.MAINTENANCE,
     ["reports"],
   ],
   maintenance: [
