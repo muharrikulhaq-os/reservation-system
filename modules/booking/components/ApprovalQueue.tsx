@@ -19,6 +19,7 @@ import { StatCard } from '@/modules/dashboard/components/StatCard'
 import { formatDate, isSameWibDay, resolveFileUrl, wibMonthBounds } from '@/lib'
 import { BOOKING_STATUS, RESOURCE_TYPE } from '@/constants'
 import type { Booking } from '@/types'
+import { useAuthStore } from '@/store/auth.store'
 import {
   useBookings,
   useApproveBooking,
@@ -54,6 +55,7 @@ export const ApprovalQueue = () => {
     limit: 1,
   })
 
+  const myId = useAuthStore((s) => s.user?.id)
   const approve = useApproveBooking()
   const reject = useRejectBooking()
 
@@ -158,8 +160,10 @@ export const ApprovalQueue = () => {
               <QueueRow
                 key={booking.id}
                 booking={booking}
-                onApprove={() => handleApprove(booking)}
-                onReject={() => handleReject(booking)}
+                // Booking milik admin sendiri diputuskan admin lain (backend 403).
+                isOwn={booking.user.id === myId}
+                onApprove={booking.user.id === myId ? undefined : () => handleApprove(booking)}
+                onReject={booking.user.id === myId ? undefined : () => handleReject(booking)}
                 approving={
                   approve.isPending && approve.variables?.id === booking.id
                 }
@@ -229,10 +233,12 @@ interface QueueRowProps {
   onReject?: () => void
   approving?: boolean
   rejecting?: boolean
+  isOwn?: boolean
 }
 
 const QueueRow = ({
   booking,
+  isOwn,
   onApprove,
   onReject,
   approving,
@@ -292,6 +298,11 @@ const QueueRow = ({
 
       {/* Kanan: aksi */}
       <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:ml-auto sm:w-auto">
+        {isOwn && (
+          <span className="text-xs text-[var(--text-secondary)]">
+            Booking Anda — disetujui admin lain
+          </span>
+        )}
         {showActions && (
           <>
             <AppButton
@@ -301,7 +312,7 @@ const QueueRow = ({
               disabled={approving || rejecting}
               onClick={onApprove}
               className="bg-[var(--success)] hover:bg-green-700"
-            >dashboard/booking
+            >
               Setujui
             </AppButton>
             <AppButton

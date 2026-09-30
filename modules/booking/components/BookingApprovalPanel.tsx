@@ -15,6 +15,7 @@ import { AppButton, InputSelect, InputTextArea } from '@/components/ui-custom'
 import { getErrorMessage, resolveFileUrl } from '@/lib'
 import { BOOKING_STATUS, RESOURCE_STATUS, RESOURCE_TYPE } from '@/constants'
 import type { Booking, SelectOption } from '@/types'
+import { useAuthStore } from '@/store/auth.store'
 import { useDrivers } from '@/modules/drivers/hooks/useDrivers'
 import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
 import { useRooms } from '@/modules/rooms/hooks/useRooms'
@@ -51,6 +52,7 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
   const [alihkanDriverId, setAlihkanDriverId] = useState('')
   const [alihkanVehicleId, setAlihkanVehicleId] = useState('')
 
+  const myId = useAuthStore((s) => s.user?.id)
   const approve = useApproveBooking()
   const reject = useRejectBooking()
   const substitute = useSubstituteResource()
@@ -79,6 +81,23 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
     approve.isPending || reject.isPending || substitute.isPending || assign.isPending
 
   if (booking.status !== BOOKING_STATUS.PENDING) return null
+
+  // Admin tidak boleh memutuskan booking miliknya sendiri (backend 403).
+  if (booking.user.id === myId) {
+    return (
+      <Card>
+        <h3
+          className="mb-2 text-base font-bold text-[var(--text-primary)]"
+          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        >
+          Persetujuan Booking
+        </h3>
+        <p className="text-sm text-[var(--text-secondary)]">
+          Ini booking Anda sendiri — persetujuan atau penolakan dilakukan oleh admin lain.
+        </p>
+      </Card>
+    )
+  }
 
   // Approve biasa: cukup klik "Setujui" - driver + kendaraan yang sudah
   // ter-attach saat create tetap dipakai (booking siap digunakan).
