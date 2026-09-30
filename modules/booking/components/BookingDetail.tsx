@@ -128,7 +128,11 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
   const isRoomKeeper = useAuthStore((s) => s.isRoomKeeper());
   const isEmployee = useAuthStore((s) => s.isEmployee());
   const currentUserId = useAuthStore((s) => s.user?.id);
-  const { mutate: cancelBooking, isPending: isCancelling } = useCancelBooking();
+  const {
+    mutate: cancelBooking,
+    isPending: isCancelling,
+    error: cancelError,
+  } = useCancelBooking();
 
   if (isLoading) {
     return (
@@ -415,6 +419,30 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
             !booking.assignedDriver && (
               <BookingAssignPanel booking={booking} onActionComplete={refetch} />
             )}
+
+          {/* Booking disetujui yang belum dimulai hanya bisa dibatalkan admin;
+              supirnya otomatis dilepas. */}
+          {booking.status === BOOKING_STATUS.APPROVED && (
+            <Card>
+              <CardHeader title="Batalkan Booking" />
+              {cancelError && <PanelError error={cancelError} />}
+              <p className="mb-3 text-sm text-[var(--text-secondary)]">
+                Booking sudah disetujui tapi belum dimulai. Pemohon dan supir
+                akan mendapat notifikasi pembatalan.
+              </p>
+              <AppButton
+                variant="danger"
+                size="sm"
+                loading={isCancelling}
+                onClick={() => {
+                  if (window.confirm("Batalkan booking yang sudah disetujui ini?"))
+                    cancelBooking(booking.id, { onSuccess: () => refetch() });
+                }}
+              >
+                Batalkan Booking
+              </AppButton>
+            </Card>
+          )}
         </AdminOnly>
 
         {/* StartPanel: Admin, Room Keeper (ruangan), atau karyawan pemilik booking ruangan */}
