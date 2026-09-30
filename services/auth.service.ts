@@ -9,7 +9,6 @@ import type {
   User,
   LoginPayload,
   LoginResponse,
-  RegisterPayload,
   RefreshTokenPayload,
   RefreshTokenResponse,
   LogoutPayload,
@@ -22,11 +21,6 @@ import type {
 } from '@/types'
 
 export const authService = {
-  register: (payload: RegisterPayload) =>
-    apiClient
-      .post<ApiResponse<User>>(API_ENDPOINTS.AUTH.REGISTER, payload)
-      .then((r) => r.data),
-
   login: (payload: LoginPayload) =>
     apiClient
       .post<ApiResponse<LoginResponse>>(API_ENDPOINTS.AUTH.LOGIN, payload)

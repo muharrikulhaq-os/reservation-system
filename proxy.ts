@@ -10,9 +10,9 @@ import { TOKEN_CONFIG } from '@/constants'
 
 // ── Route Definitions ────────────────────
 
-const PUBLIC_ROUTES  = ['/login', '/register', '/guest-booking', '/forgot-password']
+const PUBLIC_ROUTES  = ['/login', '/guest-booking', '/forgot-password']
 // redirect ke dashboard jika sudah login (user yang sudah masuk pakai ganti password biasa)
-const AUTH_ROUTES    = ['/login', '/register', '/forgot-password']
+const AUTH_ROUTES    = ['/login', '/forgot-password']
 // Hanya ADMIN (Pemeliharaan admin-only di backend bahkan untuk lihat data)
 const ADMIN_ROUTES   = ['/admin', '/reports', '/users', '/settings', '/drivers', '/booking/approval', '/maintenance']
 // Hanya ADMIN atau EMPLOYEE - booking dibuat oleh keduanya (DRIVER

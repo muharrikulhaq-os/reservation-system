@@ -53,15 +53,6 @@ export interface AuthUser {
 
 // --- Auth Payloads & Responses ---
 
-export interface RegisterPayload {
-  employeeId: string
-  name: string
-  email: string
-  password: string
-  roleId: number
-  departmentId: number
-}
-
 export interface LoginPayload {
   email: string
   password: string

@@ -12,7 +12,6 @@ export const API_ENDPOINTS = {
 
   // ── Auth ────────────────────────────────
   AUTH: {
-    REGISTER:        `${API_PREFIX}/auth/register`,
     LOGIN:           `${API_PREFIX}/auth/login`,
     REFRESH:         `${API_PREFIX}/auth/refresh`,
     LOGOUT:          `${API_PREFIX}/auth/logout`,
