@@ -28,7 +28,10 @@ const isThisMonth = (iso: string) => isSameWibMonth(iso, new Date())
 
 export const Fuel = () => {
   const isAdmin = useAuthStore((s) => s.user?.role === 'ADMIN')
-  const [tab, setTab] = useState<FuelTab>(isAdmin ? 'balance' : 'voucher')
+  // Role terisi setelah hidrasi auth → tab default diturunkan, bukan disimpan di awal.
+  const [picked, setPicked] = useState<FuelTab | null>(null)
+  const tab: FuelTab = picked && (isAdmin || picked !== 'balance') ? picked : isAdmin ? 'balance' : 'voucher'
+  const setTab = setPicked
   const { filters, setFilter, sortBy, sortOrder, setSort, params, setPage, setLimit } = useTableFilter({
     vehicleId: undefined as number | undefined,
     fuelType: undefined as EnergyType | undefined,
