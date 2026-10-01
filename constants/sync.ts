@@ -25,6 +25,8 @@ export const SYNC_TOPIC_QUERY_KEYS: Record<SyncTopic, readonly QueryKey[]> = {
     QUERY_KEYS.BOOKINGS,
     QUERY_KEYS.GUEST_BOOKINGS,
     QUERY_KEYS.VEHICLES,
+    // Odometer mulai/akhir trip memajukan hak saldo BBM.
+    QUERY_KEYS.FUEL_BALANCES,
     QUERY_KEYS.ROOMS,
     QUERY_KEYS.DRIVERS,
     QUERY_KEYS.DASHBOARD,
@@ -32,6 +34,8 @@ export const SYNC_TOPIC_QUERY_KEYS: Record<SyncTopic, readonly QueryKey[]> = {
   ],
   vehicle: [
     QUERY_KEYS.VEHICLES,
+    // Odometer kendaraan menentukan hak saldo BBM.
+    QUERY_KEYS.FUEL_BALANCES,
     QUERY_KEYS.DRIVERS,
     QUERY_KEYS.DASHBOARD,
     ["reports"],
@@ -61,6 +65,9 @@ export const SYNC_TOPIC_QUERY_KEYS: Record<SyncTopic, readonly QueryKey[]> = {
   fuel: [
     QUERY_KEYS.FUEL,
     QUERY_KEYS.FUEL_TYPES,
+    QUERY_KEYS.FUEL_BALANCES,
+    QUERY_KEYS.FUEL_STATIONS,
+    QUERY_KEYS.FUEL_VOUCHERS,
     QUERY_KEYS.SETTINGS,
     // Pengisian BBM memajukan odometer kendaraan.
     QUERY_KEYS.VEHICLES,
@@ -71,6 +78,7 @@ export const SYNC_TOPIC_QUERY_KEYS: Record<SyncTopic, readonly QueryKey[]> = {
     QUERY_KEYS.VEHICLE_ISSUES,
     // Serah terima / kembali dari vendor mengubah status & odometer kendaraan.
     QUERY_KEYS.VEHICLES,
+    QUERY_KEYS.FUEL_BALANCES,
     QUERY_KEYS.DASHBOARD,
     ["reports"],
   ],

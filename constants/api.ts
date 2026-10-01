@@ -112,6 +112,32 @@ export const API_ENDPOINTS = {
   FUEL: {
     BASE:            `${API_PREFIX}/fuel-expenses`,
     BY_ID:           (id: number) => `${API_PREFIX}/fuel-expenses/${id}`,
+    VOID:            (id: number) => `${API_PREFIX}/fuel-expenses/${id}/void`,
+  },
+
+  // ── Saldo BBM per kendaraan (odometer → hak liter) ──
+  FUEL_BALANCES: {
+    BASE:            `${API_PREFIX}/fuel-balances`,
+    BY_VEHICLE:      (vehicleId: number) => `${API_PREFIX}/fuel-balances/${vehicleId}`,
+    LEDGER:          (vehicleId: number) => `${API_PREFIX}/fuel-balances/${vehicleId}/ledger`,
+    PROFILE:         (vehicleId: number) => `${API_PREFIX}/fuel-balances/${vehicleId}/profile`,
+    ADJUSTMENTS:     (vehicleId: number) => `${API_PREFIX}/fuel-balances/${vehicleId}/adjustments`,
+  },
+
+  // ── SPBU mitra ──
+  FUEL_STATIONS: {
+    BASE:            `${API_PREFIX}/fuel-stations`,
+    BY_ID:           (id: number) => `${API_PREFIX}/fuel-stations/${id}`,
+  },
+
+  // ── Voucher BBM ──
+  FUEL_VOUCHERS: {
+    BASE:            `${API_PREFIX}/fuel-vouchers`,
+    PREVIEW:         `${API_PREFIX}/fuel-vouchers/preview`,
+    RECONCILE:       `${API_PREFIX}/fuel-vouchers/reconcile`,
+    BY_ID:           (id: number) => `${API_PREFIX}/fuel-vouchers/${id}`,
+    USE:             (id: number) => `${API_PREFIX}/fuel-vouchers/${id}/use`,
+    CANCEL:          (id: number) => `${API_PREFIX}/fuel-vouchers/${id}/cancel`,
   },
 
   // ── Fuel Types (master data harga acuan) ──

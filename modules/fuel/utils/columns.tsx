@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Eye, Fuel, Trash2, Zap } from 'lucide-react'
+import { Ban, Eye, Fuel, Ticket, Zap } from 'lucide-react'
 import {
   createColumnHelper,
   type ColumnDef,
@@ -11,8 +11,9 @@ import { AdminOnly } from '@/components/common'
 import { formatDate, formatCurrency, formatNumber } from '@/lib'
 import { ENERGY_TYPE, ENERGY_TYPE_CONFIG } from '@/constants'
 import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
-import { useDeleteFuel } from '../hooks/useFuel'
 import { FuelDetailModal } from '../components/FuelDetailModal'
+import { VoidFuelModal } from '../components/VoidFuelModal'
+import { FUEL_REASON_LABEL } from './format'
 import type { FuelExpense } from '@/types'
 
 const ch = createColumnHelper<FuelExpense>()
@@ -56,11 +57,10 @@ const EnergyBadge = ({ energyType }: { energyType: FuelExpense['fuelType'] }) =>
 }
 
 const RowActions = ({ row }: { row: FuelExpense }) => {
-  const del = useDeleteFuel()
   const [detailOpen, setDetailOpen] = useState(false)
-  const handleDelete = () => {
-    if (window.confirm('Hapus catatan pengisian ini?')) del.mutate(row.id)
-  }
+  const [voidOpen, setVoidOpen] = useState(false)
+  // Catatan dari voucher dibatalkan lewat menu Voucher; yang sudah batal tidak bisa lagi.
+  const canVoid = row.status !== 'VOID' && row.source !== 'VOUCHER'
   return (
     <div className="flex items-center justify-end">
       <AppButton
@@ -71,18 +71,21 @@ const RowActions = ({ row }: { row: FuelExpense }) => {
       >
         <Eye className="h-4 w-4" />
       </AppButton>
-      <AdminOnly>
-        <AppButton
-          variant="ghost"
-          size="icon-sm"
-          loading={del.isPending}
-          onClick={handleDelete}
-          aria-label="Hapus"
-          className="text-[var(--danger)] hover:text-[var(--danger)]"
-        >
-          <Trash2 className="h-4 w-4" />
-        </AppButton>
-      </AdminOnly>
+      {canVoid && (
+        <AdminOnly>
+          <AppButton
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setVoidOpen(true)}
+            aria-label="Batalkan"
+            title="Batalkan catatan"
+            className="text-[var(--danger)] hover:text-[var(--danger)]"
+          >
+            <Ban className="h-4 w-4" />
+          </AppButton>
+          <VoidFuelModal fuel={row} open={voidOpen} onOpenChange={setVoidOpen} />
+        </AdminOnly>
+      )}
       <FuelDetailModal fuel={row} open={detailOpen} onOpenChange={setDetailOpen} />
     </div>
   )
@@ -103,6 +106,38 @@ export const fuelColumns: ColumnDef<FuelExpense, unknown>[] = [
     id: 'vehicleName',
     header: 'Kendaraan',
     cell: ({ getValue }) => <VehicleCell vehicleId={getValue()} />,
+  }),
+
+  ch.display({
+    id: 'source',
+    header: 'Sumber',
+    size: 150,
+    enableSorting: false,
+    cell: ({ row }) => {
+      const f = row.original
+      const isVoid = f.status === 'VOID'
+      return (
+        <div className="min-w-0">
+          {f.source === 'VOUCHER' ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+              <Ticket className="h-2.5 w-2.5" /> {f.voucherCode ?? 'Voucher'}
+            </span>
+          ) : (
+            <span className="inline-flex rounded-full bg-[var(--bg-subtle)] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-secondary)]">
+              Isi langsung{f.reason ? ` · ${FUEL_REASON_LABEL[f.reason] ?? f.reason}` : ''}
+            </span>
+          )}
+          {f.stationName && (
+            <p className="mt-0.5 truncate text-xs text-[var(--text-secondary)]">{f.stationName}</p>
+          )}
+          {isVoid && (
+            <span className="mt-0.5 inline-flex rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600">
+              Dibatalkan
+            </span>
+          )}
+        </div>
+      )
+    },
   }),
 
   ch.accessor('driverName', {
@@ -155,8 +190,10 @@ export const fuelColumns: ColumnDef<FuelExpense, unknown>[] = [
   ch.accessor('totalCost', {
     header: 'Total',
     size: 120,
-    cell: ({ getValue }) => (
-      <span className="text-sm font-medium text-[var(--text-primary)]">
+    cell: ({ getValue, row }) => (
+      <span
+        className={`text-sm font-medium text-[var(--text-primary)] ${row.original.status === 'VOID' ? 'line-through opacity-50' : ''}`}
+      >
         {formatCurrency(getValue())}
       </span>
     ),

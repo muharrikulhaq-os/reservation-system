@@ -47,15 +47,21 @@ export const useCreateFuel = () => {
     mutationFn: (payload: CreateFuelPayload) => fuelApi.create(payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.FUEL })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.FUEL_BALANCES })
       qc.invalidateQueries({ queryKey: QUERY_KEYS.VEHICLES })
     },
   })
 }
 
-export const useDeleteFuel = () => {
+export const useVoidFuel = () => {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: number) => fuelApi.delete(id),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: QUERY_KEYS.FUEL }),
+    mutationFn: ({ id, reason, odometerTypo }: { id: number; reason: string; odometerTypo?: boolean }) =>
+      fuelApi.void(id, reason, odometerTypo),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.FUEL })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.FUEL_BALANCES })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.VEHICLES })
+    },
   })
 }

@@ -66,6 +66,9 @@ export const QUERY_KEYS = {
   // Fuel
   FUEL: ["fuel-expenses"] as const,
   FUEL_TYPES: ["fuel-types"] as const,
+  FUEL_BALANCES: ["fuel-balances"] as const,
+  FUEL_STATIONS: ["fuel-stations"] as const,
+  FUEL_VOUCHERS: ["fuel-vouchers"] as const,
 
   // Maintenance
   MAINTENANCE: ["maintenance"] as const,
