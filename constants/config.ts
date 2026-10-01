@@ -72,6 +72,10 @@ export const QUERY_KEYS = {
 
   // Maintenance
   MAINTENANCE: ["maintenance"] as const,
+  MAINTENANCE_OPTIONS: ["maintenance", "options"] as const,
+  VEHICLE_ISSUES: ["vehicle-issues"] as const,
+  VENDORS: ["vendors"] as const,
+  DOCUMENT_SETTINGS: ["document-settings"] as const,
 
   // Settings
   SETTINGS: ["master-settings"] as const,

@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────
 
 import type { FuelType, ResourceStatus, ResourceType } from './enums'
+import type { VehicleOwnership } from './resource'
 
 // ─────────────────────────────────────────
 // FUEL EXPENSES
@@ -327,59 +328,302 @@ export interface FuelExpenseParams {
 // MAINTENANCE
 // ─────────────────────────────────────────
 
-// Shape dari GET /maintenance (list/detail) - VEHICLE only
-export interface MaintenanceRecord {
+// Maintenance oleh vendor/bengkel luar (booking-system-api
+// docs/RANCANGAN_MAINTENANCE_VENDOR.md):
+// DRAFT → SUBMITTED → SCHEDULED → IN_PROGRESS → COMPLETED (CANCELLED sebelum
+// kendaraan diserahkan). Kendaraan MAINTENANCE hanya selama IN_PROGRESS.
+export type MaintenanceStatus =
+  | 'DRAFT'
+  | 'SUBMITTED'
+  | 'SCHEDULED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'CANCELLED'
+
+export type MaintenanceCategory = 'ROUTINE' | 'REPAIR' | 'PARTS' | 'BODY' | 'OTHER'
+export type MaintenancePickupMethod = 'DROP_OFF' | 'PICKUP'
+export type MaintenanceCostBearer = 'COMPANY' | 'VENDOR' | 'UNDECIDED'
+export type FuelLevel = 'E' | '1/4' | '1/2' | '3/4' | 'F'
+export type MaintenanceDocumentKind =
+  | 'INVOICE'
+  | 'SIGNED_REQUEST'
+  | 'SIGNED_HANDOVER'
+  | 'SIGNED_RETURN'
+  | 'PHOTO'
+  | 'OTHER'
+export type MaintenancePdfKind = 'request' | 'handover' | 'return'
+
+/** Checklist kelengkapan berita acara: key → ada/tidak. */
+export type HandoverChecklist = Record<string, boolean>
+
+export interface MaintenanceVehicleRef {
   id: number
-  vehicleId: number
-  vehicleName: string
+  name: string
   plateNumber: string
-  vehiclePhotoUrl: string | null
-  maintenanceTypeId: number | null
-  type: string           // mis. "routine" | "repair"
-  status: string         // mis. "pending" | "completed"
-  description: string
+  photoUrl: string | null
+  brand: string
+  model: string
+  year: number
+  currentOdometer: number
+  ownership: VehicleOwnership
+  ownerVendorName: string | null
+  rentalContractNo: string | null
+}
+
+export interface MaintenanceVendorRef {
+  id: number
+  name: string
+  address: string | null
+  picName: string | null
+  phone: string | null
+}
+
+export interface MaintenanceHandover {
+  at: string
   odometer: number | null
-  totalCost: string | null // API mengirim string
-  vendorName: string | null
-  location: string
-  startDate: string
-  endDate: string | null
-  completedAt: string | null
-  proofPhotos: string[]
-  createdBy: string
+  fuelLevel: FuelLevel | null
+  receiverName: string | null
+  checklist: HandoverChecklist
+  note: string | null
+}
+
+export interface MaintenanceReturn {
+  at: string
+  odometer: number | null
+  fuelLevel: FuelLevel | null
+  handlerName: string | null
+  checklist: HandoverChecklist
+  workDone: string | null
+  partsReplaced: string | null
+  note: string | null
+}
+
+export interface MaintenanceDocument {
+  id: number
+  maintenanceId: number
+  kind: MaintenanceDocumentKind
+  fileUrl: string
+  fileName: string
+  uploadedById: number
+  uploadedBy: string
   createdAt: string
 }
 
-// POST /maintenance - JSON
-export interface CreateMaintenancePayload {
+// Shape dari GET /maintenance (list) & GET /maintenance/:id (detail + documents)
+export interface MaintenanceRecord {
+  id: number
+  requestNo: string | null
+  status: MaintenanceStatus
+  vehicle: MaintenanceVehicleRef
   vehicleId: number
-  maintenanceTypeId?: number
-  type: string          // WAJIB
-  status: string        // WAJIB ("pending" saat create)
-  description: string   // WAJIB
-  odometer?: number
-  totalCost?: number
-  vendorName?: string
-  location: string      // WAJIB
-  startDate: string     // WAJIB (RFC3339)
-  endDate?: string
+  vehicleName: string
+  plateNumber: string
+  vendor: MaintenanceVendorRef | null
+  /** Nama vendor (termasuk nama bengkel data lama tanpa master vendor). */
+  vendorName: string | null
+  category: MaintenanceCategory
+  categoryLabel: string
+  description: string
+  complaint: string | null
+  location: string | null
+  plannedDate: string | null
+  estimatedDays: number | null
+  scheduledDate: string | null
+  scheduleNote: string | null
+  pickupMethod: MaintenancePickupMethod | null
+  estimatedCost: number | null
+  actualCost: number | null
+  costBearer: MaintenanceCostBearer | null
+  odometer: number | null
+  submittedAt: string | null
+  handover: MaintenanceHandover | null
+  return: MaintenanceReturn | null
+  completedAt: string | null
+  cancelledAt: string | null
+  cancelReason: string | null
+  proofPhotos: string[]
+  sourceIssueId: number | null
+  createdBy: string
+  createdAt: string
+  updatedAt: string
+  /** Jendela tanggal yang sedang memblokir booking (null = tidak memblokir). */
+  blockStart: string | null
+  blockEnd: string | null
+  documents?: MaintenanceDocument[]
 }
 
-// PUT /maintenance/:id - sama dengan create
-export type UpdateMaintenancePayload = CreateMaintenancePayload
+/** Respons aksi maintenance - `warning` bila bentrok dengan booking disetujui. */
+export interface MaintenanceActionResponse {
+  success: boolean
+  message: string
+  data: MaintenanceRecord
+  warning?: string
+}
 
-// PATCH /maintenance/:id/complete - multipart, upload foto bukti
-export interface CompleteMaintenancePayload {
-  photos?: File[]
+export interface MaintenanceOption<T extends string = string> {
+  value: T
+  label: string
+}
+
+// GET /maintenance/options - pilihan tetap untuk form
+export interface MaintenanceOptions {
+  categories: MaintenanceOption<MaintenanceCategory>[]
+  pickupMethods: MaintenanceOption<MaintenancePickupMethod>[]
+  costBearers: MaintenanceOption<MaintenanceCostBearer>[]
+  fuelLevels: FuelLevel[]
+  checklist: MaintenanceOption[]
+}
+
+// POST /maintenance & PUT /maintenance/:id
+export interface MaintenancePlanPayload {
+  vehicleId: number
+  vendorId?: number
+  category: MaintenanceCategory
+  description: string
+  complaint?: string
+  location?: string
+  plannedDate?: string
+  estimatedDays?: number
+  pickupMethod?: MaintenancePickupMethod
+  estimatedCost?: number
+  costBearer?: MaintenanceCostBearer
+  odometer?: number
+  /** Create saja: langsung ajukan (buat nomor surat). */
+  submit?: boolean
+}
+
+export interface ScheduleMaintenancePayload {
+  scheduledDate: string
+  estimatedDays?: number
+  note?: string
+}
+
+export interface HandoverMaintenancePayload {
+  handoverAt?: string
+  odometer?: number
+  fuelLevel?: FuelLevel
+  receiverName: string
+  checklist?: HandoverChecklist
+  note?: string
+}
+
+export interface ReturnMaintenancePayload {
+  returnedAt?: string
+  odometer?: number
+  fuelLevel?: FuelLevel
+  handlerName?: string
+  checklist?: HandoverChecklist
+  workDone: string
+  partsReplaced?: string
+  note?: string
+  actualCost?: number
+  costBearer?: MaintenanceCostBearer
+}
+
+export interface MaintenanceCostPayload {
+  estimatedCost?: number
+  actualCost?: number
+  costBearer?: MaintenanceCostBearer
 }
 
 export interface MaintenanceParams {
   vehicleId?: number
+  vendorId?: number
+  /** Satu status, beberapa dipisah koma, atau "ACTIVE" (belum final). */
+  status?: string
+  search?: string
   page?: number
   limit?: number
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
 }
+
+// ─────────────────────────────────────────
+// VENDOR / BENGKEL
+// ─────────────────────────────────────────
+
+export type VendorType = 'OWNER' | 'WORKSHOP' | 'BOTH'
+
+export interface Vendor {
+  id: number
+  name: string
+  type: VendorType
+  typeLabel: string
+  address: string | null
+  picName: string | null
+  phone: string | null
+  email: string | null
+  note: string | null
+  isActive: boolean
+  vehicleCount: number
+  maintenanceCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface VendorPayload {
+  name: string
+  type: VendorType
+  address?: string
+  picName?: string
+  phone?: string
+  email?: string
+  note?: string
+}
+
+export interface VendorParams {
+  search?: string
+  type?: 'OWNER' | 'WORKSHOP'
+  isActive?: boolean
+}
+
+// ─────────────────────────────────────────
+// LAPORAN KENDALA KENDARAAN (supir)
+// ─────────────────────────────────────────
+
+export type VehicleIssueStatus = 'OPEN' | 'CONVERTED' | 'DISMISSED'
+
+export interface VehicleIssue {
+  id: number
+  vehicle: { id: number; name: string; plateNumber: string }
+  bookingId: number | null
+  reportedBy: { id: number; name: string }
+  description: string
+  location: string | null
+  photos: string[]
+  canContinue: boolean
+  status: VehicleIssueStatus
+  handledBy: string | null
+  handledNote: string | null
+  handledAt: string | null
+  maintenanceId: number | null
+  createdAt: string
+}
+
+export interface VehicleIssueParams {
+  status?: VehicleIssueStatus
+  vehicleId?: number
+  page?: number
+  limit?: number
+}
+
+// ─────────────────────────────────────────
+// PENGATURAN DOKUMEN (kop surat & penandatangan)
+// ─────────────────────────────────────────
+
+export interface DocumentSettings {
+  companyName: string
+  companyAddress: string
+  companyPhone: string
+  companyEmail: string
+  logoUrl: string | null
+  signerName: string
+  signerTitle: string
+  letterCode: string
+  updatedAt: string
+}
+
+export type DocumentSettingsPayload = Omit<DocumentSettings, 'logoUrl' | 'updatedAt'>
 
 // ─────────────────────────────────────────
 // MASTER SETTINGS

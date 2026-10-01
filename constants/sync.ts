@@ -75,9 +75,18 @@ export const SYNC_TOPIC_QUERY_KEYS: Record<SyncTopic, readonly QueryKey[]> = {
   ],
   maintenance: [
     QUERY_KEYS.MAINTENANCE,
+    QUERY_KEYS.VEHICLE_ISSUES,
+    // Serah terima / kembali dari vendor mengubah status & odometer kendaraan.
     QUERY_KEYS.VEHICLES,
+    QUERY_KEYS.FUEL_BALANCES,
     QUERY_KEYS.DASHBOARD,
     ["reports"],
+  ],
+  vendor: [
+    QUERY_KEYS.VENDORS,
+    // Nama vendor tampil di kendaraan (pemilik sewa) & maintenance.
+    QUERY_KEYS.VEHICLES,
+    QUERY_KEYS.MAINTENANCE,
   ],
 };
 
