@@ -15,6 +15,7 @@ import {
   Clock,
   Star,
   Bell,
+  Fuel,
 } from 'lucide-react'
 import { cn, formatRelativeTime } from '@/lib'
 import { notificationTypeConfig } from '@/constants'
@@ -38,6 +39,7 @@ const NOTIFICATION_ICON: Record<string, React.ComponentType<{ className?: string
   Clock,
   Star,
   Bell,
+  Fuel,
 }
 
 interface NotificationItemProps {

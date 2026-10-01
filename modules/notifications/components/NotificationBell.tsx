@@ -36,7 +36,9 @@ export const NotificationBell = () => {
   const handleItemClick = (n: AppNotification) => {
     if (!n.isRead) markAsRead(n.id)
     setOpen(false)
-    if (n.relatedEntityId != null) router.push(`/booking/${n.relatedEntityId}`)
+    // Voucher BBM diterbitkan → menu Bahan Bakar (tab Voucher).
+    if (n.type === 'FUEL_VOUCHER_ISSUED') router.push('/fuel')
+    else if (n.relatedEntityId != null) router.push(`/booking/${n.relatedEntityId}`)
   }
 
   return (
