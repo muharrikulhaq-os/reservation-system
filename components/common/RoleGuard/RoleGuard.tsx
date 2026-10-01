@@ -17,8 +17,12 @@ interface RoleGuardProps {
 }
 
 export const RoleGuard = ({ roles, children, fallback = null }: RoleGuardProps) => {
-  const hasRole = useAuthStore((s) => s.hasRole)
-  return hasRole(roles) ? <>{children}</> : <>{fallback}</>
+  // Selector mengembalikan boolean (bukan fungsi hasRole) supaya komponen
+  // ikut render ulang saat user selesai dimuat - dulu halaman AdminOnly
+  // (mis. /settings) kosong setelah reload karena store belum terisi saat
+  // render pertama dan tidak pernah memicu render ulang.
+  const allowed = useAuthStore((s) => s.hasRole(roles))
+  return allowed ? <>{children}</> : <>{fallback}</>
 }
 
 // ── Convenience wrappers ──────────────────

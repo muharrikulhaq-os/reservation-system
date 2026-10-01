@@ -40,7 +40,14 @@ export interface Vehicle {
   // Supir tetap (permanen, diatur admin) - kalau terisi, booking kendaraan
   // ini otomatis pakai supir ini, tidak ada pilihan supir lain.
   fixedDriver: { id: number; name: string } | null
+  // Kepemilikan: milik perusahaan atau sewa dari vendor (maintenance
+  // kendaraan sewa otomatis diajukan ke vendor pemiliknya).
+  ownership: VehicleOwnership
+  ownerVendor: { id: number; name: string } | null
+  rentalContractNo: string | null
 }
+
+export type VehicleOwnership = 'COMPANY' | 'VENDOR'
 
 // Subset untuk nested di booking response
 export interface VehicleSummary {
@@ -161,10 +168,17 @@ export interface CreateVehiclePayload {
   categoryId: number
   capacity: number
   energyType?: VehicleEnergyType
+  ownership?: VehicleOwnership
+  ownerVendorId?: number
+  rentalContractNo?: string
 }
 
-// PUT /vehicles/:id - semua field wajib (bukan partial)
-export type UpdateVehiclePayload = Required<CreateVehiclePayload>
+// PUT /vehicles/:id - field data kendaraan wajib; kepemilikan opsional
+// (tidak dikirim = tidak diubah).
+export type UpdateVehiclePayload = Required<
+  Omit<CreateVehiclePayload, 'ownership' | 'ownerVendorId' | 'rentalContractNo'>
+> &
+  Pick<CreateVehiclePayload, 'ownership' | 'ownerVendorId' | 'rentalContractNo'>
 
 export interface UpdateVehicleStatusPayload {
   status: ResourceStatus

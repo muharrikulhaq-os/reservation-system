@@ -131,6 +131,17 @@ export const VehicleDetail = ({ vehicleId }: VehicleDetailProps) => {
             />
             <InfoItem label="Kapasitas" value={`${vehicle.capacity} Penumpang`} />
             <InfoItem label="Odometer" value={formatOdometer(vehicle.currentOdometer)} />
+            <InfoItem
+              label="Kepemilikan"
+              value={
+                vehicle.ownership === 'VENDOR'
+                  ? `Sewa - ${vehicle.ownerVendor?.name ?? '-'}`
+                  : 'Milik perusahaan'
+              }
+            />
+            {vehicle.ownership === 'VENDOR' && (
+              <InfoItem label="No. Kontrak Sewa" value={vehicle.rentalContractNo || '-'} />
+            )}
           </div>
         </Card>
 
