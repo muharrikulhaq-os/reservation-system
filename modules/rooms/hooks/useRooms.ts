@@ -4,10 +4,10 @@
 
 import {
   useQuery,
-  useMutation,
   useQueryClient,
   keepPreviousData,
 } from '@tanstack/react-query'
+import { useMutation } from '@/lib/mutation'
 import { QUERY_KEYS } from '@/constants'
 import { roomService } from '../api/room.api'
 import type {

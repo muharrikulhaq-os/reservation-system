@@ -2,7 +2,8 @@
 // FUEL EXPENSE HOOKS
 // ─────────────────────────────────────────
 
-import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueries, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@/lib/mutation'
 import { QUERY_KEYS } from '@/constants'
 import { fuelApi } from '../api/fuel.api'
 import type { FuelExpenseParams, CreateFuelPayload } from '@/types'

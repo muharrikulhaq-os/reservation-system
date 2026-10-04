@@ -3,7 +3,8 @@
 // Global delete - berlaku untuk semua jenis
 // ─────────────────────────────────────────
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@/lib/mutation'
 import { QUERY_KEYS } from '@/constants'
 import { attachmentService } from '@/services'
 
