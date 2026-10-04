@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { Plus, Search } from "lucide-react";
 import { DataTable, PageHeader } from "@/components/shared";
@@ -45,6 +46,14 @@ export const BookingPage = () => {
       status: undefined as BookingStatus | undefined,
       resourceType: defaultResourceType,
     });
+
+  // Filter awal dari URL (`/booking?status=OVERDUE`) — dipakai tautan
+  // "Lihat Semua" di dashboard. Dibaca setelah mount (bukan useSearchParams)
+  // supaya halaman statis tidak butuh Suspense boundary.
+  useEffect(() => {
+    const s = new URLSearchParams(window.location.search).get("status");
+    if (s && s in BOOKING_STATUS_CONFIG) setFilter("status", s as BookingStatus);
+  }, [setFilter]);
 
   const { data, isLoading } = useBookings(params);
 
