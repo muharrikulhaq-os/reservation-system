@@ -187,6 +187,19 @@ Setiap request tulis sukses → backend menyebut topik yang berubah (`booking`, 
 - `onSuccess` mutasi cukup invalidate key-nya sendiri (respons instan).
 - Data server **jangan** disalin ke Zustand/`useState` — kalau terpaksa, sinkronkan dari query (contoh: `useSyncAuthUser` untuk user di Navbar/Sidebar).
 
+### Mutasi tulis — `useMutation` dari `@/lib/mutation`, BUKAN dari TanStack
+```ts
+// ✗ JANGAN untuk mutasi tulis
+import { useMutation } from '@tanstack/react-query'
+// ✓ HARUS
+import { useMutation } from '@/lib/mutation'
+```
+`isPending` baru menonaktifkan tombol setelah render ulang, jadi klik ganda dulu mengirim request
+ganda (booking ganda). Versi `@/lib/mutation` mengabaikan request IDENTIK yang sedang berjalan atau
+baru berhasil (< 2 dtk). `mutateAsync` yang diabaikan tidak pernah selesai — kode setelah `await`
+tidak jalan dua kali. Pengecualian: "mutasi" baca seperti pratinjau (`usePreviewFuelVoucher`) tetap
+pakai versi TanStack. Backend juga menolak booking duplikat (409) sebagai lapis terakhir.
+
 ### Form — selalu RHF + Zod
 ```ts
 const form = useForm<BookingFormData>({

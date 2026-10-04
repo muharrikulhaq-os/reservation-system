@@ -4,7 +4,8 @@
 // (topik fuel + vehicle, lihat constants/sync.ts).
 // ─────────────────────────────────────────
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient, useMutation as useRawMutation } from '@tanstack/react-query'
+import { useMutation } from '@/lib/mutation'
 import { QUERY_KEYS } from '@/constants'
 import { fuelBalanceApi, fuelStationApi, fuelVoucherApi } from '../api/fuelVoucher.api'
 import type {
@@ -107,8 +108,10 @@ export const useFuelVoucher = (id?: number) =>
     enabled: !!id,
   })
 
+// Pratinjau = hitung ulang (bukan tulis) dan dipanggil berulang dengan input
+// yang bisa sama → tanpa penjaga kirim-ganda.
 export const usePreviewFuelVoucher = () =>
-  useMutation({
+  useRawMutation({
     mutationFn: (payload: FuelVoucherPayload) => fuelVoucherApi.preview(payload).then((r) => r.data),
   })
 

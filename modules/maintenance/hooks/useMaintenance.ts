@@ -4,7 +4,8 @@
 // (header X-Data-Changed) - onSuccess cukup key milik modul ini.
 // ─────────────────────────────────────────
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@/lib/mutation'
 import { QUERY_KEYS } from '@/constants'
 import {
   maintenanceApi,
