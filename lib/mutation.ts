@@ -1,3 +1,5 @@
+'use client'
+
 // ─────────────────────────────────────────
 // useMutation dengan penjaga kirim-ganda
 // Pengganti langsung `useMutation` TanStack untuk mutasi TULIS.
