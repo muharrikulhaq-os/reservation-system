@@ -306,7 +306,8 @@ export const VoucherTab = () => {
                           <CheckCircle2 className="h-4 w-4" />
                         </AppButton>
                       )}
-                      {isAdmin && v.status !== 'CANCELLED' && (
+                      {/* Voucher yang sudah diisi (USED) tidak bisa dibatalkan - BBM sudah keluar di SPBU mitra */}
+                      {isAdmin && (v.status === 'ISSUED' || v.status === 'EXPIRED') && (
                         <AppButton
                           size="icon-sm"
                           variant="ghost"

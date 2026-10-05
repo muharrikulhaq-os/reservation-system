@@ -162,7 +162,6 @@ export const VoucherCancelModal = ({ voucher, open, onOpenChange }: ModalProps) 
             {voucher.status === 'EXPIRED'
               ? 'Voucher sudah kedaluwarsa (liter sudah kembali ke saldo) - pembatalan hanya menandai statusnya.'
               : `${formatQty(voucher.liter)} L dikembalikan ke saldo ${voucher.plateNumber}.`}
-            {voucher.status === 'USED' && ' Catatan pengisian dari voucher ini ikut dibatalkan.'}
           </p>
           <ErrorBox error={cancel.error} />
           <InputTextArea label="Alasan" required rows={2} value={reason} onChange={(e) => setReason(e.target.value)} />
