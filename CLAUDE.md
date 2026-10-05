@@ -447,6 +447,7 @@ Route protection
 | COMPLETED | `#F0FDF4` | `#166534` | `#16A34A` |
 | CANCELLED | `#F3F4F6` | `#374151` | `#9CA3AF` |
 | OVERDUE | `#FEF3C7` | `#92400E` | `#D97706` |
+| RETURNED | `#CCFBF1` | `#115E59` | `#0D9488` |
 
 ---
 
@@ -729,7 +730,7 @@ style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
 
 ## 9. ERD Ringkas
 
-**Enums:** `RoleName`: ADMIN/EMPLOYEE/DRIVER/ROOM_KEEPER · `ResourceType`: VEHICLE/ROOM · `ResourceStatus`: AVAILABLE/MAINTENANCE/INACTIVE · `BookingStatus`: PENDING/APPROVED/REJECTED/ONGOING/COMPLETED/CANCELLED/OVERDUE · `FuelType`: BBM/LISTRIK
+**Enums:** `RoleName`: ADMIN/EMPLOYEE/DRIVER/ROOM_KEEPER · `ResourceType`: VEHICLE/ROOM · `ResourceStatus`: AVAILABLE/MAINTENANCE/INACTIVE · `BookingStatus`: PENDING/APPROVED/REJECTED/ONGOING/OVERDUE/RETURNED (laporan pengembalian masuk, tinggal diselesaikan admin)/COMPLETED/CANCELLED/EXPIRED/IGNORED · `FuelType`: BBM/LISTRIK
 
 **Relasi:**
 - `users` → `roles` (N:1) + `departments` (N:1)

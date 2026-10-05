@@ -30,6 +30,12 @@ export interface Booking extends Timestamps {
   odometerStart?: number | null
   startLocation?: string | null
   startPhotoUrl?: string | null
+  // Lokasi jemput & tujuan (VEHICLE; booking lama/ruangan = null)
+  pickupLocation?: string | null
+  destination?: string | null
+  // Waktu paling awal booking APPROVED boleh dimulai (jadwal mulai dikurangi
+  // setting "mulai lebih awal" per SPD/Non-SPD/ruangan) - detail saja.
+  startableFrom?: string | null
   // Pengalihan resource oleh admin saat approve
   isReassigned?: boolean
   originalResource?: OriginalResource | null
@@ -202,6 +208,9 @@ export interface CreateBookingPayload {
   driverId?: number      // opsional - jika kosong, di-auto-pick / admin assign
   // Opsional, VEHICLE saja - default NON_SPD di backend bila tidak dikirim.
   bookingType?: BookingType
+  // VEHICLE saja (wajib di form kendaraan) - lokasi jemput & tujuan perjalanan.
+  pickupLocation?: string
+  destination?: string
 }
 
 // PATCH /bookings/:id/start - semua field opsional (ROOM/self-serve start

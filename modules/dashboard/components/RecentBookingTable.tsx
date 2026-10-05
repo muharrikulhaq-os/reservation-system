@@ -20,6 +20,8 @@ const ADMIN_TABS: { status: BookingStatus; label: string }[] = [
   { status: BOOKING_STATUS.PENDING, label: 'Menunggu' },
   { status: BOOKING_STATUS.ONGOING, label: 'Sedang Berjalan' },
   { status: BOOKING_STATUS.OVERDUE, label: 'Terlambat Dikembalikan' },
+  // Laporan pengembalian sudah masuk - tinggal diselesaikan admin.
+  { status: BOOKING_STATUS.RETURNED, label: 'Sudah Kembali' },
 ]
 
 /** Jumlah booking per status (cukup total dari pagination, limit 1). */
@@ -47,6 +49,7 @@ export const AvailableBookings = () => {
     [BOOKING_STATUS.PENDING]: useStatusCount(BOOKING_STATUS.PENDING, isAdmin),
     [BOOKING_STATUS.ONGOING]: useStatusCount(BOOKING_STATUS.ONGOING, isAdmin),
     [BOOKING_STATUS.OVERDUE]: useStatusCount(BOOKING_STATUS.OVERDUE, isAdmin),
+    [BOOKING_STATUS.RETURNED]: useStatusCount(BOOKING_STATUS.RETURNED, isAdmin),
   } as Partial<Record<BookingStatus, number>>
 
   return (
@@ -94,7 +97,9 @@ export const AvailableBookings = () => {
                         ? 'bg-[var(--primary)] text-white'
                         : t.status === BOOKING_STATUS.OVERDUE && count > 0
                           ? 'bg-[var(--warning)] text-white'
-                          : 'bg-[var(--bg-subtle)] text-[var(--text-secondary)]',
+                          : t.status === BOOKING_STATUS.RETURNED && count > 0
+                            ? 'bg-[#0D9488] text-white'
+                            : 'bg-[var(--bg-subtle)] text-[var(--text-secondary)]',
                     )}
                   >
                     {count}

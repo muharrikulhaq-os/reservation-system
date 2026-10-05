@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle, Building2, Car, Clock, UserCheck } from 'lucide-react'
+import { AlertCircle, Building2, Car, Clock, MapPin, Navigation, UserCheck } from 'lucide-react'
 import { Card, CardHeader, CardSection } from '@/components/common'
-import { AppButton, InputTextArea, InputNumber } from '@/components/ui-custom'
+import { AppButton, InputText, InputTextArea, InputNumber } from '@/components/ui-custom'
 import { DriverSelector } from './DriverSelector'
 import { ResourcePicker } from './ResourcePicker'
 import {
@@ -70,10 +70,11 @@ export const BookingForm = () => {
     register,
     handleSubmit,
     setValue,
+    setError,
     formState: { errors },
   } = useForm<CreateBookingFormData>({
     resolver: zodResolver(createBookingSchema),
-    defaultValues: { purpose: '', passengerCount: 1 },
+    defaultValues: { purpose: '', passengerCount: 1, pickupLocation: '', destination: '' },
   })
 
   const isVehicle = resourceType === RESOURCE_TYPE.VEHICLE
@@ -175,16 +176,32 @@ export const BookingForm = () => {
 
   const finalDriverId = selectedDriverId ?? suggestedDriverId ?? undefined
 
-  const onSubmit = (data: CreateBookingFormData) =>
+  const onSubmit = (data: CreateBookingFormData) => {
+    // Lokasi jemput & tujuan wajib untuk kendaraan (schema tidak tahu jenis resource).
+    if (isVehicle) {
+      let missing = false
+      if (!data.pickupLocation) {
+        setError('pickupLocation', { message: 'Lokasi penjemputan wajib diisi' })
+        missing = true
+      }
+      if (!data.destination) {
+        setError('destination', { message: 'Lokasi tujuan wajib diisi' })
+        missing = true
+      }
+      if (missing) return
+    }
     mutate(
       {
         ...data,
         passengerCount: isVehicle ? passengerCount : 1,
         driverId: isVehicle ? finalDriverId : undefined,
         bookingType: isVehicle ? bookingType : undefined,
+        pickupLocation: isVehicle ? data.pickupLocation : undefined,
+        destination: isVehicle ? data.destination : undefined,
       },
       { onSuccess: () => router.push('/booking') },
     )
+  }
 
   const TypeIcon = isVehicle ? Car : Building2
 
@@ -457,6 +474,29 @@ export const BookingForm = () => {
               <p className="mt-1.5 text-xs text-[var(--text-disabled)]">
                 {BOOKING_TYPE_CONFIG[bookingType].description}
               </p>
+            </div>
+          )}
+
+          {isVehicle && (
+            <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <InputText
+                label="Lokasi Penjemputan"
+                required
+                maxLength={255}
+                placeholder="Mis. Lobi kantor pusat"
+                leftIcon={<MapPin className="h-4 w-4" />}
+                error={errors.pickupLocation?.message}
+                {...register('pickupLocation')}
+              />
+              <InputText
+                label="Lokasi Tujuan"
+                required
+                maxLength={255}
+                placeholder="Mis. Kantor cabang Bandung"
+                leftIcon={<Navigation className="h-4 w-4" />}
+                error={errors.destination?.message}
+                {...register('destination')}
+              />
             </div>
           )}
 

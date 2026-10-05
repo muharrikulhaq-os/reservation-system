@@ -18,7 +18,9 @@ import {
   FileCheck,
   Fuel,
   GitMerge,
+  MapPin,
   Merge,
+  Navigation,
   Paperclip,
   Phone,
   Play,
@@ -160,6 +162,9 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
   const isOngoingOrOverdue =
     booking.status === BOOKING_STATUS.ONGOING ||
     booking.status === BOOKING_STATUS.OVERDUE;
+  // RETURNED = supir sudah kirim laporan pengembalian (kendaraan & supir
+  // sudah bebas) - tinggal diselesaikan admin, input supir sudah ditutup.
+  const isReturned = booking.status === BOOKING_STATUS.RETURNED;
   // Karyawan pemilik booking ruangan bisa mulai/selesaikan sendiri (tidak
   // butuh admin/room keeper di lokasi) - dibatasi backend ke ruangan + pemilik.
   const canSelfServeRoom =
@@ -290,6 +295,23 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
               </p>
             </CardSection>
           </InfoBlock>
+
+          {isVehicle && (booking.pickupLocation || booking.destination) && (
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <InfoBlock label="Lokasi Penjemputan">
+                <p className="flex items-start gap-1.5 text-sm text-[var(--text-primary)]">
+                  <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--text-secondary)]" />
+                  {booking.pickupLocation || "-"}
+                </p>
+              </InfoBlock>
+              <InfoBlock label="Lokasi Tujuan">
+                <p className="flex items-start gap-1.5 text-sm text-[var(--text-primary)]">
+                  <Navigation className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--text-secondary)]" />
+                  {booking.destination || "-"}
+                </p>
+              </InfoBlock>
+            </div>
+          )}
         </Card>
 
         {/* A. Info Pengalihan */}
@@ -389,8 +411,8 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
         )}
 
         {/* Catatan perjalanan (tab): odometer keberangkatan, BBM, laporan
-            pengembalian - VEHICLE saja, tampil saat ONGOING/OVERDUE/COMPLETED */}
-        {isVehicle && (isOngoingOrOverdue || booking.status === BOOKING_STATUS.COMPLETED) && (
+            pengembalian - VEHICLE saja, tampil saat ONGOING/OVERDUE/RETURNED/COMPLETED */}
+        {isVehicle && (isOngoingOrOverdue || isReturned || booking.status === BOOKING_STATUS.COMPLETED) && (
           <TripRecordTabs
             booking={booking}
             linkedBookingIds={(mergeInfo ?? []).map((m) => m.linkedBooking.bookingId)}
@@ -451,15 +473,22 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           !(
             booking.resource.type === RESOURCE_TYPE.VEHICLE &&
             !booking.assignedDriver
-          ) && <StartPanel bookingId={booking.id} onActionComplete={refetch} />}
+          ) && (
+            <StartPanel
+              bookingId={booking.id}
+              startableFrom={booking.startableFrom}
+              onActionComplete={refetch}
+            />
+          )}
 
         {/* CompletePanel: Admin, Room Keeper (ruangan), atau karyawan pemilik booking ruangan.
-            Tetap tampil saat OVERDUE - booking yang terlambat tetap harus bisa diselesaikan. */}
+            Tetap tampil saat OVERDUE - booking yang terlambat tetap harus bisa diselesaikan.
+            RETURNED = laporan pengembalian sudah masuk, tinggal diselesaikan. */}
         {(isAdmin || (isRoomKeeper && !isVehicle) || canSelfServeRoom) &&
-          isOngoingOrOverdue && (
+          (isOngoingOrOverdue || isReturned) && (
             <CompletePanel
               bookingId={booking.id}
-              hasReturnReport={!!returnReport}
+              hasReturnReport={isReturned || !!returnReport}
               isVehicle={isVehicle}
               onActionComplete={refetch}
             />
@@ -472,6 +501,7 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           !!booking.assignedDriver && (
             <Card>
               <CardHeader title="Mulai Perjalanan" />
+              <StartableHint startableFrom={booking.startableFrom} />
               <StartBookingModal
                 bookingId={booking.id}
                 currentOdometer={assignedVehicle?.currentOdometer}
@@ -834,11 +864,23 @@ const RoomRatingCard = ({
 // START PANEL (APPROVED siap jalan → ONGOING)
 // ─────────────────────────────────────────
 
+// Batas paling awal booking boleh dimulai (setting "mulai lebih awal" per
+// SPD / Non-SPD / ruangan). Backend yang menegakkan; ini hanya info.
+const StartableHint = ({ startableFrom }: { startableFrom?: string | null }) =>
+  startableFrom ? (
+    <p className="mb-3 flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+      <Clock className="h-3.5 w-3.5 shrink-0" />
+      Bisa dimulai mulai {formatDateTime(startableFrom)}
+    </p>
+  ) : null;
+
 const StartPanel = ({
   bookingId,
+  startableFrom,
   onActionComplete,
 }: {
   bookingId: number;
+  startableFrom?: string | null;
   onActionComplete?: () => void;
 }) => {
   const start = useStartBooking();
@@ -846,6 +888,7 @@ const StartPanel = ({
     <Card>
       <CardHeader title="Mulai" />
       {start.error && <PanelError error={start.error} />}
+      <StartableHint startableFrom={startableFrom} />
       <AppButton
         fullWidth
         loading={start.isPending}

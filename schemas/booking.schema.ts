@@ -23,6 +23,10 @@ export const createBookingSchema = z.object({
   driverId: z.number().optional(),
   // Opsional, VEHICLE saja - default NON_SPD di backend bila tidak dikirim.
   bookingType: z.enum(['SPD', 'NON_SPD']).optional(),
+  // VEHICLE saja - wajib untuk kendaraan, dicek di komponen (schema tidak
+  // tahu jenis resource). Ruangan tidak mengirim keduanya.
+  pickupLocation: z.string().trim().max(255, 'Maksimal 255 karakter').optional(),
+  destination: z.string().trim().max(255, 'Maksimal 255 karakter').optional(),
   // Validasi kapasitas dilakukan di komponen (butuh data kapasitas kendaraan)
 })
 
