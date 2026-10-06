@@ -75,7 +75,10 @@ components/
 │   ├── Appinput.tsx                  # AppLabel, AppFieldError, AppFieldHint,
 │   │                                 # InputText/Email/Password/Number/Rupiah/TextArea/
 │   │                                 # File/Date/DateTime/Select
-│   └── TimePicker.tsx                # TimePicker (hybrid dropdown/manual, disable masa lalu)
+│   ├── TimePicker.tsx                # TimePicker (hybrid dropdown/manual, disable masa lalu)
+│   └── SearchableSelect.tsx          # Dropdown + cari langsung (cmdk): label + keterangan +
+│                                     # badge, opsi disabled tetap tampil dgn alasan. Pakai untuk
+│                                     # daftar panjang / butuh konteks (contoh: DriverVehiclePicker)
 ├── shared/                           # Reusable lintas fitur (barrel: @/components/shared)
 │   ├── table/DataTable.tsx           # DataTable + createColumnHelper + ColumnDef
 │   ├── avatar/Avatar.tsx             # UserAvatar

@@ -3,7 +3,7 @@
 // ─────────────────────────────────────────
 
 import type { Timestamps } from './common'
-import type { BookingStatus, ApprovalAction, ResourceType, BookingActivityAction, BookingType } from './enums'
+import type { BookingStatus, ApprovalAction, ResourceType, ResourceStatus, BookingActivityAction, BookingType } from './enums'
 import type { UserSummary } from './auth'
 import type { ResourceRef, VehicleSummary } from './resource'
 import type { DriverSummary } from './driver'
@@ -195,6 +195,39 @@ export interface GuestBookingQueryParams {
   page?: number
   limit?: number
   status?: BookingStatus
+}
+
+// --- Pilihan dropdown Tugaskan / Alihkan (GET /bookings/:id/assign-options) ---
+// Ketersediaan dihitung untuk JADWAL booking ini dengan aturan yang sama
+// dengan assign-vehicle; reason terisi bila tidak bisa dipilih.
+
+export interface AssignOptionDriver {
+  id: number
+  name: string
+  employeeId: string
+  phoneNumber: string
+  fixedVehicle: { id: number; name: string; plateNumber: string } | null
+  available: boolean
+  reason: string | null
+  isCurrent: boolean
+}
+
+export interface AssignOptionVehicle {
+  id: number
+  name: string
+  plateNumber: string
+  capacity: number
+  status: ResourceStatus
+  fixedDriver: { id: number; name: string } | null
+  available: boolean
+  reason: string | null
+  warning: string | null // mis. kapasitas kurang - tidak memblokir
+  isCurrent: boolean
+}
+
+export interface AssignOptions {
+  drivers: AssignOptionDriver[]
+  vehicles: AssignOptionVehicle[]
 }
 
 // --- Payloads ---

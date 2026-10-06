@@ -79,6 +79,7 @@ export const API_ENDPOINTS = {
     APPROVE:         (id: number) => `${API_PREFIX}/bookings/${id}/approve`,
     REJECT:          (id: number) => `${API_PREFIX}/bookings/${id}/reject`,
     ASSIGN_VEHICLE:  (id: number) => `${API_PREFIX}/bookings/${id}/assign-vehicle`,
+    ASSIGN_OPTIONS:  (id: number) => `${API_PREFIX}/bookings/${id}/assign-options`,
     START:           (id: number) => `${API_PREFIX}/bookings/${id}/start`,
     COMPLETE:        (id: number) => `${API_PREFIX}/bookings/${id}/complete`,
     RATE_DRIVER:     (id: number) => `${API_PREFIX}/bookings/${id}/rate-driver`,

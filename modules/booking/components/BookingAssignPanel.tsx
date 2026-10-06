@@ -3,13 +3,12 @@
 import { useState } from 'react'
 import { AlertCircle } from 'lucide-react'
 import { Card } from '@/components/common'
-import { AppButton, InputSelect } from '@/components/ui-custom'
+import { AppButton } from '@/components/ui-custom'
 import { getErrorMessage } from '@/lib'
-import { BOOKING_STATUS, RESOURCE_STATUS, RESOURCE_TYPE } from '@/constants'
-import type { Booking, SelectOption } from '@/types'
-import { useDrivers } from '@/modules/drivers/hooks/useDrivers'
-import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
+import { BOOKING_STATUS, RESOURCE_TYPE } from '@/constants'
+import type { Booking } from '@/types'
 import { useAssignVehicle } from '../hooks/useBookings'
+import { DriverVehiclePicker } from './DriverVehiclePicker'
 
 // ─────────────────────────────────────────
 // BOOKING ASSIGN PANEL (admin, APPROVED + VEHICLE + belum ada driver)
@@ -26,17 +25,6 @@ export const BookingAssignPanel = ({ booking, onActionComplete }: Props) => {
   const [vehicleId, setVehicleId] = useState('')
 
   const assign = useAssignVehicle()
-
-  const { data: drivers } = useDrivers({ limit: 100 })
-  const { data: vehicles } = useVehicles({ status: RESOURCE_STATUS.AVAILABLE, limit: 100 })
-
-  const driverOptions: SelectOption[] = (drivers ?? [])
-    .filter((d) => d.isActive)
-    .map((d) => ({ value: d.id, label: d.name }))
-  const vehicleOptions: SelectOption[] = (vehicles ?? []).map((v) => ({
-    value: v.id,
-    label: `${v.name} (${v.plateNumber})`,
-  }))
 
   const canAssign = !!driverId && !!vehicleId
 
@@ -72,21 +60,12 @@ export const BookingAssignPanel = ({ booking, onActionComplete }: Props) => {
       )}
 
       <div className="space-y-3">
-        <InputSelect
-          label="Pilih Driver"
-          required
-          placeholder="Pilih driver"
-          options={driverOptions}
-          value={driverId}
-          onChange={(e) => setDriverId(e.target.value)}
-        />
-        <InputSelect
-          label="Pilih Kendaraan"
-          required
-          placeholder="Pilih kendaraan"
-          options={vehicleOptions}
-          value={vehicleId}
-          onChange={(e) => setVehicleId(e.target.value)}
+        <DriverVehiclePicker
+          bookingId={booking.id}
+          driverId={driverId}
+          vehicleId={vehicleId}
+          onDriverChange={setDriverId}
+          onVehicleChange={setVehicleId}
         />
         <AppButton
           fullWidth

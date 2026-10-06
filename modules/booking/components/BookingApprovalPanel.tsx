@@ -16,8 +16,6 @@ import { getErrorMessage, resolveFileUrl } from '@/lib'
 import { BOOKING_STATUS, RESOURCE_STATUS, RESOURCE_TYPE } from '@/constants'
 import type { Booking, SelectOption } from '@/types'
 import { useAuthStore } from '@/store/auth.store'
-import { useDrivers } from '@/modules/drivers/hooks/useDrivers'
-import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
 import { useRooms } from '@/modules/rooms/hooks/useRooms'
 import {
   useApproveBooking,
@@ -25,6 +23,7 @@ import {
   useSubstituteResource,
   useAssignVehicle,
 } from '../hooks/useBookings'
+import { DriverVehiclePicker } from './DriverVehiclePicker'
 
 // ─────────────────────────────────────────
 // BOOKING APPROVAL PANEL (admin, status PENDING)
@@ -58,23 +57,12 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
   const substitute = useSubstituteResource()
   const assign = useAssignVehicle()
 
-  const { data: drivers } = useDrivers({ limit: 100 })
-  const { data: vehicles } = useVehicles({ status: RESOURCE_STATUS.AVAILABLE, limit: 100 })
   const { data: rooms } = useRooms({ status: RESOURCE_STATUS.AVAILABLE, limit: 100 })
 
   // ROOM: resource pengganti (value = resourceId, exclude resource saat ini)
   const roomOptions: SelectOption[] = (rooms ?? [])
     .map((r) => ({ value: r.resourceId, label: r.name }))
     .filter((opt) => opt.value !== booking.resource.id)
-
-  // VEHICLE: opsi driver + kendaraan (value = id entitas, bukan resourceId)
-  const driverOptions: SelectOption[] = (drivers ?? [])
-    .filter((d) => d.isActive)
-    .map((d) => ({ value: d.id, label: d.name }))
-  const vehicleOptions: SelectOption[] = (vehicles ?? []).map((v) => ({
-    value: v.id,
-    label: `${v.name} (${v.plateNumber})`,
-  }))
 
   const error = approve.error || reject.error || substitute.error || assign.error
   const isBusy =
@@ -244,7 +232,7 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
 
       {/* ── Dialog: Alihkan & Setujui ── */}
       <Dialog open={substituteOpen} onOpenChange={setSubstituteOpen}>
-        <DialogContent className="rounded-2xl p-6 shadow-[var(--shadow-modal)] sm:max-w-md">
+        <DialogContent className={`rounded-2xl p-6 shadow-[var(--shadow-modal)] ${isVehicle ? 'sm:max-w-lg' : 'sm:max-w-md'}`}>
           <DialogHeader>
             <DialogTitle
               className="text-lg font-bold text-[var(--text-primary)]"
@@ -283,24 +271,14 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
             </div>
 
             {isVehicle ? (
-              <>
-                <InputSelect
-                  label="Driver"
-                  required
-                  placeholder="Pilih driver"
-                  options={driverOptions}
-                  value={alihkanDriverId}
-                  onChange={(e) => setAlihkanDriverId(e.target.value)}
-                />
-                <InputSelect
-                  label="Kendaraan"
-                  required
-                  placeholder="Pilih kendaraan"
-                  options={vehicleOptions}
-                  value={alihkanVehicleId}
-                  onChange={(e) => setAlihkanVehicleId(e.target.value)}
-                />
-              </>
+              <DriverVehiclePicker
+                bookingId={booking.id}
+                enabled={substituteOpen}
+                driverId={alihkanDriverId}
+                vehicleId={alihkanVehicleId}
+                onDriverChange={setAlihkanDriverId}
+                onVehicleChange={setAlihkanVehicleId}
+              />
             ) : (
               <InputSelect
                 label="Ruangan Pengganti"

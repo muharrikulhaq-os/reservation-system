@@ -22,6 +22,7 @@ import type {
   ApproveBookingPayload,
   RejectBookingPayload,
   AssignVehiclePayload,
+  AssignOptions,
   RateDriverPayload,
   RateRoomPayload,
   CreateAttachmentPayload,
@@ -168,6 +169,11 @@ export const bookingService = {
   merge: (id: number, payload: MergeBookingPayload) =>
     apiClient
       .post<ApiResponse<BookingMergeResponse>>(API_ENDPOINTS.BOOKINGS.MERGE(id), payload)
+      .then((r) => r.data),
+
+  getAssignOptions: (id: number) =>
+    apiClient
+      .get<ApiResponse<AssignOptions>>(API_ENDPOINTS.BOOKINGS.ASSIGN_OPTIONS(id))
       .then((r) => r.data),
 
   getMergeInfo: (id: number) =>

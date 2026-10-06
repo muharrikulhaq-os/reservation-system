@@ -31,3 +31,10 @@ export type {
 
 export { TimePicker, TIME_OPTIONS } from "./TimePicker";
 export type { TimePickerProps } from "./TimePicker";
+
+export { SearchableSelect } from "./SearchableSelect";
+export type {
+  SearchableOption,
+  SearchableOptionTone,
+  SearchableSelectProps,
+} from "./SearchableSelect";

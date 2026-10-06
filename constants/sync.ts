@@ -29,6 +29,8 @@ export const SYNC_TOPIC_QUERY_KEYS: Record<SyncTopic, readonly QueryKey[]> = {
     QUERY_KEYS.FUEL_BALANCES,
     QUERY_KEYS.ROOMS,
     QUERY_KEYS.DRIVERS,
+    // Ketersediaan supir/kendaraan di dropdown Tugaskan / Alihkan.
+    QUERY_KEYS.BOOKING_ASSIGN_OPTIONS,
     QUERY_KEYS.DASHBOARD,
     ["reports"],
   ],
@@ -37,6 +39,8 @@ export const SYNC_TOPIC_QUERY_KEYS: Record<SyncTopic, readonly QueryKey[]> = {
     // Odometer kendaraan menentukan hak saldo BBM.
     QUERY_KEYS.FUEL_BALANCES,
     QUERY_KEYS.DRIVERS,
+    // Status / supir tetap kendaraan tampil di dropdown Tugaskan.
+    QUERY_KEYS.BOOKING_ASSIGN_OPTIONS,
     QUERY_KEYS.DASHBOARD,
     ["reports"],
   ],
@@ -49,12 +53,15 @@ export const SYNC_TOPIC_QUERY_KEYS: Record<SyncTopic, readonly QueryKey[]> = {
   driver: [
     QUERY_KEYS.DRIVERS,
     QUERY_KEYS.VEHICLES,
+    QUERY_KEYS.BOOKING_ASSIGN_OPTIONS,
     QUERY_KEYS.DASHBOARD,
     ["reports"],
   ],
   user: [
     QUERY_KEYS.USERS,
     QUERY_KEYS.DRIVERS,
+    // Akun supir nonaktif → hilang dari pilihan driver.
+    QUERY_KEYS.BOOKING_ASSIGN_OPTIONS,
     QUERY_KEYS.ROOM_KEEPERS,
     // Profil sendiri → Navbar/Sidebar ikut (lihat useSyncAuthUser).
     QUERY_KEYS.AUTH_ME,
@@ -78,6 +85,8 @@ export const SYNC_TOPIC_QUERY_KEYS: Record<SyncTopic, readonly QueryKey[]> = {
     QUERY_KEYS.VEHICLE_ISSUES,
     // Serah terima / kembali dari vendor mengubah status & odometer kendaraan.
     QUERY_KEYS.VEHICLES,
+    // Jadwal maintenance membuat kendaraan tidak bisa dipilih di Tugaskan.
+    QUERY_KEYS.BOOKING_ASSIGN_OPTIONS,
     QUERY_KEYS.FUEL_BALANCES,
     QUERY_KEYS.DASHBOARD,
     ["reports"],

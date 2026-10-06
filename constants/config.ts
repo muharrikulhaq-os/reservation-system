@@ -56,6 +56,9 @@ export const QUERY_KEYS = {
   // Bookings
   BOOKINGS: ["bookings"] as const,
   GUEST_BOOKINGS: ["guest-bookings"] as const,
+  // Pilihan supir & kendaraan + ketersediaan per booking (dropdown Tugaskan /
+  // Alihkan) - turunan booking, kendaraan, supir, maintenance & user.
+  BOOKING_ASSIGN_OPTIONS: ["booking-assign-options"] as const,
 
   // Drivers
   DRIVERS: ["drivers"] as const,

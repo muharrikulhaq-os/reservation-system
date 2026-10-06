@@ -59,6 +59,16 @@ export const useBookingActivity = (bookingId: number) =>
     enabled:  !!bookingId,
   })
 
+// Pilihan supir & kendaraan + ketersediaan untuk jadwal booking ini (admin,
+// dropdown Tugaskan / Alihkan). `enabled` supaya dialog yang belum dibuka
+// tidak ikut memuat.
+export const useAssignOptions = (bookingId: number, enabled = true) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.BOOKING_ASSIGN_OPTIONS, bookingId],
+    queryFn:  () => bookingService.getAssignOptions(bookingId).then((r) => r.data),
+    enabled:  !!bookingId && enabled,
+  })
+
 export const useBookingMergeInfo = (bookingId: number) =>
   useQuery({
     queryKey: [...QUERY_KEYS.BOOKINGS, bookingId, 'merge-info'],
