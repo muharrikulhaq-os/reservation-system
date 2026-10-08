@@ -11,11 +11,12 @@ import {
   PhotoUploader,
   AttachmentList,
   StatusChanger,
+  roomKeeperOption,
 } from '@/components/shared'
-import { AppButton, InputSelect } from '@/components/ui-custom'
+import { AppButton, SearchableSelect } from '@/components/ui-custom'
 import { getErrorMessage } from '@/lib'
 import { useAuthStore } from '@/store/auth.store'
-import type { ResourceStatus, SelectOption } from '@/types'
+import type { ResourceStatus } from '@/types'
 import {
   useRoom,
   useRoomAttachments,
@@ -85,9 +86,12 @@ export const RoomDetail = ({ roomId }: RoomDetailProps) => {
   // Satu room keeper boleh bertanggung jawab atas lebih dari satu ruangan
   // (N:1) - jadi semua room keeper aktif muncul di pilihan, tidak difilter
   // seperti supir tetap kendaraan.
-  const roomKeeperOptions: SelectOption[] = (roomKeepers ?? [])
-    .filter((rk) => rk.isActive)
-    .map((rk) => ({ value: rk.id, label: rk.name }))
+  const roomKeeperOptions = (roomKeepers ?? []).map((rk) =>
+    roomKeeperOption(
+      rk,
+      rk.id === room.roomKeeper?.id ? { badge: { text: 'Saat ini', tone: 'neutral' } } : undefined,
+    ),
+  )
 
   const roomKeeperDirty = roomKeeperDraft !== (room.roomKeeper?.id ?? '')
 
@@ -170,14 +174,14 @@ export const RoomDetail = ({ roomId }: RoomDetailProps) => {
               title="Room Keeper"
               description="Penanggung jawab ruangan ini - satu room keeper boleh mengelola lebih dari satu ruangan. Rating dari pemesan masuk ke room keeper, bukan ruangannya."
             />
-            <InputSelect
-              placeholder="Belum ada room keeper"
+            <SearchableSelect
+              clearLabel="Belum ada room keeper"
+              searchPlaceholder="Cari nama, NIP, atau ruangan yang dijaga…"
+              emptyText="Room keeper tidak ditemukan"
               options={roomKeeperOptions}
-              value={roomKeeperDraft}
+              value={roomKeeperDraft === '' ? '' : String(roomKeeperDraft)}
               disabled={setRoomKeeper.isPending}
-              onChange={(e) =>
-                setRoomKeeperDraft(e.target.value ? Number(e.target.value) : '')
-              }
+              onChange={(v) => setRoomKeeperDraft(v ? Number(v) : '')}
             />
             <AppButton
               className="mt-3"

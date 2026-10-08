@@ -10,16 +10,16 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card, CardHeader, AdminOnly } from '@/components/common'
-import { StarRating, UserAvatar } from '@/components/shared'
+import { StarRating, UserAvatar, vehicleOption } from '@/components/shared'
 import { Badge } from '@/components/shared/badge/StatusBadge'
-import { AppButton, InputSelect } from '@/components/ui-custom'
+import { AppButton, SearchableSelect } from '@/components/ui-custom'
 import { formatDateTime, getErrorMessage } from '@/lib'
 // Impor langsung dari file hook (bukan barrel) untuk menghindari
 // siklus impor drivers ⇄ booking / vehicles.
 import { useDriverRatings } from '@/modules/booking/hooks/useBookings'
 import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
 import { useSetDriverFixedVehicle } from '../hooks/useDrivers'
-import type { Driver, SelectOption } from '@/types'
+import type { Driver } from '@/types'
 
 // ─────────────────────────────────────────
 // DRIVER DETAIL MODAL
@@ -49,11 +49,18 @@ export const DriverDetailModal = ({ driver, open, onOpenChange }: Props) => {
   const { data: vehicles } = useVehicles(open ? { limit: 100 } : undefined)
   const setFixedVehicle = useSetDriverFixedVehicle()
 
-  // Kendaraan yang belum punya supir tetap lain (atau memang sudah jadi
-  // pasangan tetap supir ini) - selain itu tidak muncul di pilihan.
-  const fixedVehicleOptions: SelectOption[] = (vehicles ?? [])
-    .filter((v) => !v.fixedDriver || v.fixedDriver.id === driver.id)
-    .map((v) => ({ value: v.id, label: `${v.name} (${v.plateNumber})` }))
+  // Kendaraan yang sudah punya supir tetap LAIN tetap tampil tapi tidak bisa
+  // dipilih (alasannya terlihat).
+  const fixedVehicleOptions = (vehicles ?? []).map((v) =>
+    vehicleOption(
+      v,
+      v.fixedDriver && v.fixedDriver.id !== driver.id
+        ? { disabledReason: `Sudah punya supir tetap: ${v.fixedDriver.name}` }
+        : v.fixedDriver?.id === driver.id
+          ? { badge: { text: 'Saat ini', tone: 'neutral' } }
+          : undefined,
+    ),
+  )
 
   // Pilihan kendaraan tetap - draft lokal, baru dikirim ke server saat
   // tombol "Simpan" ditekan (bukan langsung tersimpan begitu dropdown berubah).
@@ -155,14 +162,14 @@ export const DriverDetailModal = ({ driver, open, onOpenChange }: Props) => {
                 title="Atur Kendaraan Tetap"
                 description="Supir ini otomatis dipilih saat kendaraan tetapnya dibooking - tidak ada pilihan supir lain"
               />
-              <InputSelect
-                placeholder="Tidak ada (bebas ditugaskan)"
+              <SearchableSelect
+                clearLabel="Tidak ada (bebas ditugaskan)"
+                searchPlaceholder="Cari nama, plat, atau supir tetap…"
+                emptyText="Kendaraan tidak ditemukan"
                 options={fixedVehicleOptions}
-                value={fixedVehicleDraft}
+                value={fixedVehicleDraft === '' ? '' : String(fixedVehicleDraft)}
                 disabled={setFixedVehicle.isPending}
-                onChange={(e) =>
-                  setFixedVehicleDraft(e.target.value ? Number(e.target.value) : '')
-                }
+                onChange={(v) => setFixedVehicleDraft(v ? Number(v) : '')}
               />
               <AppButton
                 className="mt-3"

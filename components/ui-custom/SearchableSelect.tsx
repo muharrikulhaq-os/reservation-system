@@ -50,6 +50,8 @@ export interface SearchableSelectProps {
   loading?: boolean
   disabled?: boolean
   id?: string
+  /** Untuk filter: opsi teratas bernilai '' (mis. "Semua Kendaraan"). */
+  clearLabel?: string
 }
 
 const BADGE_TONE: Record<SearchableOptionTone, string> = {
@@ -93,11 +95,16 @@ export const SearchableSelect = ({
   loading,
   disabled,
   id,
+  clearLabel,
 }: SearchableSelectProps) => {
   const [open, setOpen] = React.useState(false)
   const [search, setSearch] = React.useState('')
   const triggerId = id ?? `searchable-${label?.toLowerCase().replace(/\s+/g, '-')}`
-  const selected = options.find((o) => o.value === value)
+  const allOptions = React.useMemo<SearchableOption[]>(
+    () => (clearLabel ? [{ value: '', label: clearLabel }, ...options] : options),
+    [clearLabel, options],
+  )
+  const selected = allOptions.find((o) => o.value === value)
 
   // Dibuat sendiri (bukan filter bawaan cmdk) supaya urutan opsi dari
   // pemanggil tetap terjaga & pencocokan per kata, bukan fuzzy.
@@ -105,8 +112,8 @@ export const SearchableSelect = ({
     () =>
       search.trim()
         ? options.filter((o) => matches([o.label, ...(o.keywords ?? [])].join(' '), search))
-        : options,
-    [options, search],
+        : allOptions,
+    [options, allOptions, search],
   )
 
   return (

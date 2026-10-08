@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import { Fuel as FuelIcon, Droplet, Zap, Receipt, Gauge, Ticket } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { PageHeader, StatCard } from '@/components/shared'
+import { PageHeader, StatCard, vehicleOption } from '@/components/shared'
 import { DataTable } from '@/components/shared/table/DataTable'
-import { AppButton, InputSelect } from '@/components/ui-custom'
+import { AppButton, InputSelect, SearchableSelect } from '@/components/ui-custom'
 import { useTableFilter } from '@/hooks'
 import { formatCurrency, formatNumber, isSameWibMonth } from '@/lib'
 import { ENERGY_TYPE } from '@/constants'
@@ -55,10 +55,7 @@ export const Fuel = () => {
     .reduce((s, f) => s + (f.kwh ?? 0), 0)
   const totalCount = data?.pagination?.total ?? items.length
 
-  const vehicleOptions: SelectOption[] = (vehicles ?? []).map((v) => ({
-    value: v.id,
-    label: `${v.name} · ${v.plateNumber}`,
-  }))
+  const vehicleOptions = (vehicles ?? []).map((v) => vehicleOption(v))
   const energyOptions: SelectOption[] = [
     { value: ENERGY_TYPE.BBM, label: 'BBM' },
     { value: ENERGY_TYPE.LISTRIK, label: 'Listrik' },
@@ -134,14 +131,14 @@ export const Fuel = () => {
 
       {/* Filter */}
       <div className="flex flex-wrap items-end gap-3">
-        <div className="w-full max-w-[200px]">
-          <InputSelect
-            placeholder="Semua Kendaraan"
+        <div className="w-full max-w-[280px]">
+          <SearchableSelect
+            clearLabel="Semua Kendaraan"
+            searchPlaceholder="Cari nama, plat, atau supir tetap…"
+            emptyText="Kendaraan tidak ditemukan"
             options={vehicleOptions}
-            value={filters.vehicleId ?? ''}
-            onChange={(e) =>
-              setFilter('vehicleId', e.target.value ? Number(e.target.value) : undefined)
-            }
+            value={filters.vehicleId != null ? String(filters.vehicleId) : ''}
+            onChange={(v) => setFilter('vehicleId', v ? Number(v) : undefined)}
           />
         </div>
         <div className="w-full max-w-[150px]">

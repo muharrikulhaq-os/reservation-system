@@ -3,7 +3,8 @@
 import { useMemo, useState } from 'react'
 import { Ban, CheckCircle2, Download, Eye, FileCheck2, Printer, Search } from 'lucide-react'
 import { toast } from 'sonner'
-import { AppButton, InputDate, InputSelect, InputText } from '@/components/ui-custom'
+import { AppButton, InputDate, InputSelect, InputText, SearchableSelect } from '@/components/ui-custom'
+import { stationOption } from '@/components/shared'
 import { formatDateTime, getErrorMessage } from '@/lib'
 import { useDebounce } from '@/hooks'
 import { useAuthStore } from '@/store/auth.store'
@@ -169,12 +170,14 @@ export const VoucherTab = () => {
         </div>
         {isAdmin && (
           <>
-            <div className="w-full max-w-[200px]">
-              <InputSelect
-                placeholder="Semua SPBU"
-                options={(stations ?? []).map((s) => ({ value: s.id, label: s.name }))}
-                value={stationId}
-                onChange={(e) => setFilter(setStationId)(e.target.value ? Number(e.target.value) : '')}
+            <div className="w-full max-w-[260px]">
+              <SearchableSelect
+                clearLabel="Semua SPBU"
+                searchPlaceholder="Cari nama atau alamat SPBU…"
+                emptyText="SPBU tidak ditemukan"
+                options={(stations ?? []).map((s) => stationOption(s))}
+                value={stationId === '' ? '' : String(stationId)}
+                onChange={(v) => setFilter(setStationId)(v ? Number(v) : '')}
               />
             </div>
             <div className="w-full max-w-[170px]">

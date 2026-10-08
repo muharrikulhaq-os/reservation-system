@@ -10,11 +10,11 @@ import {
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardSection } from '@/components/common'
-import { SafeImage } from '@/components/shared'
-import { AppButton, InputSelect, InputTextArea } from '@/components/ui-custom'
+import { SafeImage, roomOption } from '@/components/shared'
+import { AppButton, InputTextArea, SearchableSelect } from '@/components/ui-custom'
 import { getErrorMessage, resolveFileUrl } from '@/lib'
-import { BOOKING_STATUS, RESOURCE_STATUS, RESOURCE_TYPE } from '@/constants'
-import type { Booking, SelectOption } from '@/types'
+import { BOOKING_STATUS, RESOURCE_TYPE } from '@/constants'
+import type { Booking } from '@/types'
 import { useAuthStore } from '@/store/auth.store'
 import { useRooms } from '@/modules/rooms/hooks/useRooms'
 import {
@@ -57,12 +57,14 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
   const substitute = useSubstituteResource()
   const assign = useAssignVehicle()
 
-  const { data: rooms } = useRooms({ status: RESOURCE_STATUS.AVAILABLE, limit: 100 })
+  // Semua ruangan tampil (yang tidak tersedia abu-abu + statusnya) supaya
+  // admin tahu kenapa ruangan tertentu tidak bisa dipilih.
+  const { data: rooms, isLoading: roomsLoading } = useRooms({ limit: 100 })
 
   // ROOM: resource pengganti (value = resourceId, exclude resource saat ini)
-  const roomOptions: SelectOption[] = (rooms ?? [])
-    .map((r) => ({ value: r.resourceId, label: r.name }))
-    .filter((opt) => opt.value !== booking.resource.id)
+  const roomOptions = (rooms ?? [])
+    .filter((r) => r.resourceId !== booking.resource.id)
+    .map((r) => roomOption(r))
 
   const error = approve.error || reject.error || substitute.error || assign.error
   const isBusy =
@@ -280,13 +282,16 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
                 onVehicleChange={setAlihkanVehicleId}
               />
             ) : (
-              <InputSelect
+              <SearchableSelect
                 label="Ruangan Pengganti"
                 required
                 placeholder="Pilih ruangan pengganti"
+                searchPlaceholder="Cari nama, lokasi, atau penjaga…"
+                emptyText="Ruangan tidak ditemukan"
+                loading={roomsLoading}
                 options={roomOptions}
                 value={substituteId}
-                onChange={(e) => setSubstituteId(e.target.value)}
+                onChange={setSubstituteId}
               />
             )}
 

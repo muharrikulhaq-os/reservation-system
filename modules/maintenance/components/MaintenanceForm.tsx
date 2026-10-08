@@ -15,7 +15,9 @@ import {
   InputSelect,
   InputText,
   InputTextArea,
+  SearchableSelect,
 } from '@/components/ui-custom'
+import { vehicleOption, vendorOption } from '@/components/shared'
 import { formatDateTime, kmHint } from '@/lib'
 import {
   BOOKING_STATUS,
@@ -25,7 +27,7 @@ import {
   PICKUP_METHOD_OPTIONS,
   RESOURCE_STATUS,
 } from '@/constants'
-import type { MaintenancePlanPayload, MaintenanceRecord, SelectOption } from '@/types'
+import type { MaintenancePlanPayload, MaintenanceRecord } from '@/types'
 import { maintenancePlanSchema, type MaintenancePlanFormData } from '@/schemas/maintenance.schema'
 import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
 import { useBookings } from '@/modules/booking'
@@ -86,19 +88,16 @@ export const MaintenanceForm = ({ initialData }: { initialData?: MaintenanceReco
     if (isRental && vehicle?.ownerVendor) setValue('vendorId', vehicle.ownerVendor.id)
   }, [isRental, vehicle, setValue])
 
-  const vehicleOptions: SelectOption[] = useMemo(
+  const vehicleOptions = useMemo(
     () =>
       (vehicles ?? [])
         .filter((v) => v.status !== RESOURCE_STATUS.INACTIVE || v.id === vehicleId)
-        .map((v) => ({
-          value: v.id,
-          label: `${v.plateNumber} · ${v.name}${v.ownership === 'VENDOR' ? ' (sewa)' : ''}`,
-        })),
+        .map((v) => vehicleOption(v)),
     [vehicles, vehicleId],
   )
-  const vendorOptions: SelectOption[] = (vendors ?? [])
+  const vendorOptions = (vendors ?? [])
     .filter((v) => v.type !== 'OWNER' || v.id === watch('vendorId'))
-    .map((v) => ({ value: v.id, label: `${v.name}${v.type === 'OWNER' ? ' (pemilik)' : ''}` }))
+    .map((v) => vendorOption(v))
 
   // Info: booking disetujui mendatang untuk kendaraan ini.
   const { data: upcoming } = useBookings(
@@ -152,16 +151,18 @@ export const MaintenanceForm = ({ initialData }: { initialData?: MaintenanceReco
             control={control}
             name="vehicleId"
             render={({ field }) => (
-              <InputSelect
+              <SearchableSelect
                 label="Kendaraan"
                 required
                 placeholder="Pilih kendaraan"
+                searchPlaceholder="Cari nama, plat, atau supir tetap…"
+                emptyText="Kendaraan tidak ditemukan"
                 options={vehicleOptions}
-                value={field.value ?? ''}
+                value={field.value != null ? String(field.value) : ''}
                 disabled={isEdit && !isDraft}
                 error={errors.vehicleId?.message}
-                onChange={(e) => {
-                  const id = e.target.value ? Number(e.target.value) : undefined
+                onChange={(val) => {
+                  const id = val ? Number(val) : undefined
                   field.onChange(id)
                   const v = (vehicles ?? []).find((x) => x.id === id)
                   setValue('odometer', v?.currentOdometer)
@@ -177,19 +178,21 @@ export const MaintenanceForm = ({ initialData }: { initialData?: MaintenanceReco
             name="vendorId"
             render={({ field }) => (
               <div>
-                <InputSelect
+                <SearchableSelect
                   label="Vendor / Bengkel Tujuan"
                   required={!isDraft}
                   placeholder="Pilih vendor"
+                  searchPlaceholder="Cari nama, PIC, atau alamat…"
+                  emptyText="Vendor tidak ditemukan"
                   options={vendorOptions}
-                  value={field.value ?? ''}
+                  value={field.value != null ? String(field.value) : ''}
                   disabled={isRental}
                   hint={
                     isRental
                       ? `Kendaraan sewa - otomatis ke ${vehicle?.ownerVendor?.name ?? 'vendor pemilik'}`
                       : undefined
                   }
-                  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                  onChange={(val) => field.onChange(val ? Number(val) : undefined)}
                 />
                 {!isRental && (
                   <Link

@@ -6,7 +6,8 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, Plus, X } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
-import { AppButton, InputText, InputNumber, InputSelect } from '@/components/ui-custom'
+import { AppButton, InputText, InputNumber, InputSelect, SearchableSelect } from '@/components/ui-custom'
+import { vendorOption } from '@/components/shared'
 import { getErrorMessage } from '@/lib'
 import Link from 'next/link'
 import { VEHICLE_ENERGY_TYPE_OPTIONS, VEHICLE_OWNERSHIP_OPTIONS } from '@/constants'
@@ -74,10 +75,7 @@ export const VehicleForm = ({ initialData, onSuccess }: VehicleFormProps) => {
 
   const ownership = watch('ownership')
   const { data: ownerVendors } = useVendors({ type: 'OWNER', isActive: true })
-  const ownerVendorOptions: SelectOption<number>[] = (ownerVendors ?? []).map((v) => ({
-    value: v.id,
-    label: v.name,
-  }))
+  const ownerVendorOptions = (ownerVendors ?? []).map((v) => vendorOption(v))
 
   // Kendaraan milik perusahaan tidak mengirim vendor pemilik / no. kontrak.
   const onSubmit = (data: CreateVehicleFormData) =>
@@ -223,15 +221,15 @@ export const VehicleForm = ({ initialData, onSuccess }: VehicleFormProps) => {
               name="ownerVendorId"
               render={({ field }) => (
                 <div>
-                  <InputSelect
+                  <SearchableSelect
                     label="Vendor Pemilik"
                     required
                     placeholder="Pilih vendor"
+                    searchPlaceholder="Cari nama, PIC, atau alamat…"
+                    emptyText="Vendor tidak ditemukan"
                     options={ownerVendorOptions}
-                    value={field.value ?? ''}
-                    onChange={(e) =>
-                      field.onChange(e.target.value ? Number(e.target.value) : undefined)
-                    }
+                    value={field.value != null ? String(field.value) : ''}
+                    onChange={(v) => field.onChange(v ? Number(v) : undefined)}
                     error={errors.ownerVendorId?.message}
                   />
                   <Link

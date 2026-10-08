@@ -42,3 +42,12 @@ export { UserProfileModal } from './user-profile/UserProfileModal'
 export { UserProfileButton } from './user-profile/UserProfileButton'
 
 export { ReadableLocation, useReadableLocation } from './location/ReadableLocation'
+
+export {
+  vehicleOption,
+  driverOption,
+  roomOption,
+  vendorOption,
+  stationOption,
+  roomKeeperOption,
+} from './select/entityOptions'

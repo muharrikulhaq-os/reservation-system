@@ -13,11 +13,12 @@ import {
   AttachmentList,
   StatusChanger,
   Badge,
+  driverOption,
 } from '@/components/shared'
-import { AppButton, InputSelect } from '@/components/ui-custom'
+import { AppButton, SearchableSelect } from '@/components/ui-custom'
 import { formatOdometer, getErrorMessage } from '@/lib'
 import { useAuthStore } from '@/store/auth.store'
-import type { ResourceStatus, SelectOption } from '@/types'
+import type { ResourceStatus } from '@/types'
 import {
   useVehicle,
   useVehicleAttachments,
@@ -81,11 +82,18 @@ export const VehicleDetail = ({ vehicleId }: VehicleDetailProps) => {
   const handleStatusChange = (status: ResourceStatus) =>
     updateStatus.mutate({ id: vehicle.id, payload: { status } })
 
-  // Supir aktif yang belum punya kendaraan tetap lain (atau memang sudah
-  // jadi supir tetap kendaraan ini) - selain itu tidak muncul di pilihan.
-  const fixedDriverOptions: SelectOption[] = (drivers ?? [])
-    .filter((d) => d.isActive && (!d.fixedVehicle || d.fixedVehicle.id === vehicle.id))
-    .map((d) => ({ value: d.id, label: d.name }))
+  // Supir yang sudah jadi supir tetap kendaraan LAIN tetap tampil tapi tidak
+  // bisa dipilih (alasannya terlihat); supir nonaktif ikut abu-abu.
+  const fixedDriverOptions = (drivers ?? []).map((d) =>
+    driverOption(
+      d,
+      d.fixedVehicle && d.fixedVehicle.id !== vehicle.id
+        ? { disabledReason: `Sudah supir tetap ${d.fixedVehicle.plateNumber}` }
+        : d.fixedVehicle?.id === vehicle.id
+          ? { badge: { text: 'Saat ini', tone: 'neutral' } }
+          : undefined,
+    ),
+  )
 
   const fixedDriverDirty = fixedDriverDraft !== (vehicle.fixedDriver?.id ?? '')
 
@@ -184,14 +192,14 @@ export const VehicleDetail = ({ vehicleId }: VehicleDetailProps) => {
               title="Supir Tetap"
               description="Kendaraan ini otomatis pakai supir ini saat dibooking - tidak ada pilihan supir lain"
             />
-            <InputSelect
-              placeholder="Tidak ada (bebas dipilih saat booking)"
+            <SearchableSelect
+              clearLabel="Tidak ada (bebas dipilih saat booking)"
+              searchPlaceholder="Cari nama, NIP, atau plat…"
+              emptyText="Driver tidak ditemukan"
               options={fixedDriverOptions}
-              value={fixedDriverDraft}
+              value={fixedDriverDraft === '' ? '' : String(fixedDriverDraft)}
               disabled={setFixedDriver.isPending}
-              onChange={(e) =>
-                setFixedDriverDraft(e.target.value ? Number(e.target.value) : '')
-              }
+              onChange={(v) => setFixedDriverDraft(v ? Number(v) : '')}
             />
             <AppButton
               className="mt-3"

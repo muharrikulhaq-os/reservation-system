@@ -18,7 +18,10 @@ import {
   InputRupiah,
   InputFile,
   InputTextArea,
+  SearchableSelect,
+  type SearchableOption,
 } from '@/components/ui-custom'
+import { stationOption, vehicleOption } from '@/components/shared'
 import { cn, getErrorMessage, formatNumber, kmHint } from '@/lib'
 import { ENERGY_TYPE } from '@/constants'
 import type { EnergyType, FuelFillReason, SelectOption } from '@/types'
@@ -229,17 +232,18 @@ export const FuelInputModal = ({
     }
   }
 
-  const vehicleOptions: SelectOption[] = (vehicles ?? []).map((v) => ({
-    value: v.id,
-    label: `${v.name} · ${v.plateNumber}`,
-  }))
+  const vehicleOptions = (vehicles ?? []).map((v) => vehicleOption(v))
   const fuelTypeOptions: SelectOption[] = typesForEnergy.map((t) => ({
     value: t.id,
     label: t.name,
   }))
-  const stationOptions: SelectOption[] = [
-    ...(stations ?? []).map((s) => ({ value: s.id, label: `${s.name} (mitra)` })),
-    { value: OTHER_STATION, label: isBbm ? 'SPBU lain (bukan mitra)' : 'Lokasi lain' },
+  const stationOptions: SearchableOption[] = [
+    ...(stations ?? []).map((s) => stationOption(s, { badge: { text: 'Mitra', tone: 'success' } })),
+    {
+      value: String(OTHER_STATION),
+      label: isBbm ? 'SPBU lain (bukan mitra)' : 'Lokasi lain',
+      description: 'Isi nama tempat pengisian secara manual',
+    },
   ]
   const unit = isBbm ? 'L' : 'kWh'
 
@@ -283,14 +287,16 @@ export const FuelInputModal = ({
             </div>
           )}
 
-          <InputSelect
+          <SearchableSelect
             label="Kendaraan"
             required
             placeholder="Pilih kendaraan"
+            searchPlaceholder="Cari nama, plat, atau supir tetap…"
+            emptyText="Kendaraan tidak ditemukan"
             options={vehicleOptions}
-            value={vehicleId ?? ''}
+            value={vehicleId != null ? String(vehicleId) : ''}
             disabled={isPresetVehicle}
-            onChange={(e) => setVehicleId(e.target.value ? Number(e.target.value) : undefined)}
+            onChange={(v) => setVehicleId(v ? Number(v) : undefined)}
           />
 
           {/* Tipe energi */}
@@ -478,11 +484,13 @@ export const FuelInputModal = ({
           )}
 
           <div className="grid grid-cols-2 gap-3">
-            <InputSelect
+            <SearchableSelect
               label={isBbm ? 'SPBU' : 'Lokasi'}
+              searchPlaceholder="Cari nama atau alamat SPBU…"
+              emptyText="SPBU tidak ditemukan"
               options={stationOptions}
-              value={stationId}
-              onChange={(e) => setStationId(Number(e.target.value))}
+              value={String(stationId)}
+              onChange={(v) => setStationId(Number(v))}
             />
             {stationId === OTHER_STATION && (
               <InputText

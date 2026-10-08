@@ -4,10 +4,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { AlertCircle, AlertTriangle, Ticket } from 'lucide-react'
 import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { AppButton, InputNumber, InputSelect, InputTextArea } from '@/components/ui-custom'
+import { AppButton, InputNumber, InputSelect, InputTextArea, SearchableSelect } from '@/components/ui-custom'
+import { driverOption, stationOption } from '@/components/shared'
 import { formatDateTime, formatNumber, getErrorMessage } from '@/lib'
 import { useDebounce } from '@/hooks'
-import type { FuelVoucher, FuelVoucherPreview, SelectOption, VehicleFuelBalance } from '@/types'
+import type { FuelVoucher, FuelVoucherPreview, VehicleFuelBalance } from '@/types'
 import { useDrivers } from '@/modules/drivers'
 import { useFuelTypes } from '../hooks/useFuelTypes'
 import { useFuelStations, useIssueFuelVoucher, usePreviewFuelVoucher } from '../hooks/useFuelVoucher'
@@ -107,10 +108,14 @@ export const VoucherIssueModal = ({ vehicle, open, onOpenChange, onIssued }: Pro
     }
   }
 
-  const driverOptions: SelectOption[] = [
-    { value: '', label: 'Tanpa driver (admin menandai terpakai)' },
-    ...(drivers ?? []).filter((d) => d.isActive).map((d) => ({ value: d.id, label: d.name })),
-  ]
+  // Supir tetap kendaraan ini ditandai & diletakkan paling atas.
+  const driverOptions = [...(drivers ?? [])]
+    .filter((d) => d.isActive)
+    .sort((a, b) => Number(b.id === vehicle.fixedDriverId) - Number(a.id === vehicle.fixedDriverId))
+    .map((d) =>
+      driverOption(d, d.id === vehicle.fixedDriverId ? { badge: { text: 'Supir tetap', tone: 'success' } } : undefined),
+    )
+  const stationOptions = (stations ?? []).map((s) => stationOption(s))
   const previewError = preview.error && !calc ? getErrorMessage(preview.error) : null
   const noStation = (stations ?? []).length === 0
 
@@ -158,20 +163,25 @@ export const VoucherIssueModal = ({ vehicle, open, onOpenChange, onIssued }: Pro
               value={fuelTypeId ?? ''}
               onChange={(e) => setFuelTypeId(e.target.value ? Number(e.target.value) : undefined)}
             />
-            <InputSelect
+            <SearchableSelect
               label="SPBU Mitra"
               required
               placeholder="Pilih SPBU"
-              options={(stations ?? []).map((s) => ({ value: s.id, label: s.name }))}
-              value={stationId ?? ''}
-              onChange={(e) => setStationId(e.target.value ? Number(e.target.value) : undefined)}
+              searchPlaceholder="Cari nama atau alamat SPBU…"
+              emptyText="SPBU tidak ditemukan"
+              options={stationOptions}
+              value={stationId != null ? String(stationId) : ''}
+              onChange={(v) => setStationId(v ? Number(v) : undefined)}
             />
           </div>
-          <InputSelect
+          <SearchableSelect
             label="Driver Penerima"
+            clearLabel="Tanpa driver (admin menandai terpakai)"
+            searchPlaceholder="Cari nama, NIP, atau plat…"
+            emptyText="Driver tidak ditemukan"
             options={driverOptions}
-            value={driverId}
-            onChange={(e) => setDriverId(e.target.value ? Number(e.target.value) : '')}
+            value={driverId === '' ? '' : String(driverId)}
+            onChange={(v) => setDriverId(v ? Number(v) : '')}
           />
 
           {/* Pratinjau hitungan */}
