@@ -17,7 +17,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
-import { PageHeader } from '@/components/shared'
+import { PageHeader, ReadableLocation } from '@/components/shared'
 import { SafeImage } from '@/components/shared/media/SafeImage'
 import { AppButton } from '@/components/ui-custom'
 import { cn } from '@/lib/utils'
@@ -246,7 +246,7 @@ export const MaintenanceDetail = ({ id }: { id: number }) => {
               )}
               <InfoRow label="Estimasi lama" value={m.estimatedDays ? `${m.estimatedDays} hari` : '—'} />
               <InfoRow label="Cara serah" value={labelOf(PICKUP_METHOD_OPTIONS, m.pickupMethod)} />
-              {m.location && <InfoRow label="Lokasi" value={m.location} />}
+              {m.location && <InfoRow label="Lokasi" value={<ReadableLocation value={m.location} />} />}
               {m.blockStart && (
                 <InfoRow
                   label="Blokir booking"

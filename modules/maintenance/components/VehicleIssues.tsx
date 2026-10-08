@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { AlertOctagon, ArrowRight, Ban, ImageOff, MapPin, Wrench } from 'lucide-react'
 import { Card } from '@/components/common'
-import { PageHeader, Pagination } from '@/components/shared'
+import { PageHeader, Pagination, ReadableLocation } from '@/components/shared'
 import { SafeImage } from '@/components/shared/media/SafeImage'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { AppButton, InputSelect, InputTextArea } from '@/components/ui-custom'
@@ -80,7 +80,7 @@ export const VehicleIssues = () => {
                   <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--text-secondary)]">
                     <span>{it.reportedBy.name} · {formatDateTime(it.createdAt)}</span>
                     {it.location && (
-                      <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{it.location}</span>
+                      <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /><ReadableLocation value={it.location} /></span>
                     )}
                     {it.bookingId && (
                       <Link href={`/booking/${it.bookingId}`} className="text-[var(--primary)] hover:underline">

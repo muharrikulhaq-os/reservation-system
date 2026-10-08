@@ -5,7 +5,7 @@ import { Fuel, FileCheck, Play, ImageOff, MapPin, Gauge, Zap } from 'lucide-reac
 import { Card, CardHeader, CardSection } from '@/components/common'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { SafeImage } from '@/components/shared'
+import { ReadableLocation, SafeImage } from '@/components/shared'
 import { cn, formatDateTime, formatDate, formatCurrency, formatNumber, resolveFileUrl } from '@/lib'
 import { ENERGY_TYPE } from '@/constants'
 import type { Booking, FuelExpense } from '@/types'
@@ -97,7 +97,8 @@ export const TripRecordTabs = ({ booking, linkedBookingIds = [] }: TripRecordTab
                   value={
                     <span className="flex items-center gap-1.5">
                       <MapPin className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
-                      {booking.startLocation || '-'}
+                      <ReadableLocation value={booking.startLocation} showCoordinates />
+
                     </span>
                   }
                 />
@@ -199,7 +200,7 @@ export const TripRecordTabs = ({ booking, linkedBookingIds = [] }: TripRecordTab
                 value={
                   <span className="flex items-start gap-1.5">
                     <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--text-secondary)]" />
-                    {report.location}
+                    <ReadableLocation value={report.location} showCoordinates />
                   </span>
                 }
               />
