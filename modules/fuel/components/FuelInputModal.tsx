@@ -19,7 +19,7 @@ import {
   InputFile,
   InputTextArea,
 } from '@/components/ui-custom'
-import { cn, getErrorMessage, formatNumber } from '@/lib'
+import { cn, getErrorMessage, formatNumber, kmHint } from '@/lib'
 import { ENERGY_TYPE } from '@/constants'
 import type { EnergyType, FuelFillReason, SelectOption } from '@/types'
 import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
@@ -337,14 +337,21 @@ export const FuelInputModal = ({
               value={odometer ?? ''}
               onChange={setOdometer}
               error={odoInvalid ? `Tidak boleh kurang dari ${formatNumber(minOdo)} km` : undefined}
-              hint={selectedVehicle ? `Tercatat: ${formatNumber(minOdo)} km` : 'Pilih kendaraan dulu'}
+              hint={
+                selectedVehicle
+                  ? kmHint(
+                      ['Km terakhir kendaraan', minOdo],
+                      [isBbm ? 'Km isi BBM terakhir' : 'Km pengisian daya terakhir', balance?.checkpointOdometer],
+                    )
+                  : 'Pilih kendaraan dulu'
+              }
             />
             {balance && (
               <div className="mt-2 flex items-start gap-2 rounded-lg border border-[var(--border-divider)] bg-[var(--bg-subtle)] px-3 py-2 text-xs text-[var(--text-secondary)]">
                 <Gauge className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 {balance.kmPerUnit ? (
                   <span>
-                    Isi terakhir di {formatNumber(balance.checkpointOdometer)} km · saldo{' '}
+                    Saldo{' '}
                     {formatQty(balance.recordedBalance)} {unit} · hak sampai odometer ini{' '}
                     <b className="text-[var(--text-primary)]">
                       {formatQty(entitlement)} {unit}

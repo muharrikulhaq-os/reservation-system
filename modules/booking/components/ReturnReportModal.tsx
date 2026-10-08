@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { AppButton, InputText, InputTextArea, InputFile, InputNumber } from '@/components/ui-custom'
-import { getErrorMessage } from '@/lib'
+import { formatKm, getErrorMessage, kmHint } from '@/lib'
 import { useSubmitReturnReport } from '../hooks/useBookings'
 
 // ─────────────────────────────────────────
@@ -24,10 +24,13 @@ interface ReturnReportModalProps {
   // (booking.odometerStart), fallback ke odometer kendaraan saat ini kalau
   // trip ini tidak punya catatan awal. Data faktual harus tetap naik.
   minOdometer?: number
+  // Info di bawah input: km terakhir kendaraan & km awal trip ini.
+  vehicleKm?: number | null
+  tripStartKm?: number | null
   onSuccess?: () => void
 }
 
-export const ReturnReportModal = ({ bookingId, minOdometer, onSuccess }: ReturnReportModalProps) => {
+export const ReturnReportModal = ({ bookingId, minOdometer, vehicleKm, tripStartKm, onSuccess }: ReturnReportModalProps) => {
   const [open, setOpen] = useState(false)
   const [note, setNote] = useState('')
   const [location, setLocation] = useState('')
@@ -106,8 +109,8 @@ export const ReturnReportModal = ({ bookingId, minOdometer, onSuccess }: ReturnR
             min={minOdometer ?? 0}
             value={odometer ?? ''}
             onChange={setOdometer}
-            error={odoInvalid ? `Tidak boleh kurang dari odometer awal trip (${minOdometer?.toLocaleString('id-ID')} km)` : undefined}
-            hint={minOdometer != null ? `Odometer awal trip: ${minOdometer.toLocaleString('id-ID')} km` : undefined}
+            error={odoInvalid ? `Tidak boleh kurang dari ${formatKm(minOdometer)}` : undefined}
+            hint={kmHint(['Km terakhir kendaraan', vehicleKm], ['Km awal perjalanan ini', tripStartKm])}
           />
 
           <InputFile

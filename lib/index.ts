@@ -20,3 +20,4 @@ export * from "./wib";
 // sinkronisasi data realtime - invalidasi query per topik DATA_CHANGED
 export * from "./dataSync";
 export * from "./geocode";
+export * from "./odometer";

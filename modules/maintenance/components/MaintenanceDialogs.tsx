@@ -11,7 +11,7 @@ import {
   InputText,
   InputTextArea,
 } from '@/components/ui-custom'
-import { formatNumber } from '@/lib'
+import { kmHint } from '@/lib'
 import { COST_BEARER_OPTIONS, FUEL_LEVEL_OPTIONS, HANDOVER_CHECKLIST } from '@/constants'
 import type {
   FuelLevel,
@@ -196,7 +196,7 @@ export const HandoverDialog = ({ m, open, onOpenChange, onWarning }: DialogProps
           min={0}
           value={odo ?? ''}
           onChange={setOdo}
-          hint={`Tercatat: ${formatNumber(m.vehicle.currentOdometer)} km`}
+          hint={kmHint(['Km terakhir kendaraan', m.vehicle.currentOdometer])}
         />
         <InputSelect
           label="Level BBM"
@@ -287,7 +287,10 @@ export const ReturnDialog = ({ m, open, onOpenChange }: DialogProps) => {
           min={0}
           value={odo ?? ''}
           onChange={setOdo}
-          hint={m.handover?.odometer ? `Saat diserahkan: ${formatNumber(m.handover.odometer)} km` : undefined}
+          hint={kmHint(
+            ['Km terakhir kendaraan', m.vehicle.currentOdometer],
+            ['Km saat diserahkan ke vendor', m.handover?.odometer],
+          )}
         />
         <InputSelect
           label="Level BBM"

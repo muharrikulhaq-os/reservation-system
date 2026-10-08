@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { AppButton, InputNumber, InputFile } from '@/components/ui-custom'
-import { getErrorMessage } from '@/lib'
+import { getErrorMessage, kmHint } from '@/lib'
 import { useStartBooking } from '../hooks/useBookings'
 
 interface StartBookingModalProps {
@@ -88,11 +88,7 @@ export const StartBookingModal = ({
             min={currentOdometer ?? 0}
             value={odometer ?? ''}
             onChange={setOdometer}
-            hint={
-              currentOdometer != null
-                ? `Catatan terakhir kendaraan: ${currentOdometer.toLocaleString('id-ID')} km`
-                : undefined
-            }
+            hint={kmHint(['Km terakhir kendaraan', currentOdometer])}
           />
 
           <InputFile

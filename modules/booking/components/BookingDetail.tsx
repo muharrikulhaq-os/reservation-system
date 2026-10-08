@@ -575,6 +575,8 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
                 // (BBM di tengah trip bisa sudah memajukannya; backend
                 // menolak odometer akhir di bawah catatan kendaraan).
                 minOdometer={higherOdometer(booking.odometerStart, assignedVehicle?.currentOdometer)}
+                vehicleKm={assignedVehicle?.currentOdometer}
+                tripStartKm={booking.odometerStart}
                 onSuccess={refetch}
               />
             </Card>

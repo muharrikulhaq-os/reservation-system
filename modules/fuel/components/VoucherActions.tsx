@@ -6,9 +6,9 @@ import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { AppButton, InputFile, InputNumber, InputText, InputTextArea } from '@/components/ui-custom'
 import { SafeImage } from '@/components/shared/media/SafeImage'
-import { formatDateTime, formatNumber, getErrorMessage, resolveFileUrl } from '@/lib'
+import { formatDateTime, formatNumber, getErrorMessage, kmHint, resolveFileUrl } from '@/lib'
 import type { FuelVoucher } from '@/types'
-import { useCancelFuelVoucher, useReconcileFuelVouchers, useUseFuelVoucher } from '../hooks/useFuelVoucher'
+import { useCancelFuelVoucher, useFuelBalance, useReconcileFuelVouchers, useUseFuelVoucher } from '../hooks/useFuelVoucher'
 import { VOUCHER_STATUS_CONFIG, formatQty, formatRupiahExact } from '../utils/format'
 
 // ─────────────────────────────────────────
@@ -51,6 +51,8 @@ interface ModalProps {
 /** Driver/admin: tandai voucher sudah diisi (foto struk wajib untuk driver). */
 export const VoucherUseModal = ({ voucher, open, onOpenChange, isAdmin }: ModalProps & { isAdmin: boolean }) => {
   const use = useUseFuelVoucher()
+  // Km terakhir kendaraan (dari saldo BBM) - info di bawah input odometer.
+  const { data: balance } = useFuelBalance(open ? voucher.vehicleId : undefined)
   const [odometer, setOdometer] = useState<number | undefined>()
   const [photo, setPhoto] = useState<File | null>(null)
   const [note, setNote] = useState('')
@@ -104,6 +106,7 @@ export const VoucherUseModal = ({ voucher, open, onOpenChange, isAdmin }: ModalP
             value={odometer ?? ''}
             onChange={setOdometer}
             error={odoInvalid ? `Tidak boleh kurang dari ${formatNumber(voucher.odometer)} km` : undefined}
+            hint={kmHint(['Km terakhir kendaraan', balance?.currentOdometer], ['Km saat voucher terbit', voucher.odometer])}
           />
           <InputFile
             label="Foto Struk / Nota"

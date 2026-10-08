@@ -16,7 +16,7 @@ import {
   InputText,
   InputTextArea,
 } from '@/components/ui-custom'
-import { formatDateTime } from '@/lib'
+import { formatDateTime, kmHint } from '@/lib'
 import {
   BOOKING_STATUS,
   COST_BEARER_OPTIONS,
@@ -235,6 +235,7 @@ export const MaintenanceForm = ({ initialData }: { initialData?: MaintenanceReco
                   min={0}
                   value={field.value ?? ''}
                   onChange={field.onChange}
+                  hint={vehicle ? kmHint(['Km terakhir kendaraan', vehicle.currentOdometer]) : undefined}
                 />
               )}
             />
