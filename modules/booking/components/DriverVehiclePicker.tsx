@@ -1,8 +1,9 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Car, Info, UserRound } from 'lucide-react'
 import { SearchableSelect, type SearchableOption } from '@/components/ui-custom'
+import { Switch } from '@/components/ui/switch'
 import { getErrorMessage } from '@/lib'
 import { RESOURCE_STATUS } from '@/constants'
 import type { AssignOptionDriver, AssignOptionVehicle } from '@/types'
@@ -14,7 +15,8 @@ import { useAssignOptions } from '../hooks/useBookings'
 // kendaraan menampilkan supir tetapnya. Yang tidak bisa dipakai di jadwal
 // booking ini tetap tampil (abu-abu + alasan) - alasannya dari backend,
 // sama dengan penolakan assign-vehicle. Memilih salah satu yang punya
-// pasangan tetap otomatis ikut memilih pasangannya (bila tersedia).
+// pasangan tetap otomatis ikut memilih pasangannya (bila tersedia) - bisa
+// dimatikan lewat sakelar "Ikuti pasangan tetap" (pilihan diingat per browser).
 // ─────────────────────────────────────────
 
 interface Props {
@@ -25,6 +27,23 @@ interface Props {
   onVehicleChange: (id: string) => void
   /** false = jangan muat dulu (mis. dialog belum dibuka). */
   enabled?: boolean
+}
+
+// Pilihan sakelar "Ikuti pasangan tetap" diingat per browser.
+const FOLLOW_PAIR_KEY = 'assign-follow-pair'
+const readFollowPair = () => {
+  try {
+    return localStorage.getItem(FOLLOW_PAIR_KEY) !== '0'
+  } catch {
+    return true
+  }
+}
+const saveFollowPair = (v: boolean) => {
+  try {
+    localStorage.setItem(FOLLOW_PAIR_KEY, v ? '1' : '0')
+  } catch {
+    // penyimpanan diblokir - cukup untuk sesi ini
+  }
 }
 
 // Yang bisa dipilih di atas, lalu urut nama.
@@ -93,6 +112,16 @@ export const DriverVehiclePicker = ({
 }: Props) => {
   const { data, isLoading, error } = useAssignOptions(bookingId, enabled)
   const [pairNote, setPairNote] = useState('')
+  // true = memilih satu ikut memilih pasangan tetapnya; false = bebas.
+  // Dibaca setelah mount (localStorage tidak ada saat render server).
+  const [followPair, setFollowPair] = useState(true)
+  useEffect(() => setFollowPair(readFollowPair()), [])
+
+  const toggleFollowPair = (v: boolean) => {
+    setFollowPair(v)
+    saveFollowPair(v)
+    setPairNote('')
+  }
 
   const drivers = useMemo(() => [...(data?.drivers ?? [])].sort(byAvailabilityThenName), [data])
   const vehicles = useMemo(() => [...(data?.vehicles ?? [])].sort(byAvailabilityThenName), [data])
@@ -102,6 +131,7 @@ export const DriverVehiclePicker = ({
   const handleDriver = (id: string) => {
     onDriverChange(id)
     setPairNote('')
+    if (!followPair) return
     const fv = drivers.find((d) => String(d.id) === id)?.fixedVehicle
     if (!fv || String(fv.id) === vehicleId) return
     const v = vehicles.find((x) => x.id === fv.id)
@@ -116,6 +146,7 @@ export const DriverVehiclePicker = ({
   const handleVehicle = (id: string) => {
     onVehicleChange(id)
     setPairNote('')
+    if (!followPair) return
     const fd = vehicles.find((v) => String(v.id) === id)?.fixedDriver
     if (!fd || String(fd.id) === driverId) return
     const d = drivers.find((x) => x.id === fd.id)
@@ -134,6 +165,17 @@ export const DriverVehiclePicker = ({
       {error && (
         <p className="text-xs text-[var(--danger)]">Gagal memuat pilihan: {getErrorMessage(error)}</p>
       )}
+      <label className="flex cursor-pointer items-start justify-between gap-3 rounded-lg border border-[var(--border-divider)] bg-[var(--bg-subtle)] px-3 py-2.5">
+        <span className="min-w-0">
+          <span className="block text-sm font-medium text-[var(--text-primary)]">Ikuti pasangan tetap</span>
+          <span className="block text-xs text-[var(--text-secondary)]">
+            {followPair
+              ? 'Memilih driver ikut memilih kendaraan tetapnya, dan sebaliknya.'
+              : 'Bebas: driver dan kendaraan dipilih masing-masing.'}
+          </span>
+        </span>
+        <Switch checked={followPair} onCheckedChange={toggleFollowPair} className="mt-0.5 shrink-0" />
+      </label>
       <SearchableSelect
         label="Pilih Driver"
         required
