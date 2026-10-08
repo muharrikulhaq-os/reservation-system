@@ -10,6 +10,7 @@ import { ENERGY_TYPE, ENERGY_TYPE_CONFIG } from '@/constants'
 import type { FuelTypeMaster } from '@/types'
 import { useFuelTypes, useDeleteFuelType } from '@/modules/fuel'
 import { FuelTypeFormModal } from './FuelTypeFormModal'
+import { appConfirm } from '@/lib/dialog'
 
 export const FuelTypeSettings = () => {
   const { data: fuelTypes, isLoading } = useFuelTypes()
@@ -26,8 +27,14 @@ export const FuelTypeSettings = () => {
     setEditing(ft)
     setModalOpen(true)
   }
-  const handleDelete = (ft: FuelTypeMaster) => {
-    if (window.confirm(`Hapus jenis "${ft.name}"?`)) del.mutate(ft.id)
+  const handleDelete = async (ft: FuelTypeMaster) => {
+    const ok = await appConfirm({
+      title: 'Hapus jenis bahan bakar?',
+      description: `Jenis "${ft.name}" akan dihapus.`,
+      tone: 'danger',
+      confirmText: 'Ya, Hapus',
+    })
+    if (ok) del.mutate(ft.id)
   }
 
   return (

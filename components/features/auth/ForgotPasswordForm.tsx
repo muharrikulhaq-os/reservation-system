@@ -68,6 +68,7 @@ const ForgotPasswordForm = () => {
 
   const [step, setStep] = useState<Step>('email')
   const [email, setEmail] = useState('')
+  const [emailError, setEmailError] = useState<string>()
   const [otp, setOtp] = useState('')
   const [resetToken, setResetToken] = useState('')
   const [password, setPassword] = useState('')
@@ -83,6 +84,10 @@ const ForgotPasswordForm = () => {
   const submitEmail = (e: React.FormEvent) => {
     e.preventDefault()
     if (!email.trim()) return
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setEmailError('Format email tidak valid')
+      return
+    }
     forgot.mutate(
       { email: email.trim() },
       { onSuccess: () => setStep('otp') },
@@ -145,7 +150,7 @@ const ForgotPasswordForm = () => {
 
       {/* ── Langkah 1: email ── */}
       {step === 'email' && (
-        <form onSubmit={submitEmail} className="space-y-5">
+        <form noValidate onSubmit={submitEmail} className="space-y-5">
           <p className="text-sm text-[var(--text-secondary)]">
             Masukkan email akun Anda. Kami akan mengirim kode OTP untuk verifikasi.
           </p>
@@ -156,7 +161,11 @@ const ForgotPasswordForm = () => {
             placeholder="nama@perusahaan.com"
             leftIcon={<Mail className="h-4 w-4" />}
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            error={emailError}
+            onChange={(e) => {
+              setEmail(e.target.value)
+              setEmailError(undefined)
+            }}
           />
           <Button
             type="submit"
@@ -171,7 +180,7 @@ const ForgotPasswordForm = () => {
 
       {/* ── Langkah 2: OTP ── */}
       {step === 'otp' && (
-        <form onSubmit={submitOtp} className="space-y-5">
+        <form noValidate onSubmit={submitOtp} className="space-y-5">
           <p className="text-sm text-[var(--text-secondary)]">
             Kode OTP telah dikirim ke{' '}
             <span className="font-semibold text-[var(--text-primary)]">{email}</span>{' '}
@@ -208,7 +217,7 @@ const ForgotPasswordForm = () => {
 
       {/* ── Langkah 3: password baru ── */}
       {step === 'password' && (
-        <form onSubmit={submitPassword} className="space-y-5">
+        <form noValidate onSubmit={submitPassword} className="space-y-5">
           <p className="text-sm text-[var(--text-secondary)]">
             Kode terverifikasi. Buat password baru untuk akun Anda.
           </p>

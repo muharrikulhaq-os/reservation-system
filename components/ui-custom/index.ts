@@ -18,14 +18,17 @@ export {
   InputRupiah,
   InputTextArea,
   InputFile,
-  InputSelect,
 } from "./Appinput";
 export type {
   InputTextProps,
   InputPasswordProps,
   InputNumberProps,
-  InputSelectProps,
 } from "./Appinput";
+
+export { InputSelect } from "./InputSelect";
+export { AppCheckbox } from "./AppCheckbox";
+export type { AppCheckboxProps } from "./AppCheckbox";
+export type { InputSelectProps, SelectChangeEvent } from "./InputSelect";
 
 export { InputDate, InputDateTime } from "./DatePicker";
 export type { DateChangeEvent, InputDateProps, InputDateTimeProps } from "./DatePicker";

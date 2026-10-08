@@ -18,6 +18,7 @@ import { getErrorMessage } from '@/lib'
 import { ENERGY_TYPE } from '@/constants'
 import type { EnergyType, FuelTypeMaster, FuelUnit, SelectOption } from '@/types'
 import { useCreateFuelType, useUpdateFuelType } from '@/modules/fuel'
+import { AppCheckbox } from '@/components/ui-custom/AppCheckbox'
 
 interface FuelTypeFormModalProps {
   open: boolean
@@ -120,12 +121,7 @@ export const FuelTypeFormModal = ({
           </div>
 
           <label className="flex items-center gap-2 text-sm text-[var(--text-primary)]">
-            <input
-              type="checkbox"
-              checked={isActive}
-              onChange={(e) => setIsActive(e.target.checked)}
-              className="h-4 w-4 rounded border-[var(--border-input)]"
-            />
+            <AppCheckbox checked={isActive} onCheckedChange={setIsActive} />
             Aktif (tampil saat pencatatan pengisian)
           </label>
 

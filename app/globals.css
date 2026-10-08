@@ -68,6 +68,39 @@
   html {
     @apply font-sans;
   }
+
+  /* ── Kontrol bawaan browser yang tidak bisa diberi tema ── */
+  :root {
+    /* sisa kontrol native (radio/range/progress) ikut warna primary */
+    accent-color: var(--primary);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-input) transparent;
+  }
+  /* Panah spinner input angka */
+  input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  /* Latar kuning/biru autofill (mis. email & password di login) */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text-primary);
+    -webkit-box-shadow: 0 0 0 1000px var(--bg-card) inset;
+    caret-color: var(--text-primary);
+    transition: background-color 9999s ease-out 0s;
+  }
+  /* Ikon "x" bawaan pada input pencarian */
+  input[type='search']::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
 }
 
 @layer utilities {

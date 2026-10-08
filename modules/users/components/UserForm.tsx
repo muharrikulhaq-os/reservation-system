@@ -131,7 +131,7 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card>
         <CardHeader
           title={isEdit ? 'Data Pengguna' : 'Tambah Pengguna'}

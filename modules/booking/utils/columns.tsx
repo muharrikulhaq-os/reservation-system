@@ -1,7 +1,7 @@
 'use client'
 
 import Link from "next/link";
-import { ArrowRightLeft, Building2, Car, Eye, GitMerge, X, Zap } from "lucide-react";
+import { ArrowRightLeft, Ban, Building2, Car, Eye, GitMerge, X, Zap } from "lucide-react";
 import { UserAvatar } from "@/components/shared/avatar/Avatar";
 import { BookingStatusBadge, BookingTypeBadge } from "@/components/shared/badge/StatusBadge";
 import { SafeImage } from "@/components/shared/media/SafeImage";
@@ -16,6 +16,7 @@ import { BOOKING_STATUS, RESOURCE_TYPE } from "@/constants";
 import { useCancelBooking } from "../hooks/useBookings";
 import { useAuthStore } from "@/store/auth.store";
 import type { Booking } from "@/types";
+import { appConfirm } from "@/lib/dialog";
 
 // ─────────────────────────────────────────
 // BOOKING COLUMNS
@@ -37,8 +38,16 @@ const RowActions = ({ booking }: { booking: Booking }) => {
     booking.status === BOOKING_STATUS.PENDING ||
     (isAdmin && booking.status === BOOKING_STATUS.APPROVED);
 
-  const handleCancel = () => {
-    if (window.confirm("Batalkan booking ini?")) mutate(booking.id);
+  const handleCancel = async () => {
+    const ok = await appConfirm({
+      title: "Batalkan booking?",
+      description: `Booking #${booking.id} akan dibatalkan.`,
+      tone: "danger",
+      icon: <Ban className="h-6 w-6 text-[var(--danger)]" />,
+      confirmText: "Ya, Batalkan",
+      cancelText: "Kembali",
+    });
+    if (ok) mutate(booking.id);
   };
 
   return (

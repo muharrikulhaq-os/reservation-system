@@ -2,12 +2,11 @@
 
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { ChevronDown, Eye, EyeOff, Upload, X } from "lucide-react";
+import { Eye, EyeOff, Upload, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import type { SelectOption } from "@/types";
 
 // ─────────────────────────────────────────
 // SHARED PRIMITIVES
@@ -604,79 +603,6 @@ export const InputFile = ({
     </div>
   );
 };
-
-// ─────────────────────────────────────────
-// 7. INPUT SELECT  (native <select>, styled)
-// ─────────────────────────────────────────
-
-export interface InputSelectProps
-  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "children"> {
-  label?: string;
-  error?: string;
-  hint?: string;
-  required?: boolean;
-  placeholder?: string;
-  options: SelectOption[];
-}
-
-export const InputSelect = React.forwardRef<
-  HTMLSelectElement,
-  InputSelectProps
->(
-  (
-    {
-      label,
-      error,
-      hint,
-      required,
-      placeholder,
-      options,
-      className,
-      id,
-      ...props
-    },
-    ref,
-  ) => {
-    const selectId =
-      id ?? `select-${label?.toLowerCase().replace(/\s+/g, "-")}`;
-    return (
-      <div className="w-full space-y-0">
-        {label && (
-          <AppLabel htmlFor={selectId} required={required}>
-            {label}
-          </AppLabel>
-        )}
-        <div className="relative">
-          <select
-            ref={ref}
-            id={selectId}
-            className={cn(
-              inputBase(!!error),
-              "cursor-pointer appearance-none pr-9",
-              className,
-            )}
-            {...props}
-          >
-            {placeholder && (
-              <option value="">{placeholder}</option>
-            )}
-            {options.map((opt) => (
-              <option key={String(opt.value)} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[var(--text-secondary)]">
-            <ChevronDown className="h-4 w-4" />
-          </span>
-        </div>
-        <AppFieldError>{error}</AppFieldError>
-        <AppFieldHint>{hint}</AppFieldHint>
-      </div>
-    );
-  },
-);
-InputSelect.displayName = "InputSelect";
 
 // ─────────────────────────────────────────
 // BARREL - export semua dari satu tempat

@@ -86,6 +86,7 @@ import { TripRecordTabs } from "./TripRecordTabs";
 import { FuelInputModal } from "@/modules/fuel";
 import { DriverProfileButton } from "@/modules/drivers";
 import { useVehicle } from "@/modules/vehicles/hooks/useVehicles";
+import { appConfirm } from "@/lib/dialog";
 
 // ─────────────────────────────────────────
 // BOOKING DETAIL
@@ -456,9 +457,17 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
                 variant="danger"
                 size="sm"
                 loading={isCancelling}
-                onClick={() => {
-                  if (window.confirm("Batalkan booking yang sudah disetujui ini?"))
-                    cancelBooking(booking.id, { onSuccess: () => refetch() });
+                onClick={async () => {
+                  const ok = await appConfirm({
+                    title: "Batalkan booking?",
+                    description:
+                      "Booking yang sudah disetujui ini akan dibatalkan. Pemohon dan supir mendapat notifikasi.",
+                    tone: "danger",
+                    icon: <Ban className="h-6 w-6 text-[var(--danger)]" />,
+                    confirmText: "Ya, Batalkan",
+                    cancelText: "Kembali",
+                  });
+                  if (ok) cancelBooking(booking.id, { onSuccess: () => refetch() });
                 }}
               >
                 Batalkan Booking

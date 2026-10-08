@@ -34,6 +34,7 @@ import { useBookings } from '@/modules/booking'
 import { useCreateMaintenance, useUpdateMaintenance, useVendors } from '../hooks/useMaintenance'
 import { fromWibInput, toWibInput } from '../utils/helpers'
 import { ErrorAlert, WarningAlert } from './shared'
+import { appAlert } from '@/lib/dialog'
 
 // ─────────────────────────────────────────
 // FORM PENGAJUAN MAINTENANCE - buat & ubah
@@ -132,15 +133,17 @@ export const MaintenanceForm = ({ initialData }: { initialData?: MaintenanceReco
     }
     const payload = { ...toPayload(d), ...(isEdit ? {} : { submit: submitIntent }) }
     mutation.mutate(payload, {
-      onSuccess: (res) => {
-        if (res.warning) window.alert(res.warning)
+      onSuccess: async (res) => {
+        if (res.warning) {
+          await appAlert({ title: 'Perlu Diperhatikan', description: res.warning, tone: 'warning' })
+        }
         router.push(`/maintenance/${res.data.id}`)
       },
     })
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card>
         <CardHeader
           title="Kendaraan & Vendor"
@@ -222,12 +225,21 @@ export const MaintenanceForm = ({ initialData }: { initialData?: MaintenanceReco
         <CardHeader title="Pekerjaan yang Dimohon" />
         <div className="space-y-5">
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <InputSelect
-              label="Jenis Pekerjaan"
-              required
-              options={MAINTENANCE_CATEGORY_OPTIONS}
-              error={errors.category?.message}
-              {...register('category')}
+            <Controller
+              control={control}
+              name="category"
+              render={({ field }) => (
+                <InputSelect
+                  label="Jenis Pekerjaan"
+                  required
+                  options={MAINTENANCE_CATEGORY_OPTIONS}
+                  error={errors.category?.message}
+                  name={field.name}
+                  value={field.value ?? ''}
+                  onChange={(e) => field.onChange(e.target.value)}
+                  onBlur={field.onBlur}
+                />
+              )}
             />
             <Controller
               control={control}

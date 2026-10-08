@@ -36,6 +36,8 @@ export type {
 export * from './Resource'
 
 export { ConfirmDialog } from './ConfirmDialog'
+export { AppDialogHost } from './AppDialogHost'
+export { TitleTooltipHost } from './TitleTooltipHost'
 export type { ConfirmDialogProps } from './ConfirmDialog'
 
 export { UserProfileModal } from './user-profile/UserProfileModal'

@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect } from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { AppButton } from '@/components/ui-custom/Appbutton'
+import { InputSelect } from '@/components/ui-custom/InputSelect'
 import { PAGINATION } from '@/constants'
 import { cn } from '@/lib/utils'
 import type { PaginationMeta } from '@/types'
@@ -91,20 +92,15 @@ export const Pagination = ({
         {onLimitChange && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-[var(--text-secondary)]">Per halaman</span>
-            <div className="relative">
-              <select
+            <div className="w-[4.25rem]">
+              <InputSelect
+                size="sm"
+                required
+                aria-label="Jumlah data per halaman"
                 value={pagination.limit}
                 onChange={(e) => onLimitChange(Number(e.target.value))}
-                aria-label="Jumlah data per halaman"
-                className="h-8 cursor-pointer appearance-none rounded-lg border border-[var(--border-input)] bg-[var(--bg-card)] pl-2.5 pr-7 text-xs font-medium text-[var(--text-primary)] transition-all duration-150 focus-visible:border-[1.5px] focus-visible:border-[var(--primary)] focus-visible:outline-none focus-visible:ring-0"
-              >
-                {limitOptions.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute inset-y-0 right-2 my-auto h-3.5 w-3.5 text-[var(--text-secondary)]" />
+                options={limitOptions.map((opt) => ({ value: opt, label: String(opt) }))}
+              />
             </div>
           </div>
         )}

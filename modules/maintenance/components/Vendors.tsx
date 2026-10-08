@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Building2, Pencil, Plus, Power, Trash2 } from 'lucide-react'
 import { Card } from '@/components/common'
@@ -15,6 +15,7 @@ import { vendorSchema, type VendorFormData } from '@/schemas/maintenance.schema'
 import { useDeleteVendor, useSaveVendor, useToggleVendor, useVendors } from '../hooks/useMaintenance'
 import { MaintenanceNav } from './MaintenanceNav'
 import { ErrorAlert, FormDialog } from './shared'
+import { appConfirm } from '@/lib/dialog'
 
 // Master vendor: bengkel rekanan & pemilik kendaraan sewa.
 export const Vendors = () => {
@@ -93,8 +94,14 @@ export const Vendors = () => {
                     size="icon-sm"
                     aria-label="Hapus"
                     className="text-[var(--danger)] hover:text-[var(--danger)]"
-                    onClick={() => {
-                      if (window.confirm(`Hapus vendor "${v.name}"?`)) del.mutate(v.id)
+                    onClick={async () => {
+                      const ok = await appConfirm({
+                        title: 'Hapus vendor?',
+                        description: `Vendor "${v.name}" akan dihapus.`,
+                        tone: 'danger',
+                        confirmText: 'Ya, Hapus',
+                      })
+                      if (ok) del.mutate(v.id)
                     }}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -114,7 +121,7 @@ export const Vendors = () => {
 const VendorFormDialog = ({ vendor, onClose }: { vendor: Vendor | 'new' | null; onClose: () => void }) => {
   const save = useSaveVendor()
   const isEdit = vendor !== null && vendor !== 'new'
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<VendorFormData>({
+  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<VendorFormData>({
     resolver: zodResolver(vendorSchema),
   })
 
@@ -158,7 +165,22 @@ const VendorFormDialog = ({ vendor, onClose }: { vendor: Vendor | 'new' | null; 
     >
       <ErrorAlert error={save.error} />
       <InputText label="Nama Vendor" required error={errors.name?.message} {...register('name')} />
-      <InputSelect label="Jenis" required options={VENDOR_TYPE_OPTIONS} error={errors.type?.message} {...register('type')} />
+      <Controller
+        control={control}
+        name="type"
+        render={({ field }) => (
+          <InputSelect
+            label="Jenis"
+            required
+            options={VENDOR_TYPE_OPTIONS}
+            error={errors.type?.message}
+            name={field.name}
+            value={field.value ?? ''}
+            onChange={(e) => field.onChange(e.target.value)}
+            onBlur={field.onBlur}
+          />
+        )}
+      />
       <InputTextArea label="Alamat" rows={2} hint="Tampil di surat pengajuan" {...register('address')} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <InputText label="Nama PIC" {...register('picName')} />

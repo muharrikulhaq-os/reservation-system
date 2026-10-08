@@ -38,6 +38,7 @@ import { openMaintenancePdf } from '../utils/helpers'
 import { CancelDialog, CostDialog, HandoverDialog, ReturnDialog, ScheduleDialog } from './MaintenanceDialogs'
 import { MaintenanceDocuments } from './MaintenanceDocuments'
 import { ErrorAlert, InfoRow, MaintenanceStatusBadge, WarningAlert } from './shared'
+import { appConfirm } from '@/lib/dialog'
 
 type DialogKind = 'schedule' | 'handover' | 'return' | 'cancel' | 'cost' | null
 
@@ -351,9 +352,14 @@ export const MaintenanceDetail = ({ id }: { id: number }) => {
                     variant="danger"
                     leftIcon={<Trash2 className="h-4 w-4" />}
                     loading={del.isPending}
-                    onClick={() => {
-                      if (window.confirm('Hapus maintenance ini permanen?'))
-                        del.mutate(m.id, { onSuccess: () => router.push('/maintenance') })
+                    onClick={async () => {
+                      const ok = await appConfirm({
+                        title: 'Hapus maintenance?',
+                        description: 'Data maintenance ini dihapus permanen dan tidak bisa dikembalikan.',
+                        tone: 'danger',
+                        confirmText: 'Ya, Hapus',
+                      })
+                      if (ok) del.mutate(m.id, { onSuccess: () => router.push('/maintenance') })
                     }}
                   >
                     Hapus

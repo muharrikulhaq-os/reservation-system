@@ -9,6 +9,7 @@ import { MAINTENANCE_DOC_KIND_OPTIONS, maintenanceDocKindLabel } from '@/constan
 import type { MaintenanceDocumentKind, MaintenanceRecord } from '@/types'
 import { useDeleteMaintenanceDocument, useUploadMaintenanceDocuments } from '../hooks/useMaintenance'
 import { ErrorAlert } from './shared'
+import { appConfirm } from '@/lib/dialog'
 
 // Dokumen pendukung: invoice vendor, scan surat/BA bertanda tangan, foto.
 export const MaintenanceDocuments = ({ m }: { m: MaintenanceRecord }) => {
@@ -64,8 +65,14 @@ export const MaintenanceDocuments = ({ m }: { m: MaintenanceRecord }) => {
                   size="icon-sm"
                   aria-label={`Hapus ${d.fileName}`}
                   loading={del.isPending && del.variables === d.id}
-                  onClick={() => {
-                    if (window.confirm(`Hapus dokumen "${d.fileName}"?`)) del.mutate(d.id)
+                  onClick={async () => {
+                    const ok = await appConfirm({
+                      title: 'Hapus dokumen?',
+                      description: `Dokumen "${d.fileName}" akan dihapus.`,
+                      tone: 'danger',
+                      confirmText: 'Ya, Hapus',
+                    })
+                    if (ok) del.mutate(d.id)
                   }}
                   className="text-[var(--danger)] hover:text-[var(--danger)]"
                 >

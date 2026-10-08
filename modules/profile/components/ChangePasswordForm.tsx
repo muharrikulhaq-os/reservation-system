@@ -32,6 +32,7 @@ export const ChangePasswordForm = () => {
 
   return (
     <form
+      noValidate
       onSubmit={handleSubmit((data) => {
         resetMutation()
         onSubmit(data)

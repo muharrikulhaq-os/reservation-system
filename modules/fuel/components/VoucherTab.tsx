@@ -20,6 +20,7 @@ import {
   VoucherUseModal,
 } from './VoucherActions'
 import { openVoucherPrint } from './VoucherPrint'
+import { AppCheckbox } from '@/components/ui-custom/AppCheckbox'
 
 // ─────────────────────────────────────────
 // TAB VOUCHER
@@ -232,15 +233,14 @@ export const VoucherTab = () => {
               <tr className="border-b border-[var(--border-divider)] text-left text-[10px] uppercase tracking-[0.06em] text-[var(--text-secondary)]">
                 {isAdmin && (
                   <th className="w-10 px-3 py-3">
-                    <input
-                      type="checkbox"
+                    <AppCheckbox
                       aria-label="Pilih semua yang bisa direkonsiliasi"
                       checked={items.filter(reconcilable).length > 0 && items.filter(reconcilable).every((v) => selected[v.id])}
-                      onChange={(e) =>
+                      onCheckedChange={(checked) =>
                         setSelected((s) => {
                           const next = { ...s }
                           for (const v of items.filter(reconcilable)) {
-                            if (e.target.checked) next[v.id] = v
+                            if (checked) next[v.id] = v
                             else delete next[v.id]
                           }
                           return next
@@ -263,11 +263,10 @@ export const VoucherTab = () => {
                 <tr key={v.id} className="align-top">
                   {isAdmin && (
                     <td className="px-3 py-3">
-                      <input
-                        type="checkbox"
+                      <AppCheckbox
                         disabled={!reconcilable(v)}
                         checked={!!selected[v.id]}
-                        onChange={() => toggle(v)}
+                        onCheckedChange={() => toggle(v)}
                         aria-label={`Pilih ${v.code}`}
                       />
                     </td>

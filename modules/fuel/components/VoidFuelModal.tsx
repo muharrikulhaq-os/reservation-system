@@ -7,6 +7,7 @@ import { AppButton, InputTextArea } from '@/components/ui-custom'
 import { getErrorMessage, formatNumber } from '@/lib'
 import type { FuelExpense } from '@/types'
 import { useVoidFuel } from '../hooks/useFuel'
+import { AppCheckbox } from '@/components/ui-custom/AppCheckbox'
 
 // ─────────────────────────────────────────
 // BATALKAN CATATAN PENGISIAN (pengganti hapus - FL-06)
@@ -71,11 +72,10 @@ export const VoidFuelModal = ({ fuel, open, onOpenChange }: Props) => {
             onChange={(e) => setReason(e.target.value)}
           />
           <label className="flex items-start gap-2 text-sm text-[var(--text-primary)]">
-            <input
-              type="checkbox"
+            <AppCheckbox
               checked={odometerTypo}
-              onChange={(e) => setOdometerTypo(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-[var(--border-input)]"
+              onCheckedChange={setOdometerTypo}
+              className="mt-0.5"
             />
             <span>
               Odometer di catatan ini salah ketik ({formatNumber(fuel.odometerAfter ?? 0)} km)

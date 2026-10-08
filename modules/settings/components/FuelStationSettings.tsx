@@ -10,6 +10,8 @@ import { getErrorMessage } from '@/lib'
 import { useSetting, useUpsertSetting } from '@/hooks'
 import type { FuelStation } from '@/types'
 import { useDeleteFuelStation, useFuelStations, useSaveFuelStation } from '@/modules/fuel'
+import { appConfirm } from '@/lib/dialog'
+import { AppCheckbox } from '@/components/ui-custom/AppCheckbox'
 
 // ─────────────────────────────────────────
 // PENGATURAN: SPBU MITRA + MASA BERLAKU VOUCHER BBM
@@ -81,7 +83,7 @@ const StationFormModal = ({
             <InputText label="Kontak" value={contactPerson} onChange={(e) => setContactPerson(e.target.value)} />
           </div>
           <label className="flex items-center gap-2 text-sm text-[var(--text-primary)]">
-            <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4 rounded border-[var(--border-input)]" />
+            <AppCheckbox checked={isActive} onCheckedChange={setIsActive} />
             Aktif (bisa dipilih saat menerbitkan voucher)
           </label>
           <div className="flex gap-3 pt-1">
@@ -143,8 +145,14 @@ export const FuelStationSettings = () => {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<FuelStation | null>(null)
 
-  const handleDelete = (s: FuelStation) => {
-    if (!window.confirm(`Hapus SPBU "${s.name}"?`)) return
+  const handleDelete = async (s: FuelStation) => {
+    const ok = await appConfirm({
+      title: 'Hapus SPBU?',
+      description: `SPBU "${s.name}" akan dihapus.`,
+      tone: 'danger',
+      confirmText: 'Ya, Hapus',
+    })
+    if (!ok) return
     del.mutate(s.id, { onError: (e) => toast.error(getErrorMessage(e)) })
   }
 

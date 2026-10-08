@@ -53,7 +53,7 @@ export const RoomForm = ({ initialData, onSuccess }: RoomFormProps) => {
     })
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card>
         <CardHeader
           title={isEdit ? 'Data Ruangan' : 'Tambah Ruangan'}

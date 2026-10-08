@@ -29,6 +29,7 @@ import {
   useSetVehicleFixedDriver,
 } from '../hooks/useVehicles'
 import { useDeleteAttachment } from '@/hooks'
+import { appConfirm } from '@/lib/dialog'
 // Impor langsung dari file hook (bukan barrel) untuk menghindari siklus
 // impor vehicles ⇄ drivers.
 import { useDrivers } from '@/modules/drivers/hooks/useDrivers'
@@ -107,8 +108,14 @@ export const VehicleDetail = ({ vehicleId }: VehicleDetailProps) => {
     )
   }
 
-  const handleDelete = () => {
-    if (!confirm(`Hapus kendaraan "${vehicle.name}"?`)) return
+  const handleDelete = async () => {
+    const ok = await appConfirm({
+      title: 'Hapus kendaraan?',
+      description: `Kendaraan "${vehicle.name}" akan dihapus.`,
+      tone: 'danger',
+      confirmText: 'Ya, Hapus',
+    })
+    if (!ok) return
     deleteVehicle.mutate(vehicle.id, {
       onSuccess: () => router.push('/vehicles'),
     })

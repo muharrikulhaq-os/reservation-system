@@ -21,3 +21,6 @@ export * from "./wib";
 export * from "./dataSync";
 export * from "./geocode";
 export * from "./odometer";
+
+// popup bertema pengganti window.alert / confirm / prompt
+export * from "./dialog";

@@ -206,7 +206,7 @@ export const BookingForm = () => {
   const TypeIcon = isVehicle ? Car : Building2
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* ── a. Resource: summary atau picker ── */}
       {selected && !showPicker ? (
         <Card>

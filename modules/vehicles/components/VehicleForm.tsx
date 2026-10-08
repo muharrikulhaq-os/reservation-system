@@ -95,7 +95,7 @@ export const VehicleForm = ({ initialData, onSuccess }: VehicleFormProps) => {
     )
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card>
         <CardHeader
           title={isEdit ? 'Data Kendaraan' : 'Tambah Kendaraan'}

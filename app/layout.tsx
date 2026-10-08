@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { QueryProvider } from '@/components/common/Provider/QueryProvider'
 import { AuthProvider } from '@/components/common/Provider/AuthProvider'
 import { Toaster } from '@/components/ui/sonner'
+import { AppDialogHost } from '@/components/shared/AppDialogHost'
+import { TitleTooltipHost } from '@/components/shared/TitleTooltipHost'
 import '@/app/globals.css'
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
@@ -23,6 +25,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </AuthProvider>
         </QueryProvider>
         <Toaster position="top-right" richColors closeButton />
+        <AppDialogHost />
+        <TitleTooltipHost />
       </body>
     </html>
   )

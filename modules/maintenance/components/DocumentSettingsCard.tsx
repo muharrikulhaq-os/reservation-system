@@ -48,7 +48,7 @@ export const DocumentSettingsCard = () => {
       {isLoading ? (
         <p className="py-6 text-center text-sm text-[var(--text-secondary)]">Memuat…</p>
       ) : (
-        <form onSubmit={handleSubmit((d) => save.mutate(d))} className="space-y-5">
+        <form noValidate onSubmit={handleSubmit((d) => save.mutate(d))} className="space-y-5">
           <ErrorAlert error={save.error ?? upload.error ?? remove.error} />
 
           {/* Logo */}

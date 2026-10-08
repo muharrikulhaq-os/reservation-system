@@ -25,6 +25,7 @@ import {
   useApproveBooking,
   useRejectBooking,
 } from '../hooks/useBookings'
+import { appPrompt } from '@/lib/dialog'
 
 // ─────────────────────────────────────────
 // Helpers
@@ -73,11 +74,18 @@ export const ApprovalQueue = () => {
   const handleApprove = (booking: Booking) =>
     approve.mutate({ id: booking.id, payload: undefined })
 
-  const handleReject = (booking: Booking) => {
-    const note = window.prompt('Alasan penolakan:')
-    if (note && note.trim()) {
-      reject.mutate({ id: booking.id, payload: { note: note.trim() } })
-    }
+  const handleReject = async (booking: Booking) => {
+    const note = await appPrompt({
+      title: 'Tolak Booking',
+      description: `Booking #${booking.id} - ${booking.purpose}`,
+      label: 'Alasan Penolakan',
+      placeholder: 'Tulis alasan penolakan…',
+      multiline: true,
+      tone: 'danger',
+      icon: <XCircle className="h-6 w-6 text-[var(--danger)]" />,
+      confirmText: 'Tolak Booking',
+    })
+    if (note) reject.mutate({ id: booking.id, payload: { note } })
   }
 
   const processedList =

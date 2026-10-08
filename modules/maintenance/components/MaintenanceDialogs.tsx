@@ -28,6 +28,7 @@ import {
 } from '../hooks/useMaintenance'
 import { fromWibInput, nowWibInput, toWibInput } from '../utils/helpers'
 import { ErrorAlert, FormDialog, WarningAlert } from './shared'
+import { AppCheckbox } from '@/components/ui-custom/AppCheckbox'
 
 interface DialogProps {
   m: MaintenanceRecord
@@ -111,11 +112,9 @@ const ChecklistField = ({
     <div className="grid grid-cols-1 gap-2 rounded-xl bg-[var(--bg-subtle)] p-3 sm:grid-cols-2">
       {HANDOVER_CHECKLIST.map((it) => (
         <label key={it.key} className="flex cursor-pointer items-center gap-2 text-sm text-[var(--text-primary)]">
-          <input
-            type="checkbox"
-            className="h-4 w-4 accent-[var(--primary)]"
+          <AppCheckbox
             checked={!!value[it.key]}
-            onChange={(e) => onChange({ ...value, [it.key]: e.target.checked })}
+            onCheckedChange={(c) => onChange({ ...value, [it.key]: c })}
           />
           {it.label}
         </label>

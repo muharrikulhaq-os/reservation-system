@@ -27,6 +27,7 @@ import {
   useSetRoomKeeper,
 } from '../hooks/useRooms'
 import { useDeleteAttachment } from '@/hooks'
+import { appConfirm } from '@/lib/dialog'
 // Impor langsung dari file hook (bukan barrel) untuk menghindari siklus
 // impor rooms ⇄ room-keepers.
 import { useRoomKeepers } from '@/modules/room-keepers/hooks/useRoomKeepers'
@@ -105,8 +106,14 @@ export const RoomDetail = ({ roomId }: RoomDetailProps) => {
     )
   }
 
-  const handleDelete = () => {
-    if (!confirm(`Hapus ruangan "${room.name}"?`)) return
+  const handleDelete = async () => {
+    const ok = await appConfirm({
+      title: 'Hapus ruangan?',
+      description: `Ruangan "${room.name}" akan dihapus.`,
+      tone: 'danger',
+      confirmText: 'Ya, Hapus',
+    })
+    if (!ok) return
     deleteRoom.mutate(room.id, {
       onSuccess: () => router.push('/rooms'),
     })

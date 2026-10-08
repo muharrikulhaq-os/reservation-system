@@ -54,6 +54,7 @@ export interface BaseQueryParams extends PaginationParams {
 export interface SelectOption<T = string | number> {
   label: string
   value: T
+  disabled?: boolean
 }
 
 // --- Timestamps ---

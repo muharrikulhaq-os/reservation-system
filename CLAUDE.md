@@ -73,13 +73,16 @@ components/
 ├── ui-custom/                        # Wrapper Shadcn + token (barrel: @/components/ui-custom)
 │   ├── Appbutton.tsx                 # AppButton, IconButton
 │   ├── Appinput.tsx                  # AppLabel, AppFieldError, AppFieldHint,
-│   │                                 # InputText/Email/Password/Number/Rupiah/TextArea/
-│   │                                 # File/Select
+│   │                                 # InputText/Email/Password/Number/Rupiah/TextArea/File
+│   ├── InputSelect.tsx               # InputSelect: dropdown bertema (Radix Select), BUKAN <select>
+│   │                                 # bawaan. Terkontrol (value + onChange({target:{value}})),
+│   │                                 # pakai Controller bukan register. size="sm" untuk toolbar
+│   ├── AppCheckbox.tsx               # AppCheckbox (Radix) - pengganti <input type="checkbox">
 │   ├── DatePicker.tsx                # InputDate ("YYYY-MM-DD") & InputDateTime ("YYYY-MM-DDTHH:mm"):
 │   │                                 # kalender popover bertema (bukan <input type="date"> bawaan
 │   │                                 # browser). Terkontrol (value+onChange) — pakai Controller,
 │   │                                 # bukan register. min/max untuk membatasi rentang
-│   ├── TimePicker.tsx                # TimePicker (hybrid dropdown/manual, disable masa lalu)
+│   ├── TimePicker.tsx                # TimePicker (InputSelect / ketik "HH:MM", disable masa lalu)
 │   └── SearchableSelect.tsx          # Dropdown + cari langsung (cmdk): label + keterangan +
 │                                     # badge, opsi disabled tetap tampil dgn alasan. Pakai untuk
 │                                     # daftar panjang / butuh konteks (contoh: DriverVehiclePicker)
@@ -89,6 +92,10 @@ components/
 │   ├── badge/StatusBadge.tsx         # BookingStatusBadge, ResourceStatusBadge, Badge
 │   ├── page-header/PageHeader.tsx    # PageHeader
 │   ├── calendar/AvailabilityCalendar.tsx
+│   ├── AppDialogHost.tsx             # Penggambar appAlert/appConfirm/appPrompt (lib/dialog.ts);
+│   │                                 # dipasang sekali di app/layout.tsx
+│   ├── TitleTooltipHost.tsx          # Tooltip bertema untuk semua atribut title="…" (global,
+│   │                                 # app/layout.tsx) - cukup tetap tulis title
 │   ├── select/entityOptions.tsx      # vehicleOption/driverOption/roomOption/vendorOption/
 │   │                                 # stationOption/roomKeeperOption → opsi SearchableSelect
 │   │                                 # (keterangan + badge + kata kunci). Dropdown berisi DATA
@@ -217,6 +224,16 @@ const form = useForm<BookingFormData>({
   resolver: zodResolver(bookingSchema),
 })
 ```
+`<form noValidate>` — validasi dari Zod, bukan bubble bawaan browser.
+
+### Tanpa komponen bawaan browser — selalu versi bertema
+| Jangan | Pakai |
+|---|---|
+| `window.alert/confirm/prompt` | `await appAlert/appConfirm/appPrompt({...})` dari `@/lib/dialog` |
+| `<select>` | `InputSelect` (daftar pendek) / `SearchableSelect` (data) |
+| `<input type="date|datetime-local|time">` | `InputDate` / `InputDateTime` / `TimePicker` |
+| `<input type="checkbox">` | `AppCheckbox` |
+| tooltip bawaan | tetap `title="…"` - digambar ulang oleh `TitleTooltipHost` |
 
 ### Error — jangan expose stack trace
 ```ts
