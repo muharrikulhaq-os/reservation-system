@@ -85,6 +85,10 @@ components/
 │   ├── badge/StatusBadge.tsx         # BookingStatusBadge, ResourceStatusBadge, Badge
 │   ├── page-header/PageHeader.tsx    # PageHeader
 │   ├── calendar/AvailabilityCalendar.tsx
+│   ├── select/entityOptions.tsx      # vehicleOption/driverOption/roomOption/vendorOption/
+│   │                                 # stationOption/roomKeeperOption → opsi SearchableSelect
+│   │                                 # (keterangan + badge + kata kunci). Dropdown berisi DATA
+│   │                                 # wajib pakai ini, bukan InputSelect polos
 │   └── Resource/                     # komponen resource bersama
 ├── layout/
 │   ├── Sidebar.tsx                   # Sidebar nav (240px)
