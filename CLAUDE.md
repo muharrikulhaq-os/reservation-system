@@ -74,7 +74,11 @@ components/
 │   ├── Appbutton.tsx                 # AppButton, IconButton
 │   ├── Appinput.tsx                  # AppLabel, AppFieldError, AppFieldHint,
 │   │                                 # InputText/Email/Password/Number/Rupiah/TextArea/
-│   │                                 # File/Date/DateTime/Select
+│   │                                 # File/Select
+│   ├── DatePicker.tsx                # InputDate ("YYYY-MM-DD") & InputDateTime ("YYYY-MM-DDTHH:mm"):
+│   │                                 # kalender popover bertema (bukan <input type="date"> bawaan
+│   │                                 # browser). Terkontrol (value+onChange) — pakai Controller,
+│   │                                 # bukan register. min/max untuk membatasi rentang
 │   ├── TimePicker.tsx                # TimePicker (hybrid dropdown/manual, disable masa lalu)
 │   └── SearchableSelect.tsx          # Dropdown + cari langsung (cmdk): label + keterangan +
 │                                     # badge, opsi disabled tetap tampil dgn alasan. Pakai untuk

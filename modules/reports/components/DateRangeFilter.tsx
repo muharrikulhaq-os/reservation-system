@@ -105,6 +105,7 @@ export const DateRangeFilter = ({
         <InputDate
           label="DARI"
           value={toDateValue(startDate)}
+          max={toDateValue(endDate) || undefined}
           onChange={(e) => onStartChange(toStartIso(e.target.value))}
         />
       </div>
@@ -112,6 +113,7 @@ export const DateRangeFilter = ({
         <InputDate
           label="SAMPAI"
           value={toDateValue(endDate)}
+          min={toDateValue(startDate) || undefined}
           onChange={(e) => onEndChange(toEndIso(e.target.value))}
         />
       </div>

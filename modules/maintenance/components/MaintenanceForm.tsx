@@ -266,11 +266,19 @@ export const MaintenanceForm = ({ initialData }: { initialData?: MaintenanceReco
           description="Tanggal rencana memblokir booking kendaraan setelah surat diajukan"
         />
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <InputDateTime
-            label="Rencana Tanggal"
-            required={!isDraft}
-            error={errors.plannedDate?.message}
-            {...register('plannedDate')}
+          <Controller
+            control={control}
+            name="plannedDate"
+            render={({ field }) => (
+              <InputDateTime
+                label="Rencana Tanggal"
+                required={!isDraft}
+                error={errors.plannedDate?.message}
+                name={field.name}
+                value={field.value ?? ''}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
+            )}
           />
           <Controller
             control={control}

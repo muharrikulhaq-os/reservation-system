@@ -18,8 +18,6 @@ export {
   InputRupiah,
   InputTextArea,
   InputFile,
-  InputDate,
-  InputDateTime,
   InputSelect,
 } from "./Appinput";
 export type {
@@ -28,6 +26,9 @@ export type {
   InputNumberProps,
   InputSelectProps,
 } from "./Appinput";
+
+export { InputDate, InputDateTime } from "./DatePicker";
+export type { DateChangeEvent, InputDateProps, InputDateTimeProps } from "./DatePicker";
 
 export { TimePicker, TIME_OPTIONS } from "./TimePicker";
 export type { TimePickerProps } from "./TimePicker";

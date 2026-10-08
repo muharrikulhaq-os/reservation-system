@@ -194,10 +194,10 @@ export const VoucherTab = () => {
           </>
         )}
         <div className="w-[150px]">
-          <InputDate label="Dari" value={from} onChange={(e) => setFilter(setFrom)(e.target.value)} />
+          <InputDate label="Dari" value={from} max={to || undefined} onChange={(e) => setFilter(setFrom)(e.target.value)} />
         </div>
         <div className="w-[150px]">
-          <InputDate label="Sampai" value={to} onChange={(e) => setFilter(setTo)(e.target.value)} />
+          <InputDate label="Sampai" value={to} min={from || undefined} onChange={(e) => setFilter(setTo)(e.target.value)} />
         </div>
         {isAdmin && (
           <div className="ml-auto flex gap-2">

@@ -606,41 +606,6 @@ export const InputFile = ({
 };
 
 // ─────────────────────────────────────────
-// 8. INPUT DATE
-// ─────────────────────────────────────────
-
-export type InputDateProps = Omit<InputTextProps, "type">;
-
-export const InputDate = React.forwardRef<HTMLInputElement, InputDateProps>(
-  (props, ref) => (
-    <InputText
-      ref={ref}
-      {...props}
-      type="date"
-    />
-  ),
-);
-InputDate.displayName = "InputDate";
-
-// ─────────────────────────────────────────
-// 9. INPUT DATETIME
-// ─────────────────────────────────────────
-
-export type InputDateTimeProps = Omit<InputTextProps, "type">;
-
-export const InputDateTime = React.forwardRef<
-  HTMLInputElement,
-  InputDateTimeProps
->((props, ref) => (
-  <InputText
-    ref={ref}
-    {...props}
-    type="datetime-local"
-  />
-));
-InputDateTime.displayName = "InputDateTime";
-
-// ─────────────────────────────────────────
 // 7. INPUT SELECT  (native <select>, styled)
 // ─────────────────────────────────────────
 
