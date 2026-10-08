@@ -30,6 +30,9 @@ export const NOTIFICATION_TYPE_CONFIG: Record<string, NotificationTypeConfig> = 
   DRIVER_RATED:       { label: 'Penilaian Diterima',  icon: 'Star',          color: '#D97706' },
   RATE_DRIVER_PROMPT: { label: 'Beri Rating Driver',  icon: 'Star',          color: '#D97706' },
   FUEL_VOUCHER_ISSUED:{ label: 'Voucher BBM',         icon: 'Fuel',          color: '#2D2CE8' },
+  VEHICLE_ISSUE:      { label: 'Laporan Kendala',     icon: 'AlertTriangle', color: '#D97706' },
+  VEHICLE_ISSUE_UPDATE:{ label: 'Kendala Ditindaklanjuti', icon: 'AlertTriangle', color: '#D97706' },
+  MAINTENANCE_UPDATE: { label: 'Maintenance Kendaraan', icon: 'Wrench',       color: '#0284C7' },
 } as const
 
 export const DEFAULT_NOTIFICATION_CONFIG: NotificationTypeConfig = {

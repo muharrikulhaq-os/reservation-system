@@ -38,6 +38,8 @@ export const NotificationBell = () => {
     setOpen(false)
     // Voucher BBM diterbitkan → menu Bahan Bakar (tab Voucher).
     if (n.type === 'FUEL_VOUCHER_ISSUED') router.push('/fuel')
+    // Laporan kendala supir (admin) → daftar Laporan Kendala.
+    else if (n.type === 'VEHICLE_ISSUE') router.push('/maintenance/issues')
     else if (n.relatedEntityId != null) router.push(`/booking/${n.relatedEntityId}`)
   }
 

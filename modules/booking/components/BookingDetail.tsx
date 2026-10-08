@@ -571,7 +571,10 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
               <CardHeader title="Laporan Pengembalian" />
               <ReturnReportModal
                 bookingId={booking.id}
-                minOdometer={booking.odometerStart ?? assignedVehicle?.currentOdometer}
+                // Yang lebih besar: odometer awal trip vs catatan kendaraan
+                // (BBM di tengah trip bisa sudah memajukannya; backend
+                // menolak odometer akhir di bawah catatan kendaraan).
+                minOdometer={higherOdometer(booking.odometerStart, assignedVehicle?.currentOdometer)}
                 onSuccess={refetch}
               />
             </Card>
@@ -992,6 +995,10 @@ const AttachmentUpload = ({ bookingId }: { bookingId: number }) => {
 // ─────────────────────────────────────────
 // Helper
 // ─────────────────────────────────────────
+
+/** Yang lebih besar dari dua odometer; undefined bila keduanya kosong. */
+const higherOdometer = (a?: number | null, b?: number | null) =>
+  a == null ? (b ?? undefined) : b == null ? a : Math.max(a, b);
 
 const InfoBlock = ({
   label,
