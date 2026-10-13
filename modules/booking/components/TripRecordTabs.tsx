@@ -7,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { ReadableLocation, SafeImage } from '@/components/shared'
 import { cn, formatDateTime, formatDate, formatCurrency, formatNumber, resolveFileUrl } from '@/lib'
-import { ENERGY_TYPE } from '@/constants'
+import { BOOKING_STATUS, ENERGY_TYPE } from '@/constants'
 import type { Booking, FuelExpense } from '@/types'
 import { useReturnReport } from '../hooks/useBookings'
 import { useFuelExpensesForBookings, FuelDetailModal } from '@/modules/fuel'
@@ -54,6 +54,9 @@ export const TripRecordTabs = ({ booking, linkedBookingIds = [] }: TripRecordTab
 
   const hasReport = !reportError && !!report
   const hasStart = booking.odometerStart != null || !!booking.startPhotoUrl
+  // Sudah berjalan tapi tanpa data awal: dimulai lewat jalur lama (admin di
+  // web dulu memulai tanpa odometer & foto) - jangan bilang "belum dimulai".
+  const started = ([BOOKING_STATUS.ONGOING, BOOKING_STATUS.OVERDUE, BOOKING_STATUS.RETURNED, BOOKING_STATUS.COMPLETED] as string[]).includes(booking.status)
   const startPhotoUrl = resolveFileUrl(booking.startPhotoUrl)
 
   return (
@@ -126,7 +129,13 @@ export const TripRecordTabs = ({ booking, linkedBookingIds = [] }: TripRecordTab
               )}
             </div>
           ) : (
-            <EmptyState text="Perjalanan belum dimulai" />
+            <EmptyState
+              text={
+                started
+                  ? 'Perjalanan dimulai tanpa catatan odometer awal & foto'
+                  : 'Perjalanan belum dimulai'
+              }
+            />
           )}
         </TabsContent>
 

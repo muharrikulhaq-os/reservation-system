@@ -476,13 +476,13 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           )}
         </AdminOnly>
 
-        {/* StartPanel: Admin, Room Keeper (ruangan), atau karyawan pemilik booking ruangan */}
-        {(isAdmin || (isRoomKeeper && !isVehicle) || canSelfServeRoom) &&
-          booking.status === BOOKING_STATUS.APPROVED &&
-          !(
-            booking.resource.type === RESOURCE_TYPE.VEHICLE &&
-            !booking.assignedDriver
-          ) && (
+        {/* StartPanel: RUANGAN saja - Admin, Room Keeper, atau karyawan pemilik
+            booking. Kendaraan selalu lewat StartBookingModal (odometer + foto)
+            di bawah, termasuk admin: dulu admin memulai trip kendaraan tanpa
+            odometer awal & foto sehingga catatan perjalanannya kosong. */}
+        {(isAdmin || isRoomKeeper || canSelfServeRoom) &&
+          !isVehicle &&
+          booking.status === BOOKING_STATUS.APPROVED && (
             <StartPanel
               bookingId={booking.id}
               startableFrom={booking.startableFrom}
@@ -503,8 +503,8 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
             />
           )}
 
-        {/* Driver: mulai perjalanan (odometer + foto) */}
-        {isDriver &&
+        {/* Kendaraan (supir / admin): mulai perjalanan wajib odometer + foto */}
+        {(isDriver || isAdmin) &&
           booking.status === BOOKING_STATUS.APPROVED &&
           booking.resource.type === RESOURCE_TYPE.VEHICLE &&
           !!booking.assignedDriver && (
