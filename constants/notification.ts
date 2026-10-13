@@ -24,6 +24,11 @@ export const NOTIFICATION_TYPE_CONFIG: Record<string, NotificationTypeConfig> = 
   BOOKING_SUBSTITUTED:{ label: 'Resource Dialihkan',  icon: 'ArrowRightLeft',color: '#7C3AED' },
   BOOKING_MERGED:     { label: 'Booking Digabung',    icon: 'Merge',         color: '#0284C7' },
   NEW_BOOKING:        { label: 'Penugasan Baru',      icon: 'UserCheck',     color: '#2D2CE8' },
+  // Tugaskan/Alihkan: pemohon & supir pemegang (membuka booking).
+  BOOKING_REASSIGNED: { label: 'Penugasan Dialihkan', icon: 'ArrowRightLeft',color: '#7C3AED' },
+  // Supir yang digantikan & pemilik mobil - info saja (tanpa tautan booking).
+  ASSIGNMENT_RELEASED:{ label: 'Tugas Dilepas',       icon: 'UserMinus',     color: '#9CA3AF' },
+  VEHICLE_LENT:       { label: 'Kendaraan Dipinjam',  icon: 'Car',           color: '#D97706' },
   ROOM_BOOKED:        { label: 'Ruangan Dipesan',     icon: 'Building2',     color: '#0284C7' },
   RETURN_REPORT:      { label: 'Laporan Pengembalian',icon: 'FileCheck',     color: '#0284C7' },
   OVERTIME_RECORDED:  { label: 'Overtime Tercatat',   icon: 'Clock',         color: '#D97706' },

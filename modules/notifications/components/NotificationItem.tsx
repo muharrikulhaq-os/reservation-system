@@ -18,6 +18,8 @@ import {
   Fuel,
   AlertTriangle,
   Wrench,
+  Car,
+  UserMinus,
 } from 'lucide-react'
 import { cn, formatRelativeTime } from '@/lib'
 import { notificationTypeConfig } from '@/constants'
@@ -44,6 +46,8 @@ const NOTIFICATION_ICON: Record<string, React.ComponentType<{ className?: string
   Fuel,
   AlertTriangle,
   Wrench,
+  Car,
+  UserMinus,
 }
 
 interface NotificationItemProps {
