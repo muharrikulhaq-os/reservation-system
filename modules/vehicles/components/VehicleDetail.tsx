@@ -30,6 +30,7 @@ import {
 } from '../hooks/useVehicles'
 import { useDeleteAttachment } from '@/hooks'
 import { appConfirm } from '@/lib/dialog'
+import { CorrectOdometerModal } from './CorrectOdometerModal'
 // Impor langsung dari file hook (bukan barrel) untuk menghindari siklus
 // impor vehicles ⇄ drivers.
 import { useDrivers } from '@/modules/drivers/hooks/useDrivers'
@@ -45,6 +46,7 @@ interface VehicleDetailProps {
 export const VehicleDetail = ({ vehicleId }: VehicleDetailProps) => {
   const router = useRouter()
   const isAdmin = useAuthStore((s) => s.isAdmin())
+  const [odometerOpen, setOdometerOpen] = useState(false)
 
   const { data: vehicle, isLoading } = useVehicle(vehicleId)
   const { data: attachments } = useVehicleAttachments(vehicleId)
@@ -145,7 +147,23 @@ export const VehicleDetail = ({ vehicleId }: VehicleDetailProps) => {
               value={<Badge variant="muted">{vehicle.category.name}</Badge>}
             />
             <InfoItem label="Kapasitas" value={`${vehicle.capacity} Penumpang`} />
-            <InfoItem label="Odometer" value={formatOdometer(vehicle.currentOdometer)} />
+            <InfoItem
+              label="Odometer"
+              value={
+                <span className="inline-flex items-center gap-2">
+                  {formatOdometer(vehicle.currentOdometer)}
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => setOdometerOpen(true)}
+                      className="text-xs font-medium text-[var(--primary)] hover:underline"
+                    >
+                      Koreksi
+                    </button>
+                  )}
+                </span>
+              }
+            />
             <InfoItem
               label="Kepemilikan"
               value={
@@ -267,6 +285,14 @@ export const VehicleDetail = ({ vehicleId }: VehicleDetailProps) => {
           </CardSection>
         </Card>
       </div>
+
+      {isAdmin && (
+        <CorrectOdometerModal
+          vehicle={vehicle}
+          open={odometerOpen}
+          onOpenChange={setOdometerOpen}
+        />
+      )}
     </div>
   )
 }

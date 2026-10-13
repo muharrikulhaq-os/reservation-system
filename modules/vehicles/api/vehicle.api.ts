@@ -14,6 +14,8 @@ import type {
   CreateVehiclePayload,
   UpdateVehiclePayload,
   UpdateVehicleStatusPayload,
+  CorrectOdometerPayload,
+  VehicleOdometerFloor,
   UpdateVehiclePhotoResponse,
   CreateVehicleCategoryPayload,
   CreateAttachmentPayload,
@@ -46,6 +48,17 @@ export const vehicleService = {
   updateStatus: (id: number, payload: UpdateVehicleStatusPayload) =>
     apiClient
       .patch<ApiResponse<Vehicle>>(API_ENDPOINTS.VEHICLES.STATUS(id), payload)
+      .then((r) => r.data),
+
+  // Koreksi odometer (admin): boleh naik/turun, tidak di bawah bacaan sah.
+  correctOdometer: (id: number, payload: CorrectOdometerPayload) =>
+    apiClient
+      .patch<ApiResponse<Vehicle>>(API_ENDPOINTS.VEHICLES.ODOMETER(id), payload)
+      .then((r) => r.data),
+
+  getOdometerFloor: (id: number) =>
+    apiClient
+      .get<ApiResponse<VehicleOdometerFloor>>(API_ENDPOINTS.VEHICLES.ODOMETER_FLOOR(id))
       .then((r) => r.data),
 
   updatePhoto: (id: number, file: File) => {

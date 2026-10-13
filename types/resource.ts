@@ -180,6 +180,18 @@ export type UpdateVehiclePayload = Required<
 > &
   Pick<CreateVehiclePayload, 'ownership' | 'ownerVendorId' | 'rentalContractNo'>
 
+// Koreksi manual odometer (admin) - PATCH /vehicles/:id/odometer
+export interface CorrectOdometerPayload {
+  odometer: number
+  reason: string
+}
+
+// GET /vehicles/:id/odometer-floor - batas bawah koreksi odometer
+export interface VehicleOdometerFloor {
+  currentOdometer: number
+  minOdometer: number
+}
+
 export interface UpdateVehicleStatusPayload {
   status: ResourceStatus
 }

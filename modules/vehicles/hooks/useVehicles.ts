@@ -15,6 +15,7 @@ import type {
   CreateVehiclePayload,
   UpdateVehiclePayload,
   UpdateVehicleStatusPayload,
+  CorrectOdometerPayload,
   CreateVehicleCategoryPayload,
   CreateAttachmentPayload,
 } from '@/types'
@@ -62,6 +63,15 @@ export const useVehicleAttachments = (vehicleId: number) =>
     enabled:  !!vehicleId,
   })
 
+// Batas bawah koreksi odometer - dimuat hanya saat form koreksi dibuka.
+// Di bawah QUERY_KEYS.VEHICLES: ikut segar saat booking/BBM/kendaraan berubah.
+export const useOdometerFloor = (vehicleId: number, enabled: boolean) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.VEHICLES, vehicleId, 'odometer-floor'],
+    queryFn:  () => vehicleService.getOdometerFloor(vehicleId).then((r) => r.data),
+    enabled:  enabled && !!vehicleId,
+  })
+
 // ── Mutations ────────────────────────────
 
 export const useCreateVehicle = () => {
@@ -80,6 +90,14 @@ export const useUpdateVehicle = (id: number) => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.VEHICLES })
       qc.invalidateQueries({ queryKey: [...QUERY_KEYS.VEHICLES, id] })
     },
+  })
+}
+
+export const useCorrectOdometer = (id: number) => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: CorrectOdometerPayload) => vehicleService.correctOdometer(id, payload),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.VEHICLES }),
   })
 }
 
