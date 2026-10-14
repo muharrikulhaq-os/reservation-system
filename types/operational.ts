@@ -848,15 +848,19 @@ export interface ApprovalPerformance {
 export interface CostSummary {
   totalFuelCost: number
   totalMaintenanceCost: number
+  /** Biaya perjalanan: tol (+ parkir & lainnya di mode lengkap). */
+  totalTripCost: number
   totalCost: number
   previousPeriod: {
     totalFuelCost: number
     totalMaintenanceCost: number
+    totalTripCost: number
     totalCost: number
   }
   changePercent: {
     fuel: number
     maintenance: number
+    trip: number
     total: number
   }
 }
@@ -867,6 +871,7 @@ export interface CostByVehicle {
   plateNumber: string
   fuelCost: number
   maintenanceCost: number
+  tripCost: number
   totalCost: number
   totalKm: number
   avgCostPerKm: number
@@ -878,6 +883,7 @@ export interface CostByDepartment {
   bookingCount: number
   fuelCost: number
   maintenanceCost: number
+  tripCost: number
   totalCost: number
 }
 
@@ -885,6 +891,7 @@ export interface CostTrend {
   period: string
   fuelCost: number
   maintenanceCost: number
+  tripCost: number
   totalCost: number
 }
 
@@ -934,6 +941,7 @@ export interface DepartmentSummary {
   bookingCount: number
   fuelCost: number
   maintenanceCost: number
+  tripCost: number
   totalCost: number
   topResource: string
 }

@@ -13,6 +13,8 @@ export { BookingMergePanel } from "./components/BookingMergePanel";
 export { ReturnReportModal } from "./components/ReturnReportModal";
 export { PendingRatingPrompt } from "./components/PendingRatingPrompt";
 export { TripRecordTabs } from "./components/TripRecordTabs";
+export { TripReimbursements } from "./TripReimbursements";
+export * from "./hooks/useTripExpenses";
 export { ApprovalQueue } from "./components/ApprovalQueue";
 export { bookingColumns } from "./utils/columns";
 export { bookingService } from "./api/booking.api";

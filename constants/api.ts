@@ -99,6 +99,19 @@ export const API_ENDPOINTS = {
     RETURN_REPORT:       (id: number) => `${API_PREFIX}/bookings/${id}/return-report`,
   },
 
+  // ── Biaya perjalanan (tol, parkir, lainnya) ──
+  TRIP_EXPENSES: {
+    CONFIG:          `${API_PREFIX}/trip-expenses/config`,
+    GATES:           `${API_PREFIX}/trip-expenses/gates`,
+    BY_BOOKING:      (bookingId: number) => `${API_PREFIX}/bookings/${bookingId}/trip-expenses`,
+    VOID:            (id: number) => `${API_PREFIX}/trip-expenses/${id}/void`,
+    TOLL_BUDGET:     (bookingId: number) => `${API_PREFIX}/bookings/${bookingId}/toll-budget`,
+  },
+  TRIP_REIMBURSEMENTS: {
+    BASE:            `${API_PREFIX}/trip-reimbursements`,
+    PENDING:         `${API_PREFIX}/trip-reimbursements/pending`,
+  },
+
   // ── Drivers ─────────────────────────────
   DRIVERS: {
     BASE:            `${API_PREFIX}/drivers`,

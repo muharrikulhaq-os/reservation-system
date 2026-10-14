@@ -1,10 +1,11 @@
 'use client'
 
-import { Fuel, Wrench, Wallet, Search } from 'lucide-react'
+import { Fuel, Wrench, Wallet, Search, Receipt } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
 import { DataTable, createColumnHelper, type ColumnDef, Pagination } from '@/components/shared'
 import { InputText } from '@/components/ui-custom'
 import { formatCurrency } from '@/lib'
+import { useTripExpenseMode } from '@/modules/booking/hooks/useTripExpenses'
 import type { ReportDateParams, CostByVehicle } from '@/types'
 import { ReportStatCard } from '../ReportStatCard'
 import { TrendLineChart, BarChartHorizontal } from '../charts'
@@ -52,6 +53,13 @@ const vehicleColumns: ColumnDef<CostByVehicle, unknown>[] = [
       <span className="text-sm text-[var(--text-secondary)]">{formatCurrency(getValue())}</span>
     ),
   }),
+  ch.accessor('tripCost', {
+    header: 'Tol & Parkir',
+    size: 140,
+    cell: ({ getValue }) => (
+      <span className="text-sm text-[var(--text-secondary)]">{formatCurrency(getValue() ?? 0)}</span>
+    ),
+  }),
   ch.accessor('totalCost', {
     header: 'Total',
     size: 140,
@@ -69,6 +77,8 @@ export const FinanceSection = ({ range }: { range: ReportDateParams }) => {
   const { data: trend } = useCostTrend({ groupBy, startDate: range.startDate, endDate: range.endDate })
   const { data: byVehicle, isLoading: loadingVehicle } = useCostByVehicle(range)
   const { data: byDept } = useCostByDepartment(range)
+  // Mode sederhana hanya mencatat tol; mode lengkap juga parkir & lainnya.
+  const tripLabel = useTripExpenseMode() === 'FULL' ? 'Tol & Parkir' : 'Tol'
 
   const {
     search: vehicleSearch,
@@ -80,7 +90,7 @@ export const FinanceSection = ({ range }: { range: ReportDateParams }) => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <ReportStatCard
           label="Total BBM"
           value={cost ? formatCurrency(cost.totalFuelCost) : '-'}
@@ -96,6 +106,15 @@ export const FinanceSection = ({ range }: { range: ReportDateParams }) => {
           icon={<Wrench className="h-5 w-5 text-[var(--info)]" />}
           iconBg="#DBEAFE"
           change={cost?.changePercent.maintenance}
+          changeLabel="vs periode lalu"
+          goodDirection="down"
+        />
+        <ReportStatCard
+          label={`Total ${tripLabel}`}
+          value={cost ? formatCurrency(cost.totalTripCost ?? 0) : '-'}
+          icon={<Receipt className="h-5 w-5 text-[var(--success)]" />}
+          iconBg="#DCFCE7"
+          change={cost?.changePercent.trip}
           changeLabel="vs periode lalu"
           goodDirection="down"
         />
@@ -120,6 +139,7 @@ export const FinanceSection = ({ range }: { range: ReportDateParams }) => {
           lines={[
             { key: 'fuelCost', label: 'BBM', color: 'var(--warning)' },
             { key: 'maintenanceCost', label: 'Maintenance', color: 'var(--info)' },
+            { key: 'tripCost', label: tripLabel, color: 'var(--success)' },
             { key: 'totalCost', label: 'Total', color: 'var(--primary)' },
           ]}
         />
@@ -136,6 +156,7 @@ export const FinanceSection = ({ range }: { range: ReportDateParams }) => {
                 { key: 'plateNumber', label: 'Plat' },
                 { key: 'fuelCost', label: 'BBM' },
                 { key: 'maintenanceCost', label: 'Maintenance' },
+                { key: 'tripCost', label: tripLabel },
                 { key: 'totalCost', label: 'Total' },
               ]}
               filename="biaya-per-kendaraan"

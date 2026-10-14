@@ -102,6 +102,7 @@ export const Reports = () => {
               { key: 'bookingCount', label: 'Jumlah Booking' },
               { key: 'fuelCost', label: 'Biaya BBM' },
               { key: 'maintenanceCost', label: 'Biaya Maintenance' },
+              { key: 'tripCost', label: 'Biaya Tol & Parkir' },
               { key: 'totalCost', label: 'Total Biaya' },
               { key: 'topResource', label: 'Resource Terbanyak' },
             ]}

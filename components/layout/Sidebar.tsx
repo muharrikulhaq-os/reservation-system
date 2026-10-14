@@ -17,11 +17,12 @@ import {
   Wrench,
   LogOut,
   Grid2x2,
+  Wallet,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth.store'
 import { useLogout } from '@/hooks'
-import { useBookings } from '@/modules/booking'
+import { useBookings, useTripExpenseMode } from '@/modules/booking'
 import { ROLE, BOOKING_STATUS } from '@/constants'
 import type { RoleName } from '@/types'
 import { UserAvatar } from '@/components/shared/avatar/Avatar'
@@ -61,6 +62,9 @@ const ADMIN_NAV: NavItem[] = [
   { label: 'Pengguna',  href: '/users',     icon: Users },
   { label: 'Pengaturan', href: '/settings', icon: Settings },
 ]
+
+// Hanya saat biaya perjalanan mode lengkap aktif (lihat useTripExpenseMode).
+const REIMBURSE_NAV: NavItem = { label: 'Reimburse Supir', href: '/trip-reimbursements', icon: Wallet }
 
 // ─────────────────────────────────────────
 // NAV ITEM
@@ -204,6 +208,8 @@ export const Sidebar = () => {
     (b) => b.hasMergeSuggestion,
   ).length
 
+  const tripMode = useTripExpenseMode()
+
   // Saring menu sesuai role pengguna + inject badge dinamis
   const menuItems = MENU_NAV.filter(
     (item) => !item.roles || (role ? item.roles.includes(role) : false),
@@ -232,7 +238,12 @@ export const Sidebar = () => {
       {/* Nav scrollable area */}
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-4">
         <NavSection label="Menu" items={menuItems} />
-        {isAdmin && <NavSection label="Admin" items={ADMIN_NAV} />}
+        {isAdmin && (
+          <NavSection
+            label="Admin"
+            items={tripMode === 'FULL' ? [REIMBURSE_NAV, ...ADMIN_NAV] : ADMIN_NAV}
+          />
+        )}
       </div>
 
       {/* Bottom user section */}

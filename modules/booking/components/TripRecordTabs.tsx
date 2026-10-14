@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Fuel, FileCheck, Play, ImageOff, MapPin, Gauge, Zap } from 'lucide-react'
+import { Fuel, FileCheck, Play, ImageOff, MapPin, Gauge, Zap, Receipt } from 'lucide-react'
 import { Card, CardHeader, CardSection } from '@/components/common'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
@@ -10,6 +10,8 @@ import { cn, formatDateTime, formatDate, formatCurrency, formatNumber, resolveFi
 import { BOOKING_STATUS, ENERGY_TYPE } from '@/constants'
 import type { Booking, FuelExpense } from '@/types'
 import { useReturnReport } from '../hooks/useBookings'
+import { useTripExpenses } from '../hooks/useTripExpenses'
+import { TripExpenseTab } from './TripExpenseTab'
 import { useFuelExpensesForBookings, FuelDetailModal } from '@/modules/fuel'
 
 // ─────────────────────────────────────────
@@ -21,7 +23,7 @@ import { useFuelExpensesForBookings, FuelDetailModal } from '@/modules/fuel'
 // COMPLETED - sebelum itu belum ada apa pun untuk ditampilkan.
 // ─────────────────────────────────────────
 
-type TabKey = 'start' | 'fuel' | 'report'
+type TabKey = 'start' | 'fuel' | 'expense' | 'report'
 
 const TAB_TRIGGER_CLASS =
   'flex-1 gap-1.5 rounded-md px-2 text-xs font-medium text-[var(--text-secondary)] data-[state=active]:bg-[var(--bg-card)] data-[state=active]:text-[var(--primary)] data-[state=active]:shadow-sm'
@@ -51,6 +53,9 @@ export const TripRecordTabs = ({ booking, linkedBookingIds = [] }: TripRecordTab
 
   const { data: report, isError: reportError } = useReturnReport(booking.id)
   const { items: fuelItems } = useFuelExpensesForBookings([booking.id, ...linkedBookingIds])
+  // Biaya perjalanan: tab "Tol" (mode sederhana) / "Biaya" (mode lengkap).
+  const { data: trip, isLoading: tripLoading } = useTripExpenses(booking.id)
+  const tripCount = trip?.items.filter((e) => !e.isVoided).length ?? 0
 
   const hasReport = !reportError && !!report
   const hasStart = booking.odometerStart != null || !!booking.startPhotoUrl
@@ -63,7 +68,7 @@ export const TripRecordTabs = ({ booking, linkedBookingIds = [] }: TripRecordTab
     <Card>
       <CardHeader
         title="Catatan Perjalanan"
-        description="Odometer keberangkatan, riwayat BBM, dan laporan pengembalian"
+        description="Odometer keberangkatan, BBM, tol, dan laporan pengembalian"
       />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)}>
@@ -73,6 +78,10 @@ export const TripRecordTabs = ({ booking, linkedBookingIds = [] }: TripRecordTab
           </TabsTrigger>
           <TabsTrigger value="fuel" className={TAB_TRIGGER_CLASS}>
             <Fuel className="h-3.5 w-3.5" /> BBM{fuelItems.length > 0 ? ` (${fuelItems.length})` : ''}
+          </TabsTrigger>
+          <TabsTrigger value="expense" className={TAB_TRIGGER_CLASS}>
+            <Receipt className="h-3.5 w-3.5" /> {trip?.mode === 'FULL' ? 'Biaya' : 'Tol'}
+            {tripCount > 0 ? ` (${tripCount})` : ''}
           </TabsTrigger>
           <TabsTrigger value="report" className={TAB_TRIGGER_CLASS}>
             <FileCheck className="h-3.5 w-3.5" /> Laporan
@@ -178,6 +187,11 @@ export const TripRecordTabs = ({ booking, linkedBookingIds = [] }: TripRecordTab
           ) : (
             <EmptyState text="Belum ada pengisian BBM" />
           )}
+        </TabsContent>
+
+        {/* ── Tab: Tol / Biaya perjalanan ── */}
+        <TabsContent value="expense">
+          <TripExpenseTab booking={booking} data={trip} isLoading={tripLoading} onPreview={setPreviewUrl} />
         </TabsContent>
 
         {/* ── Tab: Laporan Pengembalian ── */}
