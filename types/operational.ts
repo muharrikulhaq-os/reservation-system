@@ -53,6 +53,7 @@ export interface FuelExpense {
   odometerAfter: number | null
   note: string | null
   proofPhotoUrl: string | null // URL/path foto bukti pengisian
+  recordedByName?: string | null // user yang menginput (supir / admin)
   createdAt: string
   // ── Saldo & voucher (rancangan voucher BBM) ──
   distanceKm?: number

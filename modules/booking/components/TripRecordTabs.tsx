@@ -92,29 +92,41 @@ export const TripRecordTabs = ({ booking, linkedBookingIds = [] }: TripRecordTab
         <TabsContent value="start">
           {hasStart ? (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FieldBlock
-                  label="Odometer Awal"
-                  value={
-                    <span className="flex items-center gap-1.5">
-                      <Gauge className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
-                      {booking.odometerStart != null
-                        ? `${formatNumber(booking.odometerStart)} km`
-                        : '-'}
-                    </span>
-                  }
-                />
-                <FieldBlock
-                  label="Lokasi"
-                  value={
-                    <span className="flex items-center gap-1.5">
-                      <MapPin className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
-                      <ReadableLocation value={booking.startLocation} showCoordinates />
+              {booking.startedBy && (
+                <div>
+                  <p className="text-sm text-[var(--text-primary)]">
+                    Dimulai oleh <span className="font-semibold">{booking.startedBy.name}</span>
+                  </p>
+                  {booking.startedAt && (
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      {formatDateTime(booking.startedAt)}
+                    </p>
+                  )}
+                </div>
+              )}
 
-                    </span>
-                  }
-                />
-              </div>
+              <FieldBlock
+                label="Odometer Awal"
+                value={
+                  <span className="flex items-center gap-1.5">
+                    <Gauge className="h-4 w-4 text-[var(--text-secondary)]" />
+                    {booking.odometerStart != null
+                      ? `${formatNumber(booking.odometerStart)} km`
+                      : '-'}
+                  </span>
+                }
+              />
+
+              {/* Sama dengan tab Laporan: alamat lengkap + koordinat. */}
+              <FieldBlock
+                label="Lokasi"
+                value={
+                  <span className="flex items-start gap-1.5">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--text-secondary)]" />
+                    <ReadableLocation value={booking.startLocation} showCoordinates />
+                  </span>
+                }
+              />
 
               {startPhotoUrl && (
                 <div>
@@ -176,7 +188,7 @@ export const TripRecordTabs = ({ booking, linkedBookingIds = [] }: TripRecordTab
                           {formatCurrency(f.totalCost)}
                         </p>
                         <p className="truncate text-xs text-[var(--text-secondary)]">
-                          {f.driverName || '-'} · {formatDate(f.createdAt)}
+                          Dicatat oleh {f.recordedByName || f.driverName || '-'} · {formatDate(f.createdAt)}
                         </p>
                       </div>
                     </button>

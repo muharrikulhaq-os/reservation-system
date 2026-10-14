@@ -30,6 +30,9 @@ export interface Booking extends Timestamps {
   odometerStart?: number | null
   startLocation?: string | null
   startPhotoUrl?: string | null
+  // Siapa & kapan menekan Mulai (dari audit log) - detail saja.
+  startedBy?: { id: number; name: string } | null
+  startedAt?: string | null
   // Lokasi jemput & tujuan (VEHICLE; booking lama/ruangan = null)
   pickupLocation?: string | null
   destination?: string | null

@@ -107,6 +107,7 @@ export const FuelDetailModal = ({ fuel, open, onOpenChange }: Props) => {
               }
             />
             <Row label="Driver" value={fuel.driverName || '-'} />
+            {fuel.recordedByName && <Row label="Dicatat oleh" value={fuel.recordedByName} />}
             {isBbm ? (
               <>
                 <Row
