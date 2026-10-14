@@ -15,8 +15,10 @@ import { AppFieldError, AppFieldHint, AppLabel } from './Appinput'
 // Untuk daftar data yang panjang/butuh keterangan, pakai SearchableSelect.
 // ─────────────────────────────────────────
 
-/** Radix Select tidak menerima value "" untuk item. */
+/** Radix Select MELEMPAR ERROR untuk item bervalue "" (halaman crash) -
+ * opsi "Semua …" bernilai "" dipetakan ke sentinel ini. */
 const EMPTY = '__empty__'
+const toItemValue = (v: string | number) => (String(v) === '' ? EMPTY : String(v))
 
 export interface SelectChangeEvent {
   target: { name?: string; value: string }
@@ -61,7 +63,10 @@ export const InputSelect = ({
 }: InputSelectProps) => {
   const selectId = id ?? (label ? `select-${label.toLowerCase().replace(/\s+/g, '-')}` : undefined)
   const current = value == null ? '' : String(value)
-  const emptyItem = !!placeholder && !required
+  // Opsi bernilai "" dari pemanggil (mis. "Semua Entitas") sudah mewakili
+  // pilihan kosong - placeholder tidak perlu ditambahkan sebagai item lagi.
+  const hasEmptyOption = options.some((o) => String(o.value) === '')
+  const emptyItem = !!placeholder && !required && !hasEmptyOption
   const isEmpty = current === ''
 
   return (
@@ -74,7 +79,7 @@ export const InputSelect = ({
       <SelectPrimitive.Root
         name={name}
         disabled={disabled}
-        value={isEmpty ? (emptyItem ? EMPTY : '') : current}
+        value={isEmpty ? (emptyItem || hasEmptyOption ? EMPTY : '') : current}
         onValueChange={(v) => onChange?.({ target: { name, value: v === EMPTY ? '' : v } })}
         onOpenChange={(o) => {
           if (!o) onBlur?.()
@@ -127,10 +132,11 @@ export const InputSelect = ({
               {emptyItem && <Item value={EMPTY} label={placeholder!} muted size={size} />}
               {options.map((opt) => (
                 <Item
-                  key={String(opt.value)}
-                  value={String(opt.value)}
+                  key={toItemValue(opt.value)}
+                  value={toItemValue(opt.value)}
                   label={opt.label}
                   disabled={opt.disabled}
+                  muted={String(opt.value) === ''}
                   size={size}
                 />
               ))}
