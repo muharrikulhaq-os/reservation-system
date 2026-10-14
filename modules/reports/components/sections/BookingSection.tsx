@@ -5,6 +5,7 @@ import { Card, CardHeader } from '@/components/common'
 import { DataTable, createColumnHelper, type ColumnDef, Badge, Pagination } from '@/components/shared'
 import { InputText } from '@/components/ui-custom'
 import { RESOURCE_TYPE } from '@/constants'
+import { formatHours } from '@/lib'
 import type { ReportDateParams, BookingByResource } from '@/types'
 import { ReportStatCard } from '../ReportStatCard'
 import { TrendLineChart, BarChartHorizontal } from '../charts'
@@ -52,7 +53,7 @@ const resourceColumns: ColumnDef<BookingByResource, unknown>[] = [
     header: 'Total Jam',
     size: 120,
     cell: ({ getValue }) => (
-      <span className="text-sm text-[var(--text-secondary)]">{getValue()} jam</span>
+      <span className="text-sm text-[var(--text-secondary)]">{formatHours(getValue())}</span>
     ),
   }),
 ] as ColumnDef<BookingByResource, unknown>[]
@@ -88,7 +89,7 @@ export const BookingSection = ({ range }: { range: ReportDateParams }) => {
         />
         <ReportStatCard
           label="Avg Waktu Approval"
-          value={avgHoursToDecision != null ? `${avgHoursToDecision.toFixed(1)} jam` : '-'}
+          value={avgHoursToDecision != null ? formatHours(avgHoursToDecision) : '-'}
           icon={<Clock className="h-5 w-5 text-[var(--info)]" />}
           iconBg="#DBEAFE"
         />

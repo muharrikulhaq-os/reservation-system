@@ -139,6 +139,10 @@ export const formatCurrency = (amount: number): string =>
 export const formatNumber = (n: number): string =>
   new Intl.NumberFormat("id-ID").format(n);
 
+/** "12,33 jam" - jam desimal dari laporan, maksimal 2 angka di belakang koma. */
+export const formatHours = (hours: number): string =>
+  `${new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 }).format(hours)} jam`;
+
 /** "15.350 km" */
 export const formatOdometer = (km: number): string => `${formatNumber(km)} km`;
 

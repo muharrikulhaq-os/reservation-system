@@ -4,7 +4,7 @@ import { Search } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
 import { DataTable, createColumnHelper, type ColumnDef, Badge, Pagination } from '@/components/shared'
 import { InputText } from '@/components/ui-custom'
-import { formatCurrency } from '@/lib'
+import { formatCurrency, formatHours } from '@/lib'
 import type { ReportDateParams, DriverPerformance } from '@/types'
 import { BarChartHorizontal } from '../charts'
 import { ratingStars } from '../../utils/format'
@@ -101,7 +101,7 @@ const performanceColumns: ColumnDef<DriverReportRow, unknown>[] = [
       }
       return (
         <span className="text-sm text-[var(--text-secondary)]">
-          {hours.toFixed(1)} jam{' '}
+          {formatHours(hours)}{' '}
           <span className="text-xs text-[var(--text-disabled)]">({trips}x)</span>
         </span>
       )
@@ -118,7 +118,7 @@ const performanceColumns: ColumnDef<DriverReportRow, unknown>[] = [
       }
       return (
         <span className="text-sm text-[var(--text-secondary)]">
-          {hours.toFixed(1)} jam{' '}
+          {formatHours(hours)}{' '}
           <span className="text-xs text-[var(--text-disabled)]">({trips}x)</span>
         </span>
       )
