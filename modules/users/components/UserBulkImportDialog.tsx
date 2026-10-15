@@ -101,7 +101,9 @@ export const UserBulkImportDialog = ({
                   <span className="font-medium text-[var(--text-primary)]">
                     employeeId, name, email, role, department
                   </span>{' '}
-                  (kolom <span className="font-medium">password</span> opsional),
+                  (kolom <span className="font-medium">password</span> &amp;{' '}
+                  <span className="font-medium">phoneNumber</span> opsional - nomor telepon
+                  karyawan juga bisa dilengkapi lewat Edit Pengguna),
                   serta sheet <span className="font-medium">Referensi</span> berisi
                   daftar role &amp; departemen yang valid. Hapus baris contoh sebelum
                   mengunggah.

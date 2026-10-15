@@ -35,6 +35,8 @@ export type {
 
 export * from './Resource'
 
+export { PhoneContact, toWhatsAppNumber } from './contact/PhoneContact'
+
 export { ConfirmDialog } from './ConfirmDialog'
 export { AppDialogHost } from './AppDialogHost'
 export { TitleTooltipHost } from './TitleTooltipHost'

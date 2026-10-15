@@ -7,6 +7,7 @@ import { AlertCircle } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
 import { AppButton, InputText, InputPassword, InputSelect } from '@/components/ui-custom'
 import { getErrorMessage } from '@/lib'
+import { ROLE } from '@/constants'
 import type { User, SelectOption } from '@/types'
 import {
   createUserSchema,
@@ -78,8 +79,12 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
   const selectedRoleId = watch('roleId')
   // Hapus pengecekan `!isEdit` agar field tetap muncul saat edit
   const selectedRoleName = roles?.find((r) => r.id === selectedRoleId)?.name
-  const isDriver = selectedRoleName === 'DRIVER'
-  const isRoomKeeper = selectedRoleName === 'ROOM_KEEPER'
+  const isDriver = selectedRoleName === ROLE.DRIVER
+  const isRoomKeeper = selectedRoleName === ROLE.ROOM_KEEPER
+  const isEmployee = selectedRoleName === ROLE.EMPLOYEE
+  // Karyawan wajib punya nomor supaya supir/admin bisa menghubungi pemohon
+  // (mis. tidak bertemu di titik jemput); admin opsional.
+  const phoneRequired = isDriver || isRoomKeeper || isEmployee
 
   const onSubmit = (data: CreateUserFormData) => {
     let hasError = false
@@ -96,6 +101,11 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
     } else if (isRoomKeeper) {
       if (!data.phoneNumber?.trim()) {
         setError('phoneNumber', { type: 'manual', message: 'Nomor Telepon wajib diisi untuk Room Keeper' })
+        hasError = true
+      }
+    } else if (isEmployee) {
+      if (!data.phoneNumber?.trim()) {
+        setError('phoneNumber', { type: 'manual', message: 'Nomor Telepon wajib diisi untuk karyawan' })
         hasError = true
       }
     }
@@ -224,11 +234,13 @@ export const UserForm = ({ initialData, onSuccess }: UserFormProps) => {
               {...register('licenseNumber')}
             />
           )}
-          {(isDriver || isRoomKeeper) && (
+          {selectedRoleName && (
             <InputText
               label="Nomor Telepon"
-              required
-              placeholder="cth. +628123456789"
+              required={phoneRequired}
+              type="tel"
+              inputMode="tel"
+              placeholder="cth. 081234567890"
               error={errors.phoneNumber?.message}
               {...register('phoneNumber')}
             />

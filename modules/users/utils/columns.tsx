@@ -68,6 +68,17 @@ export const userColumns = ({
       ),
     }),
 
+    ch.accessor('phoneNumber', {
+      header: 'Telepon',
+      size: 140,
+      enableSorting: false,
+      cell: ({ getValue }) => (
+        <span className="whitespace-nowrap text-sm text-[var(--text-secondary)]">
+          {getValue() || '-'}
+        </span>
+      ),
+    }),
+
     ch.accessor((row) => row.department.name, {
       id: 'department',
       header: 'Departemen',

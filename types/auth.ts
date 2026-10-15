@@ -39,6 +39,8 @@ export interface UserSummary {
   name: string
   employeeId: string
   department: string // API mengirim string nama dept, bukan objek
+  /** Nomor pemohon - hanya di detail booking (GET /bookings/:id). */
+  phoneNumber?: string
 }
 
 // Shape user di dalam login response (berbeda - role & department string)

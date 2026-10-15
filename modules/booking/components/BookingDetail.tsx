@@ -22,7 +22,6 @@ import {
   Merge,
   Navigation,
   Paperclip,
-  Phone,
   Play,
   Plus,
   Star,
@@ -45,6 +44,7 @@ import {
   StarRating,
   SafeImage,
   UserProfileButton,
+  PhoneContact,
 } from "@/components/shared";
 import { AppButton, InputFile } from "@/components/ui-custom";
 import {
@@ -243,6 +243,8 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
                   </p>
                 </div>
               </UserProfileButton>
+              {/* Nomor pemohon: supir/admin bisa menelepon bila tidak bertemu di titik jemput. */}
+              <PhoneContact phone={booking.user.phoneNumber} className="mt-2" />
             </InfoBlock>
 
             <InfoBlock label="Resource">
@@ -402,12 +404,9 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
                 <p className="truncate text-sm font-semibold text-[var(--text-primary)] hover:underline">
                   {booking.assignedDriver.name}
                 </p>
-                <p className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
-                  <Phone className="h-3 w-3" />
-                  {booking.assignedDriver.phoneNumber}
-                </p>
               </div>
             </DriverProfileButton>
+            <PhoneContact phone={booking.assignedDriver.phoneNumber} className="mt-2" />
           </Card>
         )}
 

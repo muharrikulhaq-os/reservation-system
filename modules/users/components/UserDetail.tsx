@@ -19,6 +19,7 @@ import { formatDate, formatDateTime, getErrorMessage, resolveFileUrl } from '@/l
 import { ROLE, RESOURCE_TYPE } from '@/constants'
 import type { RoleName } from '@/types'
 import { useBookings, useRoomRatings } from '@/modules/booking'
+import { PhoneContact } from '@/components/shared'
 // Impor langsung dari file hook (bukan barrel) untuk menghindari siklus impor.
 import { useRoomKeepers, useRoomKeeper } from '@/modules/room-keepers/hooks/useRoomKeepers'
 import {
@@ -137,6 +138,10 @@ export const UserDetail = ({ userId }: UserDetailProps) => {
 
           <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-5 border-t border-[var(--border-divider)] pt-5">
             <InfoItem label="Departemen" value={user.department.name} />
+            <InfoItem
+              label="Telepon"
+              value={<PhoneContact phone={user.phoneNumber} className="text-sm" fallback="-" />}
+            />
             <InfoItem
               label="Status"
               value={
