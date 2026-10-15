@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dialog'
 import { UserAvatar } from '../avatar/Avatar'
 import { Badge } from '../badge/StatusBadge'
+import { PhoneContact } from '../contact/PhoneContact'
 import { resolveFileUrl, formatDate } from '@/lib'
 import { ROLE } from '@/constants'
 // Impor langsung dari file hook (bukan barrel @/modules/users) - hindari
@@ -86,7 +87,16 @@ export const UserProfileModal = ({ userId, open, onOpenChange }: UserProfileModa
 
             <div className="divide-y divide-[var(--border-divider)]">
               <Row label="Departemen" value={user.department.name} />
-              {user.phoneNumber && <Row label="Telepon" value={user.phoneNumber} />}
+              <Row
+                label="Telepon"
+                value={
+                  <PhoneContact
+                    phone={user.phoneNumber}
+                    className="justify-end"
+                    fallback={<span className="text-[var(--text-disabled)]">Belum diisi</span>}
+                  />
+                }
+              />
               {user.licenseNumber && <Row label="No. SIM" value={user.licenseNumber} />}
               <Row
                 label="Status"

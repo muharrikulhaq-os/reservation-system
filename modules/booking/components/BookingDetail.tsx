@@ -27,6 +27,7 @@ import {
   Star,
   UserCheck,
   X,
+  Phone,
 } from "lucide-react";
 import {
   Card,
@@ -244,7 +245,25 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
                 </div>
               </UserProfileButton>
               {/* Nomor pemohon: supir/admin bisa menelepon bila tidak bertemu di titik jemput. */}
-              <PhoneContact phone={booking.user.phoneNumber} className="mt-2" />
+              <PhoneContact
+                phone={booking.user.phoneNumber}
+                className="mt-2"
+                fallback={
+                  <p className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-[var(--text-disabled)]">
+                    <span className="inline-flex items-center gap-1">
+                      <Phone className="h-3 w-3" /> No. telepon belum diisi
+                    </span>
+                    {isAdmin && (
+                      <Link
+                        href={`/users/${booking.user.id}/edit`}
+                        className="font-medium text-[var(--primary)] hover:underline"
+                      >
+                        Lengkapi
+                      </Link>
+                    )}
+                  </p>
+                }
+              />
             </InfoBlock>
 
             <InfoBlock label="Resource">
