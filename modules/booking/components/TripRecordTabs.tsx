@@ -80,7 +80,7 @@ export const TripRecordTabs = ({ booking, linkedBookingIds = [] }: TripRecordTab
             <Fuel className="h-3.5 w-3.5" /> BBM{fuelItems.length > 0 ? ` (${fuelItems.length})` : ''}
           </TabsTrigger>
           <TabsTrigger value="expense" className={TAB_TRIGGER_CLASS}>
-            <Receipt className="h-3.5 w-3.5" /> {trip?.mode === 'FULL' ? 'Biaya' : 'Tol'}
+            <Receipt className="h-3.5 w-3.5" /> {trip?.mode === 'FULL' ? 'Biaya' : 'Tol & Parkir'}
             {tripCount > 0 ? ` (${tripCount})` : ''}
           </TabsTrigger>
           <TabsTrigger value="report" className={TAB_TRIGGER_CLASS}>

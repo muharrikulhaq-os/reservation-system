@@ -33,6 +33,8 @@ import type {
   BookingActivity,
   ReturnReport,
   SubmitReturnReportPayload,
+  PassengerTrip,
+  UserLookup,
 } from '@/types'
 
 export const bookingService = {
@@ -51,6 +53,22 @@ export const bookingService = {
   create: (payload: CreateBookingPayload) =>
     apiClient
       .post<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.BASE, payload)
+      .then((r) => r.data),
+
+  // ── Karyawan yang ikut ────────────────
+  setPassengers: (id: number, passengerIds: number[]) =>
+    apiClient
+      .put<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.PASSENGERS(id), { passengerIds })
+      .then((r) => r.data),
+
+  passengerTrips: () =>
+    apiClient
+      .get<ApiResponse<PassengerTrip[]>>(API_ENDPOINTS.BOOKINGS.AS_PASSENGER)
+      .then((r) => r.data),
+
+  lookupUsers: (q: string) =>
+    apiClient
+      .get<ApiResponse<UserLookup[]>>(API_ENDPOINTS.USERS.LOOKUP, { params: { q } })
       .then((r) => r.data),
 
   // ── Status Transitions ────────────────

@@ -34,6 +34,7 @@ export const API_ENDPOINTS = {
     ROLES:           `${API_PREFIX}/users/roles`,
     DEPARTMENTS:     `${API_PREFIX}/users/departments`,
     BY_ID:           (id: number) => `${API_PREFIX}/users/${id}`,
+    LOOKUP:          `${API_PREFIX}/users/lookup`,
     TOGGLE_ACTIVE:   (id: number) => `${API_PREFIX}/users/${id}/toggle-active`,
     RESET_PASSWORD:  (id: number) => `${API_PREFIX}/users/${id}/reset-password`,
     ME_PHOTO:        `${API_PREFIX}/users/me/profile-photo`,
@@ -77,6 +78,8 @@ export const API_ENDPOINTS = {
     BASE:            `${API_PREFIX}/bookings`,
     PENDING_DRIVER_RATINGS: `${API_PREFIX}/bookings/pending-driver-ratings`,
     BY_ID:           (id: number) => `${API_PREFIX}/bookings/${id}`,
+    PASSENGERS:      (id: number) => `${API_PREFIX}/bookings/${id}/passengers`,
+    AS_PASSENGER:    `${API_PREFIX}/bookings/as-passenger`,
     CANCEL:          (id: number) => `${API_PREFIX}/bookings/${id}/cancel`,
     APPROVE:         (id: number) => `${API_PREFIX}/bookings/${id}/approve`,
     REJECT:          (id: number) => `${API_PREFIX}/bookings/${id}/reject`,
@@ -106,6 +109,11 @@ export const API_ENDPOINTS = {
     BY_BOOKING:      (bookingId: number) => `${API_PREFIX}/bookings/${bookingId}/trip-expenses`,
     VOID:            (id: number) => `${API_PREFIX}/trip-expenses/${id}/void`,
     TOLL_BUDGET:     (bookingId: number) => `${API_PREFIX}/bookings/${bookingId}/toll-budget`,
+    PARKING_ALLOWANCE: (bookingId: number) => `${API_PREFIX}/bookings/${bookingId}/parking-allowance`,
+  },
+  PARKING_SETTLEMENTS: {
+    BASE:            `${API_PREFIX}/parking-settlements`,
+    PENDING:         `${API_PREFIX}/parking-settlements/pending`,
   },
   TRIP_REIMBURSEMENTS: {
     BASE:            `${API_PREFIX}/trip-reimbursements`,

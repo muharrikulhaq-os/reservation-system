@@ -8,6 +8,7 @@ import { AvailableVehicleTable } from "./components/AvailableVehicleTable";
 import { AvailableRoomTable } from "./components/AvailableRoomTable";
 import { useDashboardSummary } from "./hooks/useDashboard";
 import { useAuthStore } from "@/store/auth.store";
+import { PassengerTripsCard } from "@/modules/booking";
 
 // ─────────────────────────────────────────
 // STAT CARDS ROW
@@ -61,6 +62,8 @@ export const DashboardPage = () => {
   return (
     <div className="flex flex-col gap-5">
       {isAdmin && <StatCards />}
+      {/* Booking orang lain yang mengikutkan user ini (kosong → tidak tampil). */}
+      {!isLimitedView && <PassengerTripsCard />}
       
       {/* Main Content Grid */}
       <div className={`grid grid-cols-1 gap-5 ${isLimitedView ? "" : "lg:grid-cols-2"}`}>

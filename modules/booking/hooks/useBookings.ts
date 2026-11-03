@@ -37,6 +37,30 @@ export const useBookings = (
     enabled:  options?.enabled ?? true,
   })
 
+/** Cari karyawan untuk dipilih sebagai penumpang. */
+export const useUserLookup = (q: string, enabled: boolean) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.USERS, 'lookup', q],
+    queryFn: () => bookingService.lookupUsers(q).then((r) => r.data),
+    enabled,
+    staleTime: 60_000,
+  })
+
+/** Perjalanan yang diikuti user sebagai penumpang (Dashboard). */
+export const usePassengerTrips = () =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.BOOKINGS, 'as-passenger'],
+    queryFn: () => bookingService.passengerTrips().then((r) => r.data),
+  })
+
+export const useSetPassengers = (id: number) => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (passengerIds: number[]) => bookingService.setPassengers(id, passengerIds),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [...QUERY_KEYS.BOOKINGS, id] }),
+  })
+}
+
 export const useBooking = (id: number) =>
   useQuery({
     queryKey: [...QUERY_KEYS.BOOKINGS, id],

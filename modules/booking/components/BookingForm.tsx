@@ -8,6 +8,8 @@ import { AlertCircle, Building2, Car, Clock, MapPin, Navigation, UserCheck } fro
 import { Card, CardHeader, CardSection } from '@/components/common'
 import { AppButton, InputText, InputTextArea, InputNumber } from '@/components/ui-custom'
 import { DriverSelector } from './DriverSelector'
+import { PassengerPicker } from './PassengerPicker'
+import { useAuthStore } from '@/store/auth.store'
 import { ResourcePicker } from './ResourcePicker'
 import {
   AvailabilityCalendar,
@@ -28,7 +30,7 @@ import {
   wibToISO,
 } from '@/lib'
 import { RESOURCE_TYPE, BOOKING_TYPE, BOOKING_TYPE_CONFIG, BOOKING_STATUS } from '@/constants'
-import type { ResourceType, Vehicle, Room, BookingType } from '@/types'
+import type { ResourceType, Vehicle, Room, BookingType, UserLookup } from '@/types'
 import {
   createBookingSchema,
   type CreateBookingFormData,
@@ -58,6 +60,9 @@ export const BookingForm = () => {
   const [selectedDriverId, setSelectedDriverId] = useState<number | null>(null)
   const [suggestedDriverId, setSuggestedDriverId] = useState<number | null>(null)
   const [passengerCount, setPassengerCount] = useState<number>(1)
+  // Karyawan yang ikut (VEHICLE) - booking tetap atas nama pemesan.
+  const [passengers, setPassengers] = useState<UserLookup[]>([])
+  const currentUserId = useAuthStore((s) => s.user?.id)
   const [bookingType, setBookingType] = useState<BookingType>(BOOKING_TYPE.NON_SPD)
 
   // Untuk resolusi preselect dari query param
@@ -97,6 +102,7 @@ export const BookingForm = () => {
     setSelectedDriverId(null)
     setSuggestedDriverId(null)
     setPassengerCount(1)
+    setPassengers([])
     setBookingType(BOOKING_TYPE.NON_SPD)
     setValue('passengerCount', 1, { shouldValidate: true })
     setValue('startDate', '', { shouldValidate: false })
@@ -112,6 +118,7 @@ export const BookingForm = () => {
     setSelectedDriverId(null)
     setSuggestedDriverId(null)
     setPassengerCount(1)
+    setPassengers([])
     setBookingType(BOOKING_TYPE.NON_SPD)
   }
 
@@ -166,9 +173,16 @@ export const BookingForm = () => {
     setValue('passengerCount', n, { shouldValidate: true })
   }
 
+  // Minimal = pemesan + karyawan yang ikut; sisanya bisa tamu/non-karyawan.
+  const minPassengers = 1 + passengers.length
+  const handlePassengersChange = (list: UserLookup[]) => {
+    setPassengers(list)
+    if (passengerCount < 1 + list.length) handlePassengerChange(1 + list.length)
+  }
+
   // Validasi kapasitas (butuh data kendaraan)
   const isPassengerValid =
-    !isVehicle || (passengerCount >= 1 && passengerCount <= (capacity ?? 0))
+    !isVehicle || (passengerCount >= minPassengers && passengerCount <= (capacity ?? 0))
 
   // Jadwal siap dipakai lanjut: sudah dikonfirmasi, dan kalau bentrok, admin
   // sudah eksplisit pilih "Tetap Ajukan" di panel keputusan.
@@ -194,6 +208,7 @@ export const BookingForm = () => {
       {
         ...data,
         passengerCount: isVehicle ? passengerCount : 1,
+        passengerIds: isVehicle && passengers.length > 0 ? passengers.map((p) => p.id) : undefined,
         driverId: isVehicle ? finalDriverId : undefined,
         bookingType: isVehicle ? bookingType : undefined,
         pickupLocation: isVehicle ? data.pickupLocation : undefined,
@@ -286,11 +301,19 @@ export const BookingForm = () => {
       {/* ── a2. Jumlah penumpang (hanya VEHICLE) ── */}
       {selected && isVehicle && (
         <Card>
-          <CardHeader title="Jumlah Penumpang" />
+          <CardHeader title="Penumpang" />
+          <div className="mb-5">
+            <PassengerPicker
+              value={passengers}
+              onChange={handlePassengersChange}
+              max={capacity != null ? Math.max(0, capacity - 1) : undefined}
+              excludeIds={currentUserId ? [currentUserId] : []}
+            />
+          </div>
           <div className="max-w-[220px]">
             <InputNumber
               label="Jumlah Penumpang"
-              min={1}
+              min={minPassengers}
               max={capacity}
               value={passengerCount}
               onChange={handlePassengerChange}
@@ -302,7 +325,9 @@ export const BookingForm = () => {
           {!isPassengerValid && (
             <p className="mt-1 flex items-center gap-1 text-xs text-[var(--danger)]">
               <AlertCircle className="h-3 w-3" />
-              Jumlah penumpang melebihi kapasitas kendaraan ({capacity} orang)
+              {passengerCount < minPassengers
+                ? `Jumlah penumpang minimal ${minPassengers} (Anda + karyawan yang ikut)`
+                : `Jumlah penumpang melebihi kapasitas kendaraan (${capacity} orang)`}
             </p>
           )}
         </Card>

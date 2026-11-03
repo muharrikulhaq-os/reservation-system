@@ -1,21 +1,24 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Car, ImageOff, ParkingCircle, Pencil, Plus, Receipt, Ban } from 'lucide-react'
 import { Badge, SafeImage } from '@/components/shared'
 import { AppButton, InputRupiah } from '@/components/ui-custom'
-import { cn, formatCurrency, formatDateTime, getErrorMessage, resolveFileUrl } from '@/lib'
+import { cn, formatCurrency, formatDate, formatDateTime, getErrorMessage, resolveFileUrl } from '@/lib'
 import { appPrompt } from '@/lib/dialog'
 import { BOOKING_STATUS } from '@/constants'
 import { useAuthStore } from '@/store/auth.store'
-import type { Booking, TripExpense, TripExpenseList } from '@/types'
-import { useSetTollBudget, useVoidTripExpense } from '../hooks/useTripExpenses'
+import type { Booking, TripExpense, TripExpenseCategory, TripExpenseList, TripParkingInfo } from '@/types'
+import { useSetParkingAllowance, useSetTollBudget, useVoidTripExpense } from '../hooks/useTripExpenses'
 import { TripExpenseModal } from './TripExpenseModal'
 
 // ─────────────────────────────────────────
 // TAB BIAYA PERJALANAN (Catatan Perjalanan)
-// SIMPLE: "Tol" - daftar tol masuk/keluar + foto.
+// SIMPLE: "Tol & Parkir" - tol masuk/keluar & parkir + foto.
 // FULL  : "Biaya" - + anggaran tol, cara bayar, status reimburse.
+// Kedua mode: kartu Uang Parkir (bekal dari admin vs terpakai → sisa
+// dikembalikan / kekurangan diganti). docs/RANCANGAN_PARKIR_PENUMPANG.md §2.
 // ─────────────────────────────────────────
 
 const CATEGORY_LABEL = { TOLL: 'Tol', PARKING: 'Parkir', OTHER: 'Lainnya' } as const
@@ -123,6 +126,107 @@ const BudgetCard = ({ bookingId, data, isAdmin }: { bookingId: number; data: Tri
   )
 }
 
+/** Kartu bekal uang parkir + hasil selisihnya. */
+const ParkingCard = ({ bookingId, parking, isAdmin }: { bookingId: number; parking: TripParkingInfo; isAdmin: boolean }) => {
+  const setAllowance = useSetParkingAllowance(bookingId)
+  const [editing, setEditing] = useState(false)
+  const [value, setValue] = useState<number | undefined>(parking.allowance || undefined)
+  const settled = parking.settlement
+  const locked = !!settled
+
+  let result: React.ReactNode = null
+  if (settled) {
+    result = (
+      <Badge variant="success">
+        {settled.direction === 'TO_DRIVER'
+          ? `${formatCurrency(settled.amount)} sudah diganti ke supir`
+          : `Sisa ${formatCurrency(settled.amount)} sudah dikembalikan`}{' '}
+        · {formatDate(settled.settledAt)}
+      </Badge>
+    )
+  } else if (parking.direction === 'TO_OFFICE') {
+    result = (
+      <span className="text-[var(--text-secondary)]">
+        Sisa <b className="text-[var(--success)]">{formatCurrency(parking.amount)}</b> dikembalikan supir
+      </span>
+    )
+  } else if (parking.direction === 'TO_DRIVER') {
+    result = (
+      <span className="text-[var(--text-secondary)]">
+        {parking.hasAllowance ? 'Kekurangan ' : 'Tidak dibekali — '}
+        <b className="text-[var(--warning)]">{formatCurrency(parking.amount)}</b> diganti ke supir
+      </span>
+    )
+  } else if (parking.used > 0) {
+    result = <span className="text-[var(--text-secondary)]">Bekal pas terpakai</span>
+  }
+
+  return (
+    <div className="mb-4 rounded-xl bg-[var(--bg-subtle)] p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">
+            Uang Parkir
+          </p>
+          <p className="mt-0.5 text-sm text-[var(--text-primary)]">
+            Bekal <b>{parking.hasAllowance ? formatCurrency(parking.allowance) : 'tidak dibekali'}</b>
+            {' · '}terpakai <b>{formatCurrency(parking.used)}</b>
+            {parking.count > 0 && <span className="text-[var(--text-secondary)]"> ({parking.count}x parkir)</span>}
+          </p>
+        </div>
+        {isAdmin && !editing && !locked && (
+          <button
+            type="button"
+            onClick={() => {
+              setValue(parking.allowance || undefined)
+              setEditing(true)
+            }}
+            className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-[var(--primary)] hover:underline"
+          >
+            <Pencil className="h-3 w-3" /> Atur bekal
+          </button>
+        )}
+      </div>
+
+      {editing && (
+        <div className="mt-3">
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <InputRupiah value={value} onChange={setValue} placeholder="mis. 50.000 (kosong = tidak dibekali)" />
+            </div>
+            <AppButton
+              size="sm"
+              loading={setAllowance.isPending}
+              onClick={() => setAllowance.mutate(value ?? 0, { onSuccess: () => setEditing(false) })}
+            >
+              Simpan
+            </AppButton>
+            <AppButton size="sm" variant="ghost" onClick={() => setEditing(false)}>
+              Batal
+            </AppButton>
+          </div>
+          <p className="mt-1.5 text-xs text-[var(--text-secondary)]">
+            Uang parkir yang diberikan ke supir untuk perjalanan ini.
+          </p>
+        </div>
+      )}
+      {setAllowance.error && (
+        <p className="mt-1.5 text-xs text-[var(--danger)]">{getErrorMessage(setAllowance.error)}</p>
+      )}
+      {result && <div className="mt-2 text-xs">{result}</div>}
+      {!settled && parking.canSettle && isAdmin && (
+        <p className="mt-1.5 text-xs text-[var(--text-secondary)]">
+          Selesaikan selisih di menu{' '}
+          <Link href="/trip-reimbursements" className="font-medium text-[var(--primary)] hover:underline">
+            Reimburse Supir
+          </Link>
+          .
+        </p>
+      )}
+    </div>
+  )
+}
+
 interface Props {
   booking: Booking
   data: TripExpenseList | undefined
@@ -134,9 +238,15 @@ export const TripExpenseTab = ({ booking, data, isLoading, onPreview }: Props) =
   const isAdmin = useAuthStore((s) => s.isAdmin())
   const isDriver = useAuthStore((s) => s.isDriver())
   const [open, setOpen] = useState(false)
+  const [category, setCategory] = useState<TripExpenseCategory>('TOLL')
   const voidExpense = useVoidTripExpense(booking.id)
   const full = data?.mode === 'FULL'
   const allowed = canRecord(booking, isAdmin, isDriver)
+  const parkingLocked = !!data?.summary.parking?.settlement
+  const openForm = (c: TripExpenseCategory) => {
+    setCategory(c)
+    setOpen(true)
+  }
 
   const handleVoid = async (e: TripExpense) => {
     const reason = await appPrompt({
@@ -155,18 +265,34 @@ export const TripExpenseTab = ({ booking, data, isLoading, onPreview }: Props) =
   return (
     <div>
       {full && data && <BudgetCard bookingId={booking.id} data={data} isAdmin={isAdmin} />}
+      {data?.summary.parking && <ParkingCard bookingId={booking.id} parking={data.summary.parking} isAdmin={isAdmin} />}
 
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">
-            {full ? 'Total Biaya Perjalanan' : 'Total Tol'}
+            {full ? 'Total Biaya Perjalanan' : 'Total Tol & Parkir'}
           </p>
           <p className="text-lg font-bold text-[var(--text-primary)]">{formatCurrency(data?.summary.total ?? 0)}</p>
         </div>
         {allowed && (
-          <AppButton size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setOpen(true)}>
-            {full ? 'Catat Biaya' : 'Catat Tol'}
-          </AppButton>
+          <div className="flex flex-wrap justify-end gap-2">
+            {full ? (
+              <AppButton size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => openForm('TOLL')}>
+                Catat Biaya
+              </AppButton>
+            ) : (
+              <>
+                <AppButton size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => openForm('TOLL')}>
+                  Catat Tol
+                </AppButton>
+                {!parkingLocked && (
+                  <AppButton size="sm" variant="secondary" leftIcon={<ParkingCircle className="h-4 w-4" />} onClick={() => openForm('PARKING')}>
+                    Catat Parkir
+                  </AppButton>
+                )}
+              </>
+            )}
+          </div>
         )}
       </div>
 
@@ -220,7 +346,7 @@ export const TripExpenseTab = ({ booking, data, isLoading, onPreview }: Props) =
                     />
                   </button>
                 )}
-                {isAdmin && !e.isVoided && e.reimburseStatus !== 'PAID' && (
+                {isAdmin && !e.isVoided && e.reimburseStatus !== 'PAID' && !(e.category === 'PARKING' && parkingLocked) && (
                   <button
                     type="button"
                     onClick={() => handleVoid(e)}
@@ -237,12 +363,18 @@ export const TripExpenseTab = ({ booking, data, isLoading, onPreview }: Props) =
         </ul>
       ) : (
         <p className="py-6 text-center text-sm text-[var(--text-disabled)]">
-          {full ? 'Belum ada biaya perjalanan' : 'Belum ada catatan tol'}
+          {full ? 'Belum ada biaya perjalanan' : 'Belum ada catatan tol & parkir'}
         </p>
       )}
 
       {allowed && data && (
-        <TripExpenseModal bookingId={booking.id} mode={data.mode} open={open} onOpenChange={setOpen} />
+        <TripExpenseModal
+          bookingId={booking.id}
+          mode={data.mode}
+          open={open}
+          onOpenChange={setOpen}
+          initialCategory={category}
+        />
       )}
     </div>
   )

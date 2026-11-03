@@ -22,7 +22,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth.store'
 import { useLogout } from '@/hooks'
-import { useBookings, useTripExpenseMode } from '@/modules/booking'
+import { useBookings } from '@/modules/booking'
 import { ROLE, BOOKING_STATUS } from '@/constants'
 import type { RoleName } from '@/types'
 import { UserAvatar } from '@/components/shared/avatar/Avatar'
@@ -63,7 +63,7 @@ const ADMIN_NAV: NavItem[] = [
   { label: 'Pengaturan', href: '/settings', icon: Settings },
 ]
 
-// Hanya saat biaya perjalanan mode lengkap aktif (lihat useTripExpenseMode).
+// Reimburse supir: kekurangan uang parkir (semua mode) + tol uang pribadi (mode lengkap).
 const REIMBURSE_NAV: NavItem = { label: 'Reimburse Supir', href: '/trip-reimbursements', icon: Wallet }
 
 // ─────────────────────────────────────────
@@ -208,7 +208,6 @@ export const Sidebar = () => {
     (b) => b.hasMergeSuggestion,
   ).length
 
-  const tripMode = useTripExpenseMode()
 
   // Saring menu sesuai role pengguna + inject badge dinamis
   const menuItems = MENU_NAV.filter(
@@ -241,7 +240,7 @@ export const Sidebar = () => {
         {isAdmin && (
           <NavSection
             label="Admin"
-            items={tripMode === 'FULL' ? [REIMBURSE_NAV, ...ADMIN_NAV] : ADMIN_NAV}
+            items={[REIMBURSE_NAV, ...ADMIN_NAV]}
           />
         )}
       </div>

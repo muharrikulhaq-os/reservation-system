@@ -8,7 +8,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMutation } from '@/lib/mutation'
 import { QUERY_KEYS } from '@/constants'
-import type { CreateTripExpensePayload, PayTripReimbursementPayload } from '@/types'
+import type { CreateTripExpensePayload, PayTripReimbursementPayload, SettleParkingPayload } from '@/types'
 import { tripExpenseService } from '../api/tripExpense.api'
 
 const tripKey = (bookingId: number) => [...QUERY_KEYS.BOOKINGS, bookingId, 'trip-expenses'] as const
@@ -60,6 +60,35 @@ export const useSetTollBudget = (bookingId: number) => {
   return useMutation({
     mutationFn: (amount: number | null) => tripExpenseService.setTollBudget(bookingId, amount),
     onSuccess: () => qc.invalidateQueries({ queryKey: tripKey(bookingId) }),
+  })
+}
+
+/** Bekal uang parkir booking (admin). 0 = tidak dibekali. */
+export const useSetParkingAllowance = (bookingId: number) => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (amount: number) => tripExpenseService.setParkingAllowance(bookingId, amount),
+    onSuccess: () => qc.invalidateQueries({ queryKey: tripKey(bookingId) }),
+  })
+}
+
+export const usePendingParking = () =>
+  useQuery({
+    queryKey: [...reimburseKey, 'parking-pending'],
+    queryFn: () => tripExpenseService.pendingParking().then((r) => r.data),
+  })
+
+export const useParkingSettlements = () =>
+  useQuery({
+    queryKey: [...reimburseKey, 'parking-history'],
+    queryFn: () => tripExpenseService.parkingSettlements().then((r) => r.data),
+  })
+
+export const useSettleParking = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: SettleParkingPayload) => tripExpenseService.settleParking(payload),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.BOOKINGS }),
   })
 }
 

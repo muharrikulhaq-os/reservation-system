@@ -33,6 +33,9 @@ export interface Booking extends Timestamps {
   // Siapa & kapan menekan Mulai (dari audit log) - detail saja.
   startedBy?: { id: number; name: string } | null
   startedAt?: string | null
+  passengerCount?: number
+  // Karyawan yang ikut (+ pemesan booking gabungan) - detail saja.
+  passengers?: BookingPassenger[]
   // Lokasi jemput & tujuan (VEHICLE; booking lama/ruangan = null)
   pickupLocation?: string | null
   destination?: string | null
@@ -235,6 +238,39 @@ export interface AssignOptions {
 
 // --- Payloads ---
 
+/** Orang dalam perjalanan (docs backend RANCANGAN_PARKIR_PENUMPANG.md §3). */
+export interface BookingPassenger {
+  userId: number
+  name: string
+  employeeId: string
+  department: string
+  phoneNumber: string
+  bookingId: number
+  /** PASSENGER = karyawan yang ikut; REQUESTER = pemesan booking gabungan. */
+  role: 'PASSENGER' | 'REQUESTER'
+}
+
+/** Hasil cari karyawan (GET /users/lookup) - tanpa nomor HP. */
+export interface UserLookup {
+  id: number
+  name: string
+  employeeId: string
+  department: string
+}
+
+/** Perjalanan yang diikuti sebagai penumpang (GET /bookings/as-passenger). */
+export interface PassengerTrip {
+  id: number
+  status: BookingStatus
+  purpose: string
+  startDate: string
+  endDate: string
+  resourceName: string
+  plateNumber: string | null
+  ownerName: string
+  driverName: string | null
+}
+
 export interface CreateBookingPayload {
   resourceId: number
   startDate: string // RFC3339
@@ -247,6 +283,8 @@ export interface CreateBookingPayload {
   // VEHICLE saja (wajib di form kendaraan) - lokasi jemput & tujuan perjalanan.
   pickupLocation?: string
   destination?: string
+  // VEHICLE saja - karyawan yang ikut (booking tetap atas nama pemesan).
+  passengerIds?: number[]
 }
 
 // PATCH /bookings/:id/start - semua field opsional (ROOM/self-serve start

@@ -78,7 +78,8 @@ export const FinanceSection = ({ range }: { range: ReportDateParams }) => {
   const { data: byVehicle, isLoading: loadingVehicle } = useCostByVehicle(range)
   const { data: byDept } = useCostByDepartment(range)
   // Mode sederhana hanya mencatat tol; mode lengkap juga parkir & lainnya.
-  const tripLabel = useTripExpenseMode() === 'FULL' ? 'Tol & Parkir' : 'Tol'
+  // Parkir tercatat di kedua mode; "lainnya" hanya di mode lengkap.
+  const tripLabel = useTripExpenseMode() === 'FULL' ? 'Tol, Parkir & Lainnya' : 'Tol & Parkir'
 
   const {
     search: vehicleSearch,

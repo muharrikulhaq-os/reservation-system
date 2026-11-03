@@ -84,6 +84,7 @@ import { StartBookingModal } from "./StartBookingModal";
 import { RateDriverModal } from "./RateDriverModal";
 import { RateRoomModal } from "./RateRoomModal";
 import { TripRecordTabs } from "./TripRecordTabs";
+import { BookingPassengersCard } from "./BookingPassengersCard";
 import { FuelInputModal } from "@/modules/fuel";
 import { DriverProfileButton } from "@/modules/drivers";
 import { useVehicle } from "@/modules/vehicles/hooks/useVehicles";
@@ -413,6 +414,16 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
           )}
         </AdminOnly>
 
+        {/* Penumpang: karyawan yang ikut + nomor HP (kendaraan saja) */}
+        {isVehicle && (
+          <BookingPassengersCard
+            booking={booking}
+            currentUserId={currentUserId}
+            isAdmin={isAdmin}
+            capacity={assignedVehicle?.capacity ?? null}
+          />
+        )}
+
         {/* Driver ditugaskan */}
         {isVehicle && booking.assignedDriver && (
           <Card>
@@ -691,7 +702,8 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
             </p>
           )}
 
-          <AttachmentUpload bookingId={bookingId} />
+          {/* Supir hanya melihat & mengunduh lampiran - tidak menambah (backend juga menolak). */}
+          {!isDriver && <AttachmentUpload bookingId={bookingId} />}
         </Card>
       </div>
     </div>

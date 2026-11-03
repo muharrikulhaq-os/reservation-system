@@ -16,8 +16,10 @@ import { useCreateTripExpense, useTollGateSuggestions } from '../hooks/useTripEx
 
 // ─────────────────────────────────────────
 // CATAT BIAYA PERJALANAN
-// SIMPLE: tol masuk/keluar + nominal + foto struk.
+// SIMPLE: tol masuk/keluar ATAU parkir + nominal + foto struk.
 // FULL  : tol/parkir/lainnya, gerbang (dengan saran), cara bayar.
+// Parkir (kedua mode) tanpa cara bayar - uang siapa dihitung dari bekal
+// uang parkir booking (docs/RANCANGAN_PARKIR_PENUMPANG.md §2).
 // ─────────────────────────────────────────
 
 interface Props {
@@ -25,6 +27,8 @@ interface Props {
   mode: TripExpenseMode
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** Jenis awal saat dibuka (tombol Catat Tol / Catat Parkir). */
+  initialCategory?: TripExpenseCategory
 }
 
 const Segmented = <T extends string>({
@@ -106,7 +110,7 @@ const GateInput = ({ label, value, onChange }: { label: string; value: string; o
   )
 }
 
-export const TripExpenseModal = ({ bookingId, mode, open, onOpenChange }: Props) => {
+export const TripExpenseModal = ({ bookingId, mode, open, onOpenChange, initialCategory = 'TOLL' }: Props) => {
   const create = useCreateTripExpense(bookingId)
   const full = mode === 'FULL'
 
@@ -122,7 +126,7 @@ export const TripExpenseModal = ({ bookingId, mode, open, onOpenChange }: Props)
 
   useEffect(() => {
     if (!open) return
-    setCategory('TOLL')
+    setCategory(initialCategory)
     setTollPoint(undefined)
     setEntryGate('')
     setExitGate('')
@@ -136,19 +140,23 @@ export const TripExpenseModal = ({ bookingId, mode, open, onOpenChange }: Props)
   }, [open])
 
   const isToll = category === 'TOLL'
+  const isParking = category === 'PARKING'
   const canSubmit =
     !!amount && amount > 0 && !!photo &&
-    (full
-      ? !!payment &&
-        (!isToll || entryGate.trim() !== '' || exitGate.trim() !== '') &&
-        (category !== 'OTHER' || note.trim() !== '')
-      : !!tollPoint)
+    (isParking ||
+      (full
+        ? !!payment &&
+          (!isToll || entryGate.trim() !== '' || exitGate.trim() !== '') &&
+          (category !== 'OTHER' || note.trim() !== '')
+        : !!tollPoint))
 
   const submit = async () => {
     if (!canSubmit || !photo || !amount) return
     try {
       await create.mutateAsync(
-        full
+        isParking
+          ? { amount, proofPhoto: photo, category: 'PARKING', note: note.trim() || undefined }
+          : full
           ? {
               amount,
               proofPhoto: photo,
@@ -172,7 +180,7 @@ export const TripExpenseModal = ({ bookingId, mode, open, onOpenChange }: Props)
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg font-bold text-[var(--text-primary)]">
             <Receipt className="h-5 w-5 text-[var(--primary)]" />
-            {full ? 'Catat Biaya Perjalanan' : 'Catat Tol'}
+            {full ? 'Catat Biaya Perjalanan' : isParking ? 'Catat Parkir' : 'Catat Tol'}
           </DialogTitle>
         </DialogHeader>
 
@@ -202,7 +210,7 @@ export const TripExpenseModal = ({ bookingId, mode, open, onOpenChange }: Props)
                   <GateInput label="Gerbang Keluar" value={exitGate} onChange={setExitGate} />
                 </div>
               )}
-              <Segmented
+              {!isParking && <Segmented
                 label="Dibayar Dengan"
                 value={payment}
                 onChange={setPayment}
@@ -210,14 +218,14 @@ export const TripExpenseModal = ({ bookingId, mode, open, onOpenChange }: Props)
                   { value: 'COMPANY_EMONEY', label: 'E-money Kantor' },
                   { value: 'PERSONAL', label: 'Uang Pribadi' },
                 ]}
-              />
-              {payment === 'PERSONAL' && (
+              />}
+              {!isParking && payment === 'PERSONAL' && (
                 <p className="-mt-2 text-xs text-[var(--text-secondary)]">
                   Akan masuk daftar reimburse supir.
                 </p>
               )}
             </>
-          ) : (
+          ) : isParking ? null : (
             <Segmented
               label="Titik Bayar"
               value={tollPoint}
@@ -233,7 +241,7 @@ export const TripExpenseModal = ({ bookingId, mode, open, onOpenChange }: Props)
 
           <InputFile
             key={fileKey}
-            label="Foto Struk / Bukti Bayar"
+            label={isParking ? 'Foto Karcis / Struk Parkir' : 'Foto Struk / Bukti Bayar'}
             required
             accept="image/jpeg,image/png"
             maxSizeMb={5}
@@ -241,8 +249,9 @@ export const TripExpenseModal = ({ bookingId, mode, open, onOpenChange }: Props)
           />
 
           <InputTextArea
-            label={full && category === 'OTHER' ? 'Keterangan' : 'Catatan (opsional)'}
+            label={full && category === 'OTHER' ? 'Keterangan' : isParking ? 'Lokasi Parkir (opsional)' : 'Catatan (opsional)'}
             required={full && category === 'OTHER'}
+            placeholder={isParking ? 'mis. Parkir RSUD Serang' : undefined}
             rows={2}
             value={note}
             onChange={(e) => setNote(e.target.value)}

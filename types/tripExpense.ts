@@ -36,6 +36,68 @@ export interface TripExpense {
   createdAt: string
 }
 
+/** Uang parkir perjalanan (docs/RANCANGAN_PARKIR_PENUMPANG.md §2). */
+export type ParkingDirection = 'TO_DRIVER' | 'TO_OFFICE' | 'NONE'
+
+export interface ParkingSettlement {
+  id: number
+  bookingId: number
+  driver: { id: number; name: string }
+  direction: Exclude<ParkingDirection, 'NONE'>
+  amount: number
+  allowance: number
+  used: number
+  reimbursementId: number | null
+  settledAt: string
+  note: string | null
+  createdBy: string
+  bookingPurpose: string
+  bookingStart: string
+}
+
+export interface TripParkingInfo {
+  /** Booking utama perjalanan (sama dengan booking ini bila tidak digabung). */
+  leadBookingId: number
+  allowance: number
+  hasAllowance: boolean
+  used: number
+  count: number
+  /** TO_OFFICE = sisa dikembalikan supir, TO_DRIVER = kekurangan diganti ke supir. */
+  direction: ParkingDirection
+  amount: number
+  settlement: ParkingSettlement | null
+  canSettle: boolean
+}
+
+export interface PendingParkingItem {
+  bookingId: number
+  purpose: string
+  startDate: string
+  resourceName: string
+  plateNumber: string
+  status: string
+  allowance: number
+  used: number
+  count: number
+  direction: Exclude<ParkingDirection, 'NONE'>
+  amount: number
+}
+
+export interface PendingParkingGroup {
+  driver: { id: number; name: string }
+  toDriver: number
+  toOffice: number
+  count: number
+  items: PendingParkingItem[]
+}
+
+export interface SettleParkingPayload {
+  driverId: number
+  bookingIds: number[]
+  settledAt?: string
+  note?: string
+}
+
 export interface TripExpenseSummary {
   total: number
   count: number
@@ -46,6 +108,7 @@ export interface TripExpenseSummary {
   reimbursePaid: number
   tollBudget: number | null
   budgetRemaining: number | null
+  parking: TripParkingInfo
 }
 
 export interface TripExpenseList {
@@ -80,6 +143,8 @@ export interface TripReimbursement {
   note: string | null
   createdBy: string
   expenseCount: number
+  /** Perjalanan yang kekurangan parkirnya ikut dibayar di pembayaran ini. */
+  parkingCount: number
   createdAt: string
 }
 

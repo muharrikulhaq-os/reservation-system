@@ -29,6 +29,8 @@ export const NOTIFICATION_TYPE_CONFIG: Record<string, NotificationTypeConfig> = 
   // Supir yang digantikan & pemilik mobil - info saja (tanpa tautan booking).
   ASSIGNMENT_RELEASED:{ label: 'Tugas Dilepas',       icon: 'UserMinus',     color: '#9CA3AF' },
   VEHICLE_LENT:       { label: 'Kendaraan Dipinjam',  icon: 'Car',           color: '#D97706' },
+  // Karyawan diikutkan sebagai penumpang booking orang lain (membuka booking).
+  BOOKING_PASSENGER_ADDED: { label: 'Ikut Perjalanan', icon: 'Users',      color: '#2D2CE8' },
   ROOM_BOOKED:        { label: 'Ruangan Dipesan',     icon: 'Building2',     color: '#0284C7' },
   RETURN_REPORT:      { label: 'Laporan Pengembalian',icon: 'FileCheck',     color: '#0284C7' },
   OVERTIME_RECORDED:  { label: 'Overtime Tercatat',   icon: 'Clock',         color: '#D97706' },

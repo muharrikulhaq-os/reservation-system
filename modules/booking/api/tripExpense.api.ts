@@ -7,6 +7,10 @@ import { API_ENDPOINTS } from '@/constants'
 import type {
   ApiResponse,
   CreateTripExpensePayload,
+  ParkingSettlement,
+  PendingParkingGroup,
+  SettleParkingPayload,
+  TripExpenseCategory,
   PayTripReimbursementPayload,
   PendingTripReimbursement,
   TripExpense,
@@ -18,7 +22,7 @@ import type {
 export const tripExpenseService = {
   getConfig: () =>
     apiClient
-      .get<ApiResponse<{ mode: TripExpenseMode }>>(API_ENDPOINTS.TRIP_EXPENSES.CONFIG)
+      .get<ApiResponse<{ mode: TripExpenseMode; categories: TripExpenseCategory[] }>>(API_ENDPOINTS.TRIP_EXPENSES.CONFIG)
       .then((r) => r.data),
 
   listForBooking: (bookingId: number) =>
@@ -62,6 +66,29 @@ export const tripExpenseService = {
         API_ENDPOINTS.TRIP_EXPENSES.TOLL_BUDGET(bookingId),
         { amount },
       )
+      .then((r) => r.data),
+
+  setParkingAllowance: (bookingId: number, amount: number) =>
+    apiClient
+      .patch<ApiResponse<{ bookingId: number; parkingAllowance: number }>>(
+        API_ENDPOINTS.TRIP_EXPENSES.PARKING_ALLOWANCE(bookingId),
+        { amount },
+      )
+      .then((r) => r.data),
+
+  pendingParking: () =>
+    apiClient
+      .get<ApiResponse<PendingParkingGroup[]>>(API_ENDPOINTS.PARKING_SETTLEMENTS.PENDING)
+      .then((r) => r.data),
+
+  parkingSettlements: () =>
+    apiClient
+      .get<ApiResponse<ParkingSettlement[]>>(API_ENDPOINTS.PARKING_SETTLEMENTS.BASE)
+      .then((r) => r.data),
+
+  settleParking: (payload: SettleParkingPayload) =>
+    apiClient
+      .post<ApiResponse<{ toDriver: number; toOffice: number }>>(API_ENDPOINTS.PARKING_SETTLEMENTS.BASE, payload)
       .then((r) => r.data),
 
   pendingReimbursements: () =>
