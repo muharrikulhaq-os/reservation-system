@@ -19,6 +19,7 @@ import type {
   SubstituteResourcePayload,
   MergeBookingPayload,
   SubmitReturnReportPayload,
+  GuestPassenger,
 } from '@/types'
 
 // ── Queries ──────────────────────────────
@@ -56,7 +57,8 @@ export const usePassengerTrips = () =>
 export const useSetPassengers = (id: number) => {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (passengerIds: number[]) => bookingService.setPassengers(id, passengerIds),
+    mutationFn: ({ passengerIds, guests }: { passengerIds: number[]; guests: GuestPassenger[] }) =>
+      bookingService.setPassengers(id, passengerIds, guests),
     onSuccess: () => qc.invalidateQueries({ queryKey: [...QUERY_KEYS.BOOKINGS, id] }),
   })
 }

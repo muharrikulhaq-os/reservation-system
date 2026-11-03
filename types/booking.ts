@@ -247,7 +247,16 @@ export interface BookingPassenger {
   phoneNumber: string
   bookingId: number
   /** PASSENGER = karyawan yang ikut; REQUESTER = pemesan booking gabungan. */
-  role: 'PASSENGER' | 'REQUESTER'
+  /** GUEST = tamu tanpa akun (userId 0; department = keterangan). */
+  role: 'PASSENGER' | 'REQUESTER' | 'GUEST'
+}
+
+/** Tamu tanpa akun yang ikut booking. */
+export interface GuestPassenger {
+  name: string
+  phoneNumber?: string
+  /** Keterangan, mis. instansi / jabatan. */
+  note?: string
 }
 
 /** Hasil cari karyawan (GET /users/lookup) - tanpa nomor HP. */
@@ -285,6 +294,8 @@ export interface CreateBookingPayload {
   destination?: string
   // VEHICLE saja - karyawan yang ikut (booking tetap atas nama pemesan).
   passengerIds?: number[]
+  // VEHICLE saja - tamu tanpa akun (nama wajib).
+  guests?: GuestPassenger[]
 }
 
 // PATCH /bookings/:id/start - semua field opsional (ROOM/self-serve start

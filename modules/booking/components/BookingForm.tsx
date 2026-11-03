@@ -9,6 +9,7 @@ import { Card, CardHeader, CardSection } from '@/components/common'
 import { AppButton, InputText, InputTextArea, InputNumber } from '@/components/ui-custom'
 import { DriverSelector } from './DriverSelector'
 import { PassengerPicker } from './PassengerPicker'
+import { GuestPassengersInput } from './GuestPassengersInput'
 import { useAuthStore } from '@/store/auth.store'
 import { ResourcePicker } from './ResourcePicker'
 import {
@@ -30,7 +31,7 @@ import {
   wibToISO,
 } from '@/lib'
 import { RESOURCE_TYPE, BOOKING_TYPE, BOOKING_TYPE_CONFIG, BOOKING_STATUS } from '@/constants'
-import type { ResourceType, Vehicle, Room, BookingType, UserLookup } from '@/types'
+import type { ResourceType, Vehicle, Room, BookingType, UserLookup, GuestPassenger } from '@/types'
 import {
   createBookingSchema,
   type CreateBookingFormData,
@@ -62,6 +63,7 @@ export const BookingForm = () => {
   const [passengerCount, setPassengerCount] = useState<number>(1)
   // Karyawan yang ikut (VEHICLE) - booking tetap atas nama pemesan.
   const [passengers, setPassengers] = useState<UserLookup[]>([])
+  const [guests, setGuests] = useState<GuestPassenger[]>([])
   const currentUserId = useAuthStore((s) => s.user?.id)
   const [bookingType, setBookingType] = useState<BookingType>(BOOKING_TYPE.NON_SPD)
 
@@ -103,6 +105,7 @@ export const BookingForm = () => {
     setSuggestedDriverId(null)
     setPassengerCount(1)
     setPassengers([])
+    setGuests([])
     setBookingType(BOOKING_TYPE.NON_SPD)
     setValue('passengerCount', 1, { shouldValidate: true })
     setValue('startDate', '', { shouldValidate: false })
@@ -119,6 +122,7 @@ export const BookingForm = () => {
     setSuggestedDriverId(null)
     setPassengerCount(1)
     setPassengers([])
+    setGuests([])
     setBookingType(BOOKING_TYPE.NON_SPD)
   }
 
@@ -173,11 +177,16 @@ export const BookingForm = () => {
     setValue('passengerCount', n, { shouldValidate: true })
   }
 
-  // Minimal = pemesan + karyawan yang ikut; sisanya bisa tamu/non-karyawan.
-  const minPassengers = 1 + passengers.length
+  // Minimal = pemesan + karyawan & tamu yang ikut; sisanya bisa ditambah manual.
+  const minPassengers = 1 + passengers.length + guests.length
+  const seatsLeft = capacity != null ? Math.max(0, capacity - 1 - passengers.length - guests.length) : undefined
   const handlePassengersChange = (list: UserLookup[]) => {
     setPassengers(list)
-    if (passengerCount < 1 + list.length) handlePassengerChange(1 + list.length)
+    if (passengerCount < 1 + list.length + guests.length) handlePassengerChange(1 + list.length + guests.length)
+  }
+  const handleGuestsChange = (list: GuestPassenger[]) => {
+    setGuests(list)
+    if (passengerCount < 1 + passengers.length + list.length) handlePassengerChange(1 + passengers.length + list.length)
   }
 
   // Validasi kapasitas (butuh data kendaraan)
@@ -209,6 +218,7 @@ export const BookingForm = () => {
         ...data,
         passengerCount: isVehicle ? passengerCount : 1,
         passengerIds: isVehicle && passengers.length > 0 ? passengers.map((p) => p.id) : undefined,
+        guests: isVehicle && guests.length > 0 ? guests : undefined,
         driverId: isVehicle ? finalDriverId : undefined,
         bookingType: isVehicle ? bookingType : undefined,
         pickupLocation: isVehicle ? data.pickupLocation : undefined,
@@ -306,9 +316,12 @@ export const BookingForm = () => {
             <PassengerPicker
               value={passengers}
               onChange={handlePassengersChange}
-              max={capacity != null ? Math.max(0, capacity - 1) : undefined}
+              max={capacity != null ? Math.max(0, capacity - 1 - guests.length) : undefined}
               excludeIds={currentUserId ? [currentUserId] : []}
             />
+          </div>
+          <div className="mb-5">
+            <GuestPassengersInput value={guests} onChange={handleGuestsChange} remaining={seatsLeft} />
           </div>
           <div className="max-w-[220px]">
             <InputNumber
@@ -326,7 +339,7 @@ export const BookingForm = () => {
             <p className="mt-1 flex items-center gap-1 text-xs text-[var(--danger)]">
               <AlertCircle className="h-3 w-3" />
               {passengerCount < minPassengers
-                ? `Jumlah penumpang minimal ${minPassengers} (Anda + karyawan yang ikut)`
+                ? `Jumlah penumpang minimal ${minPassengers} (Anda + karyawan & tamu yang ikut)`
                 : `Jumlah penumpang melebihi kapasitas kendaraan (${capacity} orang)`}
             </p>
           )}

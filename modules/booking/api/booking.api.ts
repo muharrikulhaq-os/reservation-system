@@ -35,6 +35,7 @@ import type {
   SubmitReturnReportPayload,
   PassengerTrip,
   UserLookup,
+  GuestPassenger,
 } from '@/types'
 
 export const bookingService = {
@@ -56,9 +57,9 @@ export const bookingService = {
       .then((r) => r.data),
 
   // ── Karyawan yang ikut ────────────────
-  setPassengers: (id: number, passengerIds: number[]) =>
+  setPassengers: (id: number, passengerIds: number[], guests: GuestPassenger[]) =>
     apiClient
-      .put<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.PASSENGERS(id), { passengerIds })
+      .put<ApiResponse<Booking>>(API_ENDPOINTS.BOOKINGS.PASSENGERS(id), { passengerIds, guests })
       .then((r) => r.data),
 
   passengerTrips: () =>

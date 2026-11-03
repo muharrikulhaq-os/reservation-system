@@ -8,9 +8,10 @@ import { AppButton } from '@/components/ui-custom'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { getErrorMessage } from '@/lib'
 import { BOOKING_STATUS } from '@/constants'
-import type { Booking, UserLookup } from '@/types'
+import type { Booking, GuestPassenger, UserLookup } from '@/types'
 import { useSetPassengers } from '../hooks/useBookings'
 import { PassengerPicker } from './PassengerPicker'
+import { GuestPassengersInput } from './GuestPassengersInput'
 
 // ─────────────────────────────────────────
 // PENUMPANG (detail booking kendaraan)
@@ -29,23 +30,26 @@ interface Props {
 export const BookingPassengersCard = ({ booking, currentUserId, isAdmin, capacity }: Props) => {
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState<UserLookup[]>([])
+  const [guestDraft, setGuestDraft] = useState<GuestPassenger[]>([])
   const save = useSetPassengers(booking.id)
   const list = booking.passengers ?? []
   const mine = list.filter((p) => p.role === 'PASSENGER' && p.bookingId === booking.id)
-  const others = list.filter((p) => !(p.role === 'PASSENGER' && p.bookingId === booking.id))
+  const guests = list.filter((p) => p.role === 'GUEST' && p.bookingId === booking.id)
+  const others = list.filter((p) => p.bookingId !== booking.id || p.role === 'REQUESTER')
   const editable =
     (isAdmin || currentUserId === booking.user.id) &&
     (booking.status === BOOKING_STATUS.PENDING || booking.status === BOOKING_STATUS.APPROVED)
 
   const startEdit = () => {
     setDraft(mine.map((p) => ({ id: p.userId, name: p.name, employeeId: p.employeeId, department: p.department })))
+    setGuestDraft(guests.map((g) => ({ name: g.name, phoneNumber: g.phoneNumber || undefined, note: g.department || undefined })))
     save.reset()
     setOpen(true)
   }
 
   const submit = async () => {
     try {
-      await save.mutateAsync(draft.map((d) => d.id))
+      await save.mutateAsync({ passengerIds: draft.map((d) => d.id), guests: guestDraft })
       setOpen(false)
     } catch {
       // ditampilkan via save.error
@@ -56,7 +60,7 @@ export const BookingPassengersCard = ({ booking, currentUserId, isAdmin, capacit
     <Card>
       <CardHeader
         title="Penumpang"
-        description={`${booking.passengerCount ?? 1 + mine.length} orang · ${mine.length} karyawan ikut`}
+        description={`${booking.passengerCount ?? 1 + mine.length + guests.length} orang · ${mine.length} karyawan · ${guests.length} tamu`}
         action={
           editable ? (
             <AppButton size="sm" variant="secondary" leftIcon={<Pencil className="h-3.5 w-3.5" />} onClick={startEdit}>
@@ -71,8 +75,8 @@ export const BookingPassengersCard = ({ booking, currentUserId, isAdmin, capacit
         </p>
       ) : (
         <ul className="divide-y divide-[var(--border-divider)]">
-          {[...mine, ...others].map((p) => (
-            <li key={`${p.bookingId}-${p.userId}`} className="flex items-start gap-3 py-2.5 first:pt-0">
+          {[...mine, ...guests, ...others].map((p, i) => (
+            <li key={`${p.bookingId}-${p.userId}-${i}`} className="flex items-start gap-3 py-2.5 first:pt-0">
               <UserAvatar name={p.name} size="md" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{p.name}</p>
@@ -91,6 +95,7 @@ export const BookingPassengersCard = ({ booking, currentUserId, isAdmin, capacit
                 />
               </div>
               {p.role === 'REQUESTER' && <Badge variant="muted">Pemesan</Badge>}
+              {p.role === 'GUEST' && <Badge variant="info">Tamu</Badge>}
             </li>
           ))}
         </ul>
@@ -111,8 +116,13 @@ export const BookingPassengersCard = ({ booking, currentUserId, isAdmin, capacit
             <PassengerPicker
               value={draft}
               onChange={setDraft}
-              max={capacity ? Math.max(0, capacity - 1) : undefined}
+              max={capacity ? Math.max(0, capacity - 1 - guestDraft.length) : undefined}
               excludeIds={[booking.user.id]}
+            />
+            <GuestPassengersInput
+              value={guestDraft}
+              onChange={setGuestDraft}
+              remaining={capacity ? Math.max(0, capacity - 1 - draft.length - guestDraft.length) : undefined}
             />
             <p className="text-xs text-[var(--text-secondary)]">
               Karyawan yang baru ditambahkan mendapat notifikasi. Jumlah penumpang otomatis disesuaikan bila kurang.
