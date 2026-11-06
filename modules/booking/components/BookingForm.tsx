@@ -30,7 +30,7 @@ import {
   resolveFileUrl,
   wibToISO,
 } from '@/lib'
-import { RESOURCE_TYPE, BOOKING_TYPE, BOOKING_TYPE_CONFIG, BOOKING_STATUS } from '@/constants'
+import { RESOURCE_TYPE, RESOURCE_STATUS, BOOKING_TYPE, BOOKING_TYPE_CONFIG, BOOKING_STATUS } from '@/constants'
 import type { ResourceType, Vehicle, Room, BookingType, UserLookup, GuestPassenger } from '@/types'
 import {
   createBookingSchema,
@@ -126,19 +126,22 @@ export const BookingForm = () => {
     setBookingType(BOOKING_TYPE.NON_SPD)
   }
 
-  // Auto-select resource dari query param (sekali, saat data siap)
+  // Auto-select resource dari query param (sekali, saat data siap). Resource
+  // nonaktif/maintenance tidak dipilihkan - sama dengan daftar ResourcePicker.
   useEffect(() => {
     if (!preselectedResourceId || selected) return
     const idNum = Number(preselectedResourceId)
+    const bookable = (x: { status: string }) =>
+      x.status !== RESOURCE_STATUS.INACTIVE && x.status !== RESOURCE_STATUS.MAINTENANCE
     if (preselectedType === RESOURCE_TYPE.ROOM) {
       const r = (rooms ?? []).find((x) => x.resourceId === idNum)
-      if (r) {
+      if (r && bookable(r)) {
         setResourceType(RESOURCE_TYPE.ROOM)
         handleSelectResource(r)
       }
     } else {
       const v = (vehicles ?? []).find((x) => x.resourceId === idNum)
-      if (v) {
+      if (v && bookable(v)) {
         setResourceType(RESOURCE_TYPE.VEHICLE)
         handleSelectResource(v)
       }

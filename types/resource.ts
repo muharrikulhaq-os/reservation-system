@@ -143,6 +143,8 @@ export interface VehicleQueryParams {
   search?: string
   categoryId?: number
   status?: ResourceStatus
+  /** Hanya yang bisa dipesan (tanpa nonaktif & maintenance) - pilihan saat buat booking. */
+  bookable?: boolean
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
 }
@@ -152,6 +154,8 @@ export interface RoomQueryParams {
   limit?: number
   search?: string
   status?: ResourceStatus
+  /** Hanya yang bisa dipesan (tanpa nonaktif & maintenance) - pilihan saat buat booking. */
+  bookable?: boolean
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
 }

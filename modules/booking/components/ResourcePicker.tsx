@@ -31,7 +31,9 @@ export const ResourcePicker = ({
   const { search, setSearch, page, setPage, params, resetFilters } = useTableFilter({}, 6)
 
   const isVehicle = resourceType === RESOURCE_TYPE.VEHICLE
-  const queryParams = { ...params }
+  // Hanya yang bisa dipesan: nonaktif & maintenance tidak ditawarkan. Disaring
+  // di server supaya jumlah per halaman & total halaman tetap benar.
+  const queryParams = { ...params, bookable: true }
 
   // Kendaraan & ruangan pakai satu state search/page yang sama - kalau tidak
   // direset saat ganti tab, halaman/kata kunci dari tab sebelumnya kebawa
