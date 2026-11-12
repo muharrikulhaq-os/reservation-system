@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AlertCircle, Star } from 'lucide-react'
 import {
   Dialog,
@@ -9,31 +9,53 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { AppButton, InputTextArea } from '@/components/ui-custom'
+import { UserAvatar } from '@/components/shared'
 import { cn, getErrorMessage } from '@/lib'
 import { useRateRoom } from '../hooks/useBookings'
+
+// ─────────────────────────────────────────
+// RATING PENJAGA RUANGAN
+// Tiap penjaga dinilai terpisah (bintang + ulasan). Tidak wajib: penjaga
+// yang bintangnya dibiarkan kosong dilewati dan bisa dinilai nanti.
+// ─────────────────────────────────────────
+
+interface KeeperToRate {
+  roomKeeperId: number
+  name: string
+}
 
 interface RateRoomModalProps {
   bookingId: number
   roomName?: string
+  /** Penjaga yang belum dinilai. */
+  keepers: KeeperToRate[]
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void
 }
 
+type Draft = Record<number, { rating: number; review: string }>
+
 export const RateRoomModal = ({
   bookingId,
   roomName,
+  keepers,
   open,
   onOpenChange,
   onSuccess,
 }: RateRoomModalProps) => {
-  const [rating, setRating] = useState(0)
-  const [hover, setHover] = useState(0)
-  const [review, setReview] = useState('')
-
+  const [draft, setDraft] = useState<Draft>({})
   const rate = useRateRoom()
 
-  const canSubmit = rating >= 1 && rating <= 5
+  useEffect(() => {
+    if (open) setDraft({})
+  }, [open])
+
+  const set = (id: number, patch: Partial<Draft[number]>) =>
+    setDraft((d) => ({ ...d, [id]: { ...(d[id] ?? { rating: 0, review: '' }), ...patch } }))
+
+  const chosen = keepers.filter((k) => (draft[k.roomKeeperId]?.rating ?? 0) > 0)
+  const canSubmit = chosen.length > 0
 
   const handleSubmit = async () => {
     if (!canSubmit) return
@@ -41,8 +63,11 @@ export const RateRoomModal = ({
       await rate.mutateAsync({
         bookingId,
         payload: {
-          rating: rating as 1 | 2 | 3 | 4 | 5,
-          review: review.trim() || undefined,
+          ratings: chosen.map((k) => ({
+            roomKeeperId: k.roomKeeperId,
+            rating: draft[k.roomKeeperId].rating as 1 | 2 | 3 | 4 | 5,
+            review: draft[k.roomKeeperId].review.trim() || undefined,
+          })),
         },
       })
       onOpenChange(false)
@@ -54,13 +79,13 @@ export const RateRoomModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-2xl p-6 shadow-[var(--shadow-modal)] sm:max-w-md">
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl p-6 shadow-[var(--shadow-modal)] sm:max-w-md">
         <DialogHeader>
           <DialogTitle
             className="text-lg font-bold text-[var(--text-primary)]"
             style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
           >
-            Beri Rating Ruangan
+            Beri Rating Penjaga Ruangan
           </DialogTitle>
         </DialogHeader>
 
@@ -72,47 +97,65 @@ export const RateRoomModal = ({
             </div>
           )}
 
-          {roomName && (
-            <p className="text-sm text-[var(--text-secondary)]">
-              Bagaimana kondisi{' '}
-              <span className="font-semibold text-[var(--text-primary)]">
-                {roomName}
-              </span>
-              ?
-            </p>
-          )}
+          <p className="text-sm text-[var(--text-secondary)]">
+            Bagaimana pelayanan penjaga
+            {roomName && (
+              <>
+                {' '}
+                <span className="font-semibold text-[var(--text-primary)]">{roomName}</span>
+              </>
+            )}
+            ? Penjaga yang tidak diberi bintang dilewati.
+          </p>
 
-          {/* Bintang */}
-          <div className="flex items-center justify-center gap-2 py-2">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setRating(n)}
-                onMouseEnter={() => setHover(n)}
-                onMouseLeave={() => setHover(0)}
-                aria-label={`${n} bintang`}
-                className="transition-transform hover:scale-110"
-              >
-                <Star
-                  className={cn(
-                    'h-9 w-9',
-                    (hover || rating) >= n
-                      ? 'fill-[#F59E0B] text-[#F59E0B]'
-                      : 'text-[var(--border-input)]',
+          <ul className="space-y-3">
+            {keepers.map((k) => {
+              const d = draft[k.roomKeeperId]
+              const value = d?.rating ?? 0
+              return (
+                <li
+                  key={k.roomKeeperId}
+                  className="rounded-xl border border-[var(--border-card)] bg-[var(--bg-subtle)] p-3"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <UserAvatar name={k.name} size="sm" />
+                    <span className="min-w-0 flex-1 truncate text-sm font-semibold text-[var(--text-primary)]">
+                      {k.name}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-center gap-1.5">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => set(k.roomKeeperId, { rating: value === n ? 0 : n })}
+                        aria-label={`${k.name}: ${n} bintang`}
+                        className="transition-transform hover:scale-110"
+                      >
+                        <Star
+                          className={cn(
+                            'h-7 w-7',
+                            value >= n ? 'fill-[#F59E0B] text-[#F59E0B]' : 'text-[var(--border-input)]',
+                          )}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  {value > 0 && (
+                    <div className="mt-2">
+                      <InputTextArea
+                        label="Ulasan (opsional)"
+                        rows={2}
+                        placeholder="Ceritakan pelayanannya…"
+                        value={d?.review ?? ''}
+                        onChange={(e) => set(k.roomKeeperId, { review: e.target.value })}
+                      />
+                    </div>
                   )}
-                />
-              </button>
-            ))}
-          </div>
-
-          <InputTextArea
-            label="Ulasan (opsional)"
-            rows={3}
-            placeholder="Ceritakan kondisi ruangannya…"
-            value={review}
-            onChange={(e) => setReview(e.target.value)}
-          />
+                </li>
+              )
+            })}
+          </ul>
 
           <div className="flex gap-3 pt-1">
             <AppButton

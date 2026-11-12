@@ -114,12 +114,18 @@ export const roomOption = (r: Room, ov?: OptionOverrides): SearchableOption =>
       description: (
         <>
           <Info icon={MapPin} parts={[r.location, `${r.capacity} orang`]} />
-          <Info icon={UserRound} parts={[r.roomKeeper ? `Penjaga: ${r.roomKeeper.name}` : 'Belum ada penjaga']} />
+          <Info
+            icon={UserRound}
+            parts={[r.roomKeepers?.length ? `Penjaga: ${r.roomKeepers.map((k) => k.name).join(', ')}` : 'Belum ada penjaga']}
+          />
         </>
       ),
-      keywords: [r.location, r.roomKeeper?.name ?? ''],
-      disabled: r.status !== RESOURCE_STATUS.AVAILABLE,
-      badge: RESOURCE_BADGE[r.status],
+      keywords: [r.location, ...(r.roomKeepers ?? []).map((k) => k.name)],
+      // Ruangan tanpa penjaga aktif tidak bisa dibooking.
+      disabled: r.status !== RESOURCE_STATUS.AVAILABLE || r.hasActiveKeeper === false,
+      badge: r.hasActiveKeeper === false && r.status === RESOURCE_STATUS.AVAILABLE
+        ? { text: 'Tanpa penjaga', tone: 'warning' }
+        : RESOURCE_BADGE[r.status],
     },
     ov,
   )

@@ -60,9 +60,10 @@ export const roomService = {
       .delete<ApiResponse<null>>(API_ENDPOINTS.ROOMS.BY_ID(id))
       .then((r) => r.data),
 
-  setRoomKeeper: (id: number, roomKeeperId: number | null) =>
+  /** Ganti seluruh penjaga ruangan (kosong = tanpa penjaga, tidak bisa dibooking). */
+  setRoomKeepers: (id: number, roomKeeperIds: number[]) =>
     apiClient
-      .patch<ApiResponse<Room>>(API_ENDPOINTS.ROOMS.ROOM_KEEPER(id), { roomKeeperId })
+      .patch<ApiResponse<Room>>(API_ENDPOINTS.ROOMS.ROOM_KEEPERS(id), { roomKeeperIds })
       .then((r) => r.data),
 
   // ── Attachments ───────────────────────

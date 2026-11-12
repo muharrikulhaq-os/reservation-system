@@ -14,7 +14,7 @@ import type {
   DriverRatingResponse,
   DriverRatingsResult,
   PendingDriverRating,
-  RoomRatingResponse,
+  BookingRoomRatings,
   RoomRatingsResult,
   BookingQueryParams,
   CreateBookingPayload,
@@ -156,17 +156,17 @@ export const bookingService = {
 
   rateRoom: (bookingId: number, payload: RateRoomPayload) =>
     apiClient
-      .post<ApiResponse<RoomRatingResponse>>(
+      .post<ApiResponse<BookingRoomRatings>>(
         API_ENDPOINTS.BOOKINGS.RATE_ROOM(bookingId),
         payload,
       )
       .then((r) => r.data),
 
   // Rating milik satu booking (404 bila belum dinilai)
-  getBookingRoomRating: (bookingId: number) =>
+  getBookingRoomRatings: (bookingId: number) =>
     apiClient
-      .get<ApiResponse<RoomRatingResponse>>(
-        API_ENDPOINTS.BOOKINGS.ROOM_RATING_BY_BOOKING(bookingId),
+      .get<ApiResponse<BookingRoomRatings>>(
+        API_ENDPOINTS.BOOKINGS.ROOM_RATINGS_BY_BOOKING(bookingId),
       )
       .then((r) => r.data),
 

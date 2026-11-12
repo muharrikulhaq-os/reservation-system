@@ -69,7 +69,7 @@ import {
   useBookingMergeInfo,
   useBookingAttachments,
   useBookingDriverRating,
-  useBookingRoomRating,
+  useBookingRoomRatings,
   useCancelBooking,
   useReturnReport,
   useStartBooking,
@@ -437,6 +437,24 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
               </div>
             </DriverProfileButton>
             <PhoneContact phone={booking.assignedDriver.phoneNumber} className="mt-2" />
+          </Card>
+        )}
+
+        {/* Penjaga ruangan - semua menerima booking & notifikasi yang sama */}
+        {booking.resource.type === RESOURCE_TYPE.ROOM && (booking.roomKeepers?.length ?? 0) > 0 && (
+          <Card>
+            <CardHeader title="Penjaga Ruangan" />
+            <ul className="space-y-3">
+              {booking.roomKeepers!.map((k) => (
+                <li key={k.id}>
+                  <div className="flex items-center gap-3">
+                    <UserAvatar name={k.name} size="md" />
+                    <p className="min-w-0 truncate text-sm font-semibold text-[var(--text-primary)]">{k.name}</p>
+                  </div>
+                  <PhoneContact phone={k.phoneNumber} className="mt-1.5" />
+                </li>
+              ))}
+            </ul>
           </Card>
         )}
 
@@ -827,7 +845,8 @@ const RatingCard = ({
 
 // ─────────────────────────────────────────
 // ROOM RATING CARD (COMPLETED - pemilik booking)
-// Sama seperti RatingCard (driver), tapi target rating-nya ruangan.
+// Rating per penjaga ruangan; tidak wajib, penjaga yang belum dinilai bisa
+// dinilai belakangan.
 // ─────────────────────────────────────────
 
 const RoomRatingCard = ({
@@ -839,67 +858,80 @@ const RoomRatingCard = ({
   roomName?: string;
   onSuccess?: () => void;
 }) => {
-  const { data: rating, isLoading, isError } = useBookingRoomRating(bookingId);
-  const alreadyRated = !!rating; // 404 → isError, rating undefined
+  const { data, isLoading } = useBookingRoomRatings(bookingId);
   const [open, setOpen] = useState(false);
+  const keepers = data?.keepers ?? [];
+  const unrated = keepers
+    .filter((k): k is typeof k & { roomKeeperId: number } => k.roomKeeperId != null && k.rating == null)
+    .map((k) => ({ roomKeeperId: k.roomKeeperId, name: k.name }));
+  const noneRated = !!data && data.ratedCount === 0;
 
-  // Auto-open sekali: hanya jika belum dinilai & belum pernah di-prompt.
+  // Auto-open sekali: hanya jika belum ada yang dinilai & belum pernah di-prompt.
   useEffect(() => {
-    if (isLoading || alreadyRated) return;
+    if (isLoading || !noneRated || unrated.length === 0) return;
     const key = `booking-room-rating-prompted-${bookingId}`;
     if (typeof window === "undefined") return;
     if (localStorage.getItem(key)) return;
     localStorage.setItem(key, "1");
     setOpen(true);
-    // isError memastikan query 404 sudah selesai sebelum auto-open
-  }, [isLoading, alreadyRated, isError, bookingId]);
+  }, [isLoading, noneRated, unrated.length, bookingId]);
 
-  if (isLoading) return null;
+  if (isLoading || !data || keepers.length === 0) return null;
 
-  // Sudah dinilai → kartu read-only
-  if (alreadyRated && rating) {
-    return (
-      <Card>
-        <CardHeader title="Rating Ruangan" />
-        <div className="flex items-center gap-3">
-          <StarRating value={rating.rating} size="h-5 w-5" />
-          <span className="text-sm font-semibold text-[var(--text-primary)]">
-            {rating.rating}/5
-          </span>
-        </div>
-        {rating.review && (
-          <p className="mt-3 rounded-lg bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--text-secondary)]">
-            “{rating.review}”
-          </p>
-        )}
-        <p className="mt-2 text-xs text-[var(--text-disabled)]">
-          Dinilai {formatDateTime(rating.createdAt)}
-        </p>
-      </Card>
-    );
-  }
-
-  // Belum dinilai → prompt
   return (
     <Card>
-      <CardHeader title="Rating Ruangan" />
-      <p className="mb-3 text-sm text-[var(--text-secondary)]">
-        Booking selesai. Beri penilaian untuk ruangan ini.
-      </p>
-      <AppButton
-        fullWidth
-        leftIcon={<Star className="h-4 w-4" />}
-        onClick={() => setOpen(true)}
-      >
-        Beri Rating
-      </AppButton>
-      <RateRoomModal
-        bookingId={bookingId}
-        roomName={roomName}
-        open={open}
-        onOpenChange={setOpen}
-        onSuccess={onSuccess}
-      />
+      <CardHeader title="Rating Penjaga Ruangan" />
+      {noneRated ? (
+        <p className="mb-3 text-sm text-[var(--text-secondary)]">
+          Booking selesai. Beri penilaian untuk penjaga ruangan ini (tidak wajib).
+        </p>
+      ) : (
+        <ul className="mb-3 divide-y divide-[var(--border-divider)]">
+          {keepers.map((k) => (
+            <li key={k.roomKeeperId ?? `lama-${k.ratedAt}`} className="py-2.5 first:pt-0">
+              <div className="flex items-center justify-between gap-3">
+                <span className="min-w-0 truncate text-sm font-medium text-[var(--text-primary)]">{k.name}</span>
+                {k.rating != null ? (
+                  <span className="flex shrink-0 items-center gap-2">
+                    <StarRating value={k.rating} size="h-4 w-4" />
+                    <span className="text-xs font-semibold text-[var(--text-primary)]">{k.rating}/5</span>
+                  </span>
+                ) : (
+                  <span className="shrink-0 text-xs text-[var(--text-disabled)]">Belum dinilai</span>
+                )}
+              </div>
+              {k.review && (
+                <p className="mt-1.5 rounded-lg bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--text-secondary)]">
+                  “{k.review}”
+                </p>
+              )}
+              {k.ratedAt && (
+                <p className="mt-1 text-xs text-[var(--text-disabled)]">Dinilai {formatDateTime(k.ratedAt)}</p>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {unrated.length > 0 && (
+        <>
+          <AppButton
+            fullWidth
+            variant={noneRated ? "primary" : "secondary"}
+            leftIcon={<Star className="h-4 w-4" />}
+            onClick={() => setOpen(true)}
+          >
+            {noneRated ? "Beri Rating" : "Nilai penjaga lainnya"}
+          </AppButton>
+          <RateRoomModal
+            bookingId={bookingId}
+            roomName={roomName}
+            keepers={unrated}
+            open={open}
+            onOpenChange={setOpen}
+            onSuccess={onSuccess}
+          />
+        </>
+      )}
     </Card>
   );
 };

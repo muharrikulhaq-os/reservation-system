@@ -5,7 +5,7 @@
 import type { Timestamps } from './common'
 import type { BookingStatus, ApprovalAction, ResourceType, ResourceStatus, BookingActivityAction, BookingType } from './enums'
 import type { UserSummary } from './auth'
-import type { ResourceRef, VehicleSummary } from './resource'
+import type { ResourceRef, RoomKeeperRef, VehicleSummary } from './resource'
 import type { DriverSummary } from './driver'
 
 // --- Booking ---
@@ -36,6 +36,8 @@ export interface Booking extends Timestamps {
   passengerCount?: number
   // Karyawan yang ikut (+ pemesan booking gabungan) - detail saja.
   passengers?: BookingPassenger[]
+  // Penjaga ruangan (booking ruangan) - detail saja.
+  roomKeepers?: RoomKeeperRef[]
   // Lokasi jemput & tujuan (VEHICLE; booking lama/ruangan = null)
   pickupLocation?: string | null
   destination?: string | null
@@ -324,9 +326,25 @@ export interface RateDriverPayload {
   review?: string
 }
 
+// Rating per penjaga ruangan - penjaga yang tidak dinilai boleh dilewati.
 export interface RateRoomPayload {
-  rating: 1 | 2 | 3 | 4 | 5
-  review?: string
+  ratings: { roomKeeperId: number; rating: 1 | 2 | 3 | 4 | 5; review?: string }[]
+}
+
+// GET /bookings/:id/room-ratings - penjaga booking ini + rating masing-masing
+export interface BookingRoomKeeperRating {
+  roomKeeperId: number | null // null = rating lama tanpa penjaga
+  name: string
+  rating: number | null       // null = belum dinilai
+  review: string | null
+  ratedAt: string | null
+}
+
+export interface BookingRoomRatings {
+  bookingId: number
+  keepers: BookingRoomKeeperRating[]
+  ratedCount: number
+  total: number
 }
 
 export interface CreateGuestBookingPayload {

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { AlertTriangle, X } from 'lucide-react'
 import { Card, CardHeader, CardSection, CardDivider, AdminOnly } from '@/components/common'
 import {
   AvailabilityCalendar,
@@ -11,6 +12,7 @@ import {
   PhotoUploader,
   AttachmentList,
   StatusChanger,
+  UserAvatar,
   roomKeeperOption,
 } from '@/components/shared'
 import { AppButton, SearchableSelect } from '@/components/ui-custom'
@@ -24,7 +26,7 @@ import {
   useUpdateRoomPhoto,
   useUploadRoomAttachment,
   useDeleteRoom,
-  useSetRoomKeeper,
+  useSetRoomKeepers,
 } from '../hooks/useRooms'
 import { useDeleteAttachment } from '@/hooks'
 import { appConfirm } from '@/lib/dialog'
@@ -56,14 +58,16 @@ export const RoomDetail = ({ roomId }: RoomDetailProps) => {
   const uploadAttachment = useUploadRoomAttachment(roomId)
   const deleteAttachment = useDeleteAttachment()
   const deleteRoom = useDeleteRoom()
-  const setRoomKeeper = useSetRoomKeeper()
+  const setRoomKeepers = useSetRoomKeepers()
 
-  // Pilihan room keeper - draft lokal, baru dikirim ke server saat tombol
-  // "Simpan" ditekan (bukan langsung tersimpan begitu dropdown berubah).
-  const [roomKeeperDraft, setRoomKeeperDraft] = useState<number | ''>('')
+  // Penjaga ruangan - draft lokal, baru dikirim ke server saat tombol
+  // "Simpan" ditekan. Satu ruangan bisa dijaga beberapa orang.
+  const savedKeeperIds = (room?.roomKeepers ?? []).map((k) => k.id)
+  const savedKey = savedKeeperIds.join(',')
+  const [keeperDraft, setKeeperDraft] = useState<number[]>([])
   useEffect(() => {
-    setRoomKeeperDraft(room?.roomKeeper?.id ?? '')
-  }, [room?.roomKeeper?.id])
+    setKeeperDraft(savedKey ? savedKey.split(',').map(Number) : [])
+  }, [savedKey])
 
   if (isLoading) {
     return (
@@ -84,23 +88,25 @@ export const RoomDetail = ({ roomId }: RoomDetailProps) => {
   const handleStatusChange = (status: ResourceStatus) =>
     updateStatus.mutate({ id: room.id, payload: { status } })
 
-  // Satu room keeper boleh bertanggung jawab atas lebih dari satu ruangan
-  // (N:1) - jadi semua room keeper aktif muncul di pilihan, tidak difilter
-  // seperti supir tetap kendaraan.
-  const roomKeeperOptions = (roomKeepers ?? []).map((rk) =>
-    roomKeeperOption(
-      rk,
-      rk.id === room.roomKeeper?.id ? { badge: { text: 'Saat ini', tone: 'neutral' } } : undefined,
-    ),
-  )
+  // Satu penjaga boleh menjaga beberapa ruangan dan satu ruangan boleh
+  // dijaga beberapa penjaga - pilihan hanya menyembunyikan yang sudah dipilih.
+  const keeperById = new Map((roomKeepers ?? []).map((rk) => [rk.id, rk]))
+  const roomKeeperOptions = (roomKeepers ?? [])
+    .filter((rk) => !keeperDraft.includes(rk.id))
+    .map((rk) => roomKeeperOption(rk))
+  const draftKeepers = keeperDraft.map((id) => {
+    const saved = room.roomKeepers.find((k) => k.id === id)
+    const rk = keeperById.get(id)
+    return { id, name: rk?.name ?? saved?.name ?? `#${id}`, isActive: rk?.isActive ?? saved?.isActive ?? true }
+  })
+  const draftHasActive = draftKeepers.some((k) => k.isActive)
+  const keepersDirty = [...keeperDraft].sort().join(',') !== [...savedKeeperIds].sort().join(',')
 
-  const roomKeeperDirty = roomKeeperDraft !== (room.roomKeeper?.id ?? '')
-
-  const handleSaveRoomKeeper = () => {
-    setRoomKeeper.mutate(
-      { id: room.id, roomKeeperId: roomKeeperDraft ? Number(roomKeeperDraft) : null },
+  const handleSaveRoomKeepers = () => {
+    setRoomKeepers.mutate(
+      { id: room.id, roomKeeperIds: keeperDraft },
       {
-        onSuccess: () => toast.success('Room keeper berhasil disimpan.'),
+        onSuccess: () => toast.success('Penjaga ruangan berhasil disimpan.'),
         onError: (err) => toast.error(getErrorMessage(err)),
       },
     )
@@ -174,33 +180,91 @@ export const RoomDetail = ({ roomId }: RoomDetailProps) => {
           </Card>
         </AdminOnly>
 
-        {/* Room keeper (admin) */}
-        <AdminOnly>
-          <Card>
-            <CardHeader
-              title="Room Keeper"
-              description="Penanggung jawab ruangan ini - satu room keeper boleh mengelola lebih dari satu ruangan. Rating dari pemesan masuk ke room keeper, bukan ruangannya."
-            />
-            <SearchableSelect
-              clearLabel="Belum ada room keeper"
-              searchPlaceholder="Cari nama, NIP, atau ruangan yang dijaga…"
-              emptyText="Room keeper tidak ditemukan"
-              options={roomKeeperOptions}
-              value={roomKeeperDraft === '' ? '' : String(roomKeeperDraft)}
-              disabled={setRoomKeeper.isPending}
-              onChange={(v) => setRoomKeeperDraft(v ? Number(v) : '')}
-            />
-            <AppButton
-              className="mt-3"
-              size="sm"
-              loading={setRoomKeeper.isPending}
-              disabled={!roomKeeperDirty || setRoomKeeper.isPending}
-              onClick={handleSaveRoomKeeper}
-            >
-              Simpan
-            </AppButton>
-          </Card>
-        </AdminOnly>
+        {/* Penjaga ruangan */}
+        <Card>
+          <CardHeader
+            title="Penjaga Ruangan"
+            description={
+              isAdmin
+                ? 'Semua penjaga menerima booking, notifikasi, dan status yang sama, serta bisa dinilai pemesan. Ruangan tanpa penjaga aktif tidak bisa dibooking.'
+                : 'Penanggung jawab ruangan ini.'
+            }
+          />
+          {!room.hasActiveKeeper && (
+            <div className="mb-3 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>Ruangan ini belum bisa dibooking - pilih minimal satu penjaga aktif.</span>
+            </div>
+          )}
+          {isAdmin ? (
+            <>
+              {draftKeepers.length > 0 && (
+                <ul className="mb-3 space-y-2">
+                  {draftKeepers.map((k) => (
+                    <li
+                      key={k.id}
+                      className="flex items-center gap-2.5 rounded-lg border border-[var(--border-card)] bg-[var(--bg-subtle)] px-3 py-2"
+                    >
+                      <UserAvatar name={k.name} size="sm" />
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-[var(--text-primary)]">
+                        {k.name}
+                      </span>
+                      {!k.isActive && (
+                        <span className="rounded-full bg-[var(--bg-card)] px-2 py-0.5 text-[11px] font-semibold text-[var(--text-secondary)]">
+                          Nonaktif
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setKeeperDraft((d) => d.filter((id) => id !== k.id))}
+                        disabled={setRoomKeepers.isPending}
+                        className="rounded-full p-1 text-[var(--text-secondary)] hover:bg-red-50 hover:text-[var(--danger)]"
+                        aria-label={`Hapus ${k.name}`}
+                        title="Hapus dari ruangan ini"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <SearchableSelect
+                placeholder="Tambah penjaga…"
+                searchPlaceholder="Cari nama, NIP, atau ruangan yang dijaga…"
+                emptyText="Penjaga ruangan tidak ditemukan"
+                options={roomKeeperOptions}
+                value=""
+                disabled={setRoomKeepers.isPending}
+                onChange={(v) => v && setKeeperDraft((d) => [...d, Number(v)])}
+              />
+              {keepersDirty && !draftHasActive && (
+                <p className="mt-2 text-xs text-[var(--warning)]">
+                  Tanpa penjaga aktif, ruangan ini tidak bisa dibooking. Booking yang sudah ada tetap berjalan.
+                </p>
+              )}
+              <AppButton
+                className="mt-3"
+                size="sm"
+                loading={setRoomKeepers.isPending}
+                disabled={!keepersDirty || setRoomKeepers.isPending}
+                onClick={handleSaveRoomKeepers}
+              >
+                Simpan
+              </AppButton>
+            </>
+          ) : room.roomKeepers.length ? (
+            <ul className="space-y-2">
+              {room.roomKeepers.map((k) => (
+                <li key={k.id} className="flex items-center gap-2.5">
+                  <UserAvatar name={k.name} size="sm" />
+                  <span className="truncate text-sm font-medium text-[var(--text-primary)]">{k.name}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-[var(--text-secondary)]">Belum ada penjaga.</p>
+          )}
+        </Card>
 
         {/* Aksi cepat */}
         <Card>

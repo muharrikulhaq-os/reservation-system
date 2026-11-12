@@ -138,10 +138,10 @@ export const useRoomRatings = (roomKeeperId: number) =>
   })
 
 // Rating milik satu booking ruangan - 404 = belum dinilai (jangan retry)
-export const useBookingRoomRating = (bookingId: number, enabled = true) =>
+export const useBookingRoomRatings = (bookingId: number, enabled = true) =>
   useQuery({
-    queryKey: [...QUERY_KEYS.BOOKINGS, bookingId, 'room-rating'],
-    queryFn:  () => bookingService.getBookingRoomRating(bookingId).then((r) => r.data),
+    queryKey: [...QUERY_KEYS.BOOKINGS, bookingId, 'room-ratings'],
+    queryFn:  () => bookingService.getBookingRoomRatings(bookingId).then((r) => r.data),
     enabled:  !!bookingId && enabled,
     retry:    false,
   })

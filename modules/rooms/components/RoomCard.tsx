@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Building2, MapPin, Users } from 'lucide-react'
+import { AlertTriangle, Building2, MapPin, UserRound, Users } from 'lucide-react'
 import { AdminOnly } from '@/components/common'
 import { ResourceStatusBadge } from '@/components/shared'
 import { AppButton } from '@/components/ui-custom'
@@ -63,6 +63,19 @@ export const RoomCard = ({ room }: { room: Room }) => {
             {room.capacity} Orang
           </span>
         </div>
+
+        {/* Penjaga - ruangan tanpa penjaga aktif tidak bisa dibooking */}
+        {room.hasActiveKeeper === false ? (
+          <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-[var(--warning)]">
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            Belum ada penjaga - belum bisa dibooking
+          </p>
+        ) : (
+          <p className="mt-2 inline-flex min-w-0 items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+            <UserRound className="h-3.5 w-3.5 shrink-0 text-[var(--text-disabled)]" />
+            <span className="truncate">{room.roomKeepers.map((k) => k.name).join(', ')}</span>
+          </p>
+        )}
 
         {/* Aksi */}
         <div className="mt-auto flex items-center gap-2 border-t border-[var(--border-divider)] pt-3 [&>*]:flex-1">

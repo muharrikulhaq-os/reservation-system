@@ -102,11 +102,11 @@ export const useDeleteRoom = () => {
   })
 }
 
-export const useSetRoomKeeper = () => {
+export const useSetRoomKeepers = () => {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, roomKeeperId }: { id: number; roomKeeperId: number | null }) =>
-      roomService.setRoomKeeper(id, roomKeeperId),
+    mutationFn: ({ id, roomKeeperIds }: { id: number; roomKeeperIds: number[] }) =>
+      roomService.setRoomKeepers(id, roomKeeperIds),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.ROOMS })
       qc.invalidateQueries({ queryKey: QUERY_KEYS.ROOM_KEEPERS })

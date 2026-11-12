@@ -64,7 +64,7 @@ export const API_ENDPOINTS = {
     STATUS:          (id: number) => `${API_PREFIX}/rooms/${id}/status`,
     PHOTO:           (id: number) => `${API_PREFIX}/rooms/${id}/photo`,
     ATTACHMENTS:     (id: number) => `${API_PREFIX}/rooms/${id}/attachments`,
-    ROOM_KEEPER:     (id: number) => `${API_PREFIX}/rooms/${id}/room-keeper`,
+    ROOM_KEEPERS:    (id: number) => `${API_PREFIX}/rooms/${id}/room-keepers`,
   },
 
   // ── Room Keepers ────────────────────────
@@ -91,7 +91,7 @@ export const API_ENDPOINTS = {
     DRIVER_RATING_BY_BOOKING: (id: number) => `${API_PREFIX}/bookings/${id}/driver-rating`,
     DRIVER_RATINGS:  (driverId: number) => `${API_PREFIX}/bookings/drivers/${driverId}/ratings`,
     RATE_ROOM:       (id: number) => `${API_PREFIX}/bookings/${id}/rate-room`,
-    ROOM_RATING_BY_BOOKING: (id: number) => `${API_PREFIX}/bookings/${id}/room-rating`,
+    ROOM_RATINGS_BY_BOOKING: (id: number) => `${API_PREFIX}/bookings/${id}/room-ratings`,
     ROOM_RATINGS:    (roomKeeperId: number) => `${API_PREFIX}/bookings/room-keepers/${roomKeeperId}/ratings`,
     APPROVAL_LOG:    (id: number) => `${API_PREFIX}/bookings/${id}/approval-log`,
     ATTACHMENTS:     (id: number) => `${API_PREFIX}/bookings/${id}/attachments`,

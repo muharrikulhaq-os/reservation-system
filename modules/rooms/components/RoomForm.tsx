@@ -44,11 +44,13 @@ export const RoomForm = ({ initialData, onSuccess }: RoomFormProps) => {
       : undefined,
   })
 
+  // Ruangan baru langsung dibuka detailnya: admin perlu memilih penjaga
+  // ruangan dulu sebelum ruangan bisa dibooking.
   const onSubmit = (data: CreateRoomFormData) =>
     mutate(data, {
-      onSuccess: () => {
+      onSuccess: (res) => {
         onSuccess?.()
-        router.push('/rooms')
+        router.push(!isEdit && res?.data?.id ? `/rooms/${res.data.id}` : '/rooms')
       },
     })
 

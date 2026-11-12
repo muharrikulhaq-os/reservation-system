@@ -2,7 +2,7 @@
 // NOTIFICATION TYPE CONFIG
 // `type` notifikasi adalah string bebas di backend (bukan enum DB) - daftar
 // di bawah adalah SEMUA tipe yang backend kirim saat ini (grep
-// `s.notif.Notify/NotifyAdmins/NotifyRoomKeepers` di booking_service.go).
+// `s.notif.Notify/NotifyAdmins`, notifyDriver, notifyRoomKeepers di backend).
 // Tipe baru di backend otomatis jatuh ke DEFAULT_NOTIFICATION_CONFIG, tidak
 // perlu update di sini supaya tidak crash - tapi sebaiknya ditambahkan agar
 // label & warna lebih pas.
@@ -35,6 +35,7 @@ export const NOTIFICATION_TYPE_CONFIG: Record<string, NotificationTypeConfig> = 
   RETURN_REPORT:      { label: 'Laporan Pengembalian',icon: 'FileCheck',     color: '#0284C7' },
   OVERTIME_RECORDED:  { label: 'Overtime Tercatat',   icon: 'Clock',         color: '#D97706' },
   DRIVER_RATED:       { label: 'Penilaian Diterima',  icon: 'Star',          color: '#D97706' },
+  ROOM_KEEPER_RATED:  { label: 'Penilaian Diterima',  icon: 'Star',          color: '#D97706' },
   RATE_DRIVER_PROMPT: { label: 'Beri Rating Driver',  icon: 'Star',          color: '#D97706' },
   FUEL_VOUCHER_ISSUED:{ label: 'Voucher BBM',         icon: 'Fuel',          color: '#2D2CE8' },
   VEHICLE_ISSUE:      { label: 'Laporan Kendala',     icon: 'AlertTriangle', color: '#D97706' },
