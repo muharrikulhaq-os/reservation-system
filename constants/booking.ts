@@ -206,3 +206,18 @@ export const ACTIVITY_ACTION_FALLBACK = {
   icon: 'Circle',
   color: '#6B7280',
 } as const
+// --- Bagian ekspor riwayat booking (sheet Info & Booking selalu ada) ---
+export const BOOKING_HISTORY_SECTIONS: {
+  key: import('@/types').BookingHistorySection
+  label: string
+  description: string
+}[] = [
+  { key: 'passengers',  label: 'Penumpang',            description: 'Karyawan yang ikut & tamu, beserta nomor HP' },
+  { key: 'departure',   label: 'Keberangkatan',        description: 'Waktu mulai, oleh siapa, odometer awal, lokasi, link foto' },
+  { key: 'fuel',        label: 'Pengisian BBM',        description: 'Liter/kWh, biaya, odometer, SPBU, link foto struk' },
+  { key: 'return',      label: 'Laporan Pengembalian', description: 'Waktu kembali, pengirim, odometer akhir, lokasi, catatan' },
+  { key: 'expenses',    label: 'Biaya Tol & Parkir',   description: 'Transaksi tol/parkir/lainnya, nominal, link foto bukti' },
+  { key: 'ratings',     label: 'Rating',               description: 'Rating supir & penjaga ruangan beserta ulasan' },
+  { key: 'activity',    label: 'Riwayat Aktivitas',    description: 'Seluruh jejak aksi: dibuat, disetujui, dimulai, selesai, dst.' },
+  { key: 'attachments', label: 'Lampiran & Foto',      description: 'Semua lampiran & foto laporan pengembalian (link)' },
+]

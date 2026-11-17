@@ -2,11 +2,13 @@
 // BOOKING HOOKS
 // ─────────────────────────────────────────
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation as useReadMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMutation } from '@/lib/mutation'
 import { QUERY_KEYS } from '@/constants'
 import { bookingService } from '../api/booking.api'
 import type {
+  BookingHistoryParams,
+  BookingHistorySection,
   BookingQueryParams,
   CreateBookingPayload,
   StartBookingPayload,
@@ -138,6 +140,22 @@ export const useRoomRatings = (roomKeeperId: number) =>
   })
 
 // Rating milik satu booking ruangan - 404 = belum dinilai (jangan retry)
+// ── Riwayat booking (admin) ──
+export const useBookingHistory = (params: BookingHistoryParams, enabled = true) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.BOOKINGS, 'history', params],
+    queryFn:  () => bookingService.getHistory(params),
+    enabled,
+    placeholderData: keepPreviousData,
+  })
+
+/** Unduh Excel - "mutasi" baca (tidak mengubah data), jadi versi TanStack. */
+export const useExportBookingHistory = () =>
+  useReadMutation({
+    mutationFn: ({ params, sections }: { params: BookingHistoryParams; sections: BookingHistorySection[] }) =>
+      bookingService.exportHistory(params, sections),
+  })
+
 export const useBookingRoomRatings = (bookingId: number, enabled = true) =>
   useQuery({
     queryKey: [...QUERY_KEYS.BOOKINGS, bookingId, 'room-ratings'],

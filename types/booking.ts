@@ -402,3 +402,42 @@ export interface DriverRatingSummary {
   reviewerName: string
   createdAt: string
 }
+// --- Riwayat booking (admin) + ekspor Excel ---
+
+export interface BookingHistoryItem {
+  id: number
+  status: BookingStatus
+  resourceType: ResourceType
+  bookingType: BookingType
+  resourceName: string
+  plateNumber: string
+  requester: { name: string; department: string }
+  startDate: string
+  endDate: string
+  createdAt: string
+  driverName: string
+  roomKeepers: string
+  returnedAt: string | null
+  completedAt: string | null
+}
+
+export interface BookingHistoryParams {
+  from: string // YYYY-MM-DD (WIB), wajib
+  to: string
+  resourceType?: ResourceType
+  bookingType?: BookingType
+  status?: string // dipisah koma
+  search?: string
+  page?: number
+  limit?: number
+}
+
+export type BookingHistorySection =
+  | 'passengers'
+  | 'departure'
+  | 'fuel'
+  | 'return'
+  | 'expenses'
+  | 'ratings'
+  | 'activity'
+  | 'attachments'

@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────
 
 export { BookingPage } from "./Booking";
+export { BookingHistory } from "./BookingHistory";
 export { BookingCreate } from "./components/BookingCreate";
 export { BookingForm } from "./components/BookingForm";
 export { BookingDetail } from "./components/BookingDetail";

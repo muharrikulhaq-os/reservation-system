@@ -91,6 +91,8 @@ export const API_ENDPOINTS = {
     DRIVER_RATING_BY_BOOKING: (id: number) => `${API_PREFIX}/bookings/${id}/driver-rating`,
     DRIVER_RATINGS:  (driverId: number) => `${API_PREFIX}/bookings/drivers/${driverId}/ratings`,
     RATE_ROOM:       (id: number) => `${API_PREFIX}/bookings/${id}/rate-room`,
+    HISTORY:         `${API_PREFIX}/bookings/history`,
+    HISTORY_EXPORT:  `${API_PREFIX}/bookings/history/export`,
     ROOM_RATINGS_BY_BOOKING: (id: number) => `${API_PREFIX}/bookings/${id}/room-ratings`,
     ROOM_RATINGS:    (roomKeeperId: number) => `${API_PREFIX}/bookings/room-keepers/${roomKeeperId}/ratings`,
     APPROVAL_LOG:    (id: number) => `${API_PREFIX}/bookings/${id}/approval-log`,

@@ -15,6 +15,9 @@ import type {
   DriverRatingsResult,
   PendingDriverRating,
   BookingRoomRatings,
+  BookingHistoryItem,
+  BookingHistoryParams,
+  BookingHistorySection,
   RoomRatingsResult,
   BookingQueryParams,
   CreateBookingPayload,
@@ -163,6 +166,24 @@ export const bookingService = {
       .then((r) => r.data),
 
   // Rating milik satu booking (404 bila belum dinilai)
+  // ── Riwayat booking (admin) ──
+  getHistory: (params: BookingHistoryParams) =>
+    apiClient
+      .get<PaginatedResponse<BookingHistoryItem>>(API_ENDPOINTS.BOOKINGS.HISTORY, { params })
+      .then((r) => r.data),
+
+  /** File Excel dibuat backend; dikembalikan sebagai Blob + nama file. */
+  exportHistory: async (params: BookingHistoryParams, sections: BookingHistorySection[]) => {
+    const { page: _p, limit: _l, ...filter } = params
+    const res = await apiClient.get<Blob>(API_ENDPOINTS.BOOKINGS.HISTORY_EXPORT, {
+      params: { ...filter, sections: sections.join(',') },
+      responseType: 'blob',
+    })
+    const disp = String(res.headers['content-disposition'] ?? '')
+    const name = /filename="?([^";]+)"?/.exec(disp)?.[1] ?? `Riwayat Booking ${params.from} sd ${params.to}.xlsx`
+    return { blob: res.data, name }
+  },
+
   getBookingRoomRatings: (bookingId: number) =>
     apiClient
       .get<ApiResponse<BookingRoomRatings>>(

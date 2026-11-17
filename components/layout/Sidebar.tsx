@@ -5,6 +5,7 @@ import Image from 'next/image'
 import logoMenu from '@/img/kce-menu.png'
 import { usePathname } from 'next/navigation'
 import {
+  History,
   LayoutDashboard,
   CalendarCheck,
   Car,
@@ -58,6 +59,7 @@ const MENU_NAV: NavItem[] = [
 ]
 
 const ADMIN_NAV: NavItem[] = [
+  { label: 'Riwayat Booking', href: '/booking-history', icon: History },
   { label: 'Laporan',   href: '/reports',   icon: BarChart3 },
   { label: 'Pengguna',  href: '/users',     icon: Users },
   { label: 'Pengaturan', href: '/settings', icon: Settings },
@@ -134,7 +136,7 @@ const NavSection = ({ label, items }: { label: string; items: NavItem[] }) => {
             isActive={
               item.href === '/dashboard'
                 ? pathname === '/dashboard'
-                : pathname.startsWith(item.href)
+                : pathname === item.href || pathname.startsWith(item.href + '/')
             }
           />
         ))}
