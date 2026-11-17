@@ -10,7 +10,8 @@ import { TOKEN_CONFIG } from '@/constants'
 
 // ── Route Definitions ────────────────────
 
-const PUBLIC_ROUTES  = ['/login', '/guest-booking', '/forgot-password']
+// /kebijakan-privasi: URL kebijakan privasi Google Play - wajib bisa dibuka tanpa login.
+const PUBLIC_ROUTES  = ['/login', '/guest-booking', '/forgot-password', '/kebijakan-privasi']
 // redirect ke dashboard jika sudah login (user yang sudah masuk pakai ganti password biasa)
 const AUTH_ROUTES    = ['/login', '/forgot-password']
 // Hanya ADMIN (Pemeliharaan admin-only di backend bahkan untuk lihat data)
