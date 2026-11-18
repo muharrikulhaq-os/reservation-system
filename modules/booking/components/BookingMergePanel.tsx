@@ -23,11 +23,7 @@ import { AppButton, InputTextArea } from '@/components/ui-custom'
 import { cn, getErrorMessage, isSameWibDay, wibHM, wibToISO } from '@/lib'
 import { BOOKING_STATUS, RESOURCE_TYPE } from '@/constants'
 import type { Booking } from '@/types'
-import {
-  useApproveBooking,
-  useBookings,
-  useMergeBooking,
-} from '../hooks/useBookings'
+import { useBookings, useMergeBooking } from '../hooks/useBookings'
 
 // ─────────────────────────────────────────
 // BOOKING MERGE PANEL (admin, VEHICLE, PENDING)
@@ -85,7 +81,6 @@ export const BookingMergePanel = ({
   const [reason, setReason] = useState('')
 
   const merge = useMergeBooking()
-  const approve = useApproveBooking()
 
   const openMergeForm = (candidate: Booking) => {
     setSelectedBooking(candidate)
@@ -94,11 +89,11 @@ export const BookingMergePanel = ({
     setReason('')
   }
 
-  // Merge lalu otomatis approve booking ini (target).
+  // Gabungkan booking ini ke kandidat yang sudah disetujui.
   // - id (path)       = PRIMARY = candidate yang sudah APPROVED
   // - targetBookingId = booking ini (PENDING) yang ikut digabungkan
-  // Setelah merge sukses, booking ini di-approve dengan catatan
-  // "telah dilakukan merge" → status berubah ke APPROVED.
+  // Backend langsung menyetujui booking yang masih PENDING saat merge
+  // (status → APPROVED), jadi tidak ada panggilan approve terpisah.
   const handleMerge = async () => {
     if (!selectedBooking || !reason.trim() || !mergeSchedule) return
     const startDate = wibToISO(
@@ -118,11 +113,6 @@ export const BookingMergePanel = ({
           startDate,
           endDate,
         },
-      })
-      // Auto-approve booking ini (target) setelah merge
-      await approve.mutateAsync({
-        id: booking.id,
-        payload: { note: 'telah dilakukan merge' },
       })
       setSelectedBooking(null)
       onMergeComplete?.()
@@ -249,10 +239,10 @@ export const BookingMergePanel = ({
 
           {selectedBooking && (
             <div className="mt-2 space-y-4">
-              {(merge.error || approve.error) && (
+              {merge.error && (
                 <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>{getErrorMessage(merge.error || approve.error)}</span>
+                  <span>{getErrorMessage(merge.error)}</span>
                 </div>
               )}
 
@@ -317,17 +307,16 @@ export const BookingMergePanel = ({
                 <AppButton
                   variant="secondary"
                   fullWidth
-                  disabled={merge.isPending || approve.isPending}
+                  disabled={merge.isPending}
                   onClick={() => setSelectedBooking(null)}
                 >
                   Batal
                 </AppButton>
                 <AppButton
                   fullWidth
-                  loading={merge.isPending || approve.isPending}
+                  loading={merge.isPending}
                   disabled={
                     merge.isPending ||
-                    approve.isPending ||
                     !reason.trim() ||
                     !mergeSchedule
                   }
