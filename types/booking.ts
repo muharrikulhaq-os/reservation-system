@@ -428,6 +428,8 @@ export interface BookingHistoryParams {
   bookingType?: BookingType
   status?: string // dipisah koma
   search?: string
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
   page?: number
   limit?: number
 }

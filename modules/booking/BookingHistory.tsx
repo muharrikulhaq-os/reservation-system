@@ -6,6 +6,7 @@ import { AlertCircle, Building2, Car, Download, FileSpreadsheet, Search } from '
 import { Card } from '@/components/common'
 import { BookingStatusBadge, BookingTypeBadge, DataTable, PageHeader, createColumnHelper } from '@/components/shared'
 import type { ColumnDef } from '@/components/shared'
+import type { SortingState } from '@tanstack/react-table'
 import { AppButton, AppCheckbox, InputDate, InputSelect, InputText } from '@/components/ui-custom'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { BOOKING_HISTORY_SECTIONS, BOOKING_STATUS_CONFIG, RESOURCE_TYPE } from '@/constants'
@@ -128,6 +129,8 @@ export const BookingHistory = () => {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(20)
+  // Urutan dari header kolom - dikerjakan server (id kolom = kunci sort backend).
+  const [sorting, setSorting] = useState<SortingState>([])
   const [exportOpen, setExportOpen] = useState(false)
   const debounced = useDebounce(search.trim(), 300)
 
@@ -147,6 +150,8 @@ export const BookingHistory = () => {
     bookingType: resourceType === RESOURCE_TYPE.ROOM ? undefined : bookingType || undefined,
     status: statuses.length ? statuses.join(',') : undefined,
     search: debounced || undefined,
+    sortBy: sorting[0]?.id,
+    sortOrder: sorting[0] ? (sorting[0].desc ? 'desc' : 'asc') : undefined,
     page,
     limit,
   }
@@ -272,6 +277,12 @@ export const BookingHistory = () => {
             setPage(1)
           }}
           emptyMessage="Tidak ada booking pada periode & filter ini"
+          manualSorting
+          sorting={sorting}
+          onSortingChange={(s) => {
+            setSorting(s)
+            setPage(1)
+          }}
         />
       </Card>
 
