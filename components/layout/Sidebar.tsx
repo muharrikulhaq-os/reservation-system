@@ -204,8 +204,12 @@ export const Sidebar = () => {
   const isAdmin = useAuthStore((s) => s.isAdmin())
   const role = useAuthStore((s) => s.user?.role) as RoleName | undefined
 
-  // Badge booking PENDING + penanda kandidat merge
-  const pendingQ = useBookings({ status: BOOKING_STATUS.PENDING, limit: 100 })
+  // Badge booking PENDING (antrian approval) + penanda kandidat merge - KHUSUS
+  // admin; role lain tidak menyetujui booking, jadi tanpa badge & tanpa fetch.
+  const pendingQ = useBookings(
+    { status: BOOKING_STATUS.PENDING, limit: 100 },
+    { enabled: isAdmin },
+  )
   const pendingCount = pendingQ.data?.pagination.total ?? 0
   const mergeCandidateCount = (pendingQ.data?.data ?? []).filter(
     (b) => b.hasMergeSuggestion,
@@ -216,7 +220,7 @@ export const Sidebar = () => {
   const menuItems = MENU_NAV.filter(
     (item) => !item.roles || (role ? item.roles.includes(role) : false),
   ).map((item) =>
-    item.href === '/booking'
+    item.href === '/booking' && isAdmin
       ? { ...item, badge: pendingCount, dot: mergeCandidateCount > 0 }
       : item,
   )
