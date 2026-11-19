@@ -8,6 +8,7 @@ import { AppButton, InputSelect } from '@/components/ui-custom'
 import { AdminOnly } from '@/components/common'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { usePersistedState, useTableFilter } from '@/hooks'
+import { useAuthStore } from '@/store/auth.store'
 import { RESOURCE_STATUS, RESOURCE_STATUS_CONFIG, STORAGE_KEYS } from '@/constants'
 import type { ResourceStatus, SelectOption } from '@/types'
 import { useVehiclesPaginated, useVehicleCategories } from './hooks/useVehicles'
@@ -30,6 +31,12 @@ export const VehiclesPage = () => {
     status: undefined as ResourceStatus | undefined,
     categoryId: undefined as number | undefined,
   })
+  // Selain admin tidak melihat kendaraan Tidak Aktif (disaring juga di API),
+  // jadi tab-nya disembunyikan.
+  const isAdmin = useAuthStore((s) => s.isAdmin())
+  const statusTabs = isAdmin
+    ? STATUS_TABS
+    : STATUS_TABS.filter((t) => t.value !== RESOURCE_STATUS.INACTIVE)
 
   // Mode tampilan diingat antar kunjungan
   const [view, setView] = usePersistedState<ViewMode>(
@@ -95,7 +102,7 @@ export const VehiclesPage = () => {
             }
           >
             <TabsList className="rounded-lg bg-[var(--bg-subtle)] p-1">
-              {STATUS_TABS.map((tab) => (
+              {statusTabs.map((tab) => (
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
