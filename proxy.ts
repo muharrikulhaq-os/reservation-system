@@ -14,15 +14,15 @@ import { TOKEN_CONFIG } from '@/constants'
 const PUBLIC_ROUTES  = ['/login', '/guest-booking', '/forgot-password', '/kebijakan-privasi']
 // redirect ke dashboard jika sudah login (user yang sudah masuk pakai ganti password biasa)
 const AUTH_ROUTES    = ['/login', '/forgot-password']
-// Hanya ADMIN (Pemeliharaan admin-only di backend bahkan untuk lihat data)
-const ADMIN_ROUTES   = ['/admin', '/reports', '/users', '/settings', '/drivers', '/booking/approval', '/maintenance', '/trip-reimbursements', '/booking-history']
+// Hanya ADMIN (Pemeliharaan admin-only di backend bahkan untuk lihat data).
+// /vehicles: karyawan memilih kendaraan langsung di form booking (selaras
+// mobile) - halaman Kendaraan khusus admin.
+const ADMIN_ROUTES   = ['/admin', '/reports', '/users', '/settings', '/drivers', '/booking/approval', '/maintenance', '/trip-reimbursements', '/booking-history', '/vehicles']
 // Hanya ADMIN atau EMPLOYEE - booking dibuat oleh keduanya (DRIVER
-// menjalankan booking, bukan membuatnya); kendaraan dikelola oleh admin,
-// dipilih/dipakai oleh employee saat booking - DRIVER & ROOM_KEEPER tidak
-// mengelola kendaraan sama sekali.
-const ADMIN_OR_EMPLOYEE_ROUTES = ['/booking/new', '/vehicles']
-// Terlarang untuk DRIVER (ruangan bukan urusan driver)
-const DRIVER_FORBIDDEN = ['/rooms']
+// menjalankan booking, bukan membuatnya).
+const ADMIN_OR_EMPLOYEE_ROUTES = ['/booking/new']
+// Halaman Ruangan: ADMIN & ROOM_KEEPER saja (karyawan cukup Dashboard + Booking).
+const ROOM_ROUTES = ['/rooms']
 
 // ── Helpers ──────────────────────────────
 
@@ -30,7 +30,7 @@ const isPublicRoute          = (path: string) => PUBLIC_ROUTES.some((r)         
 const isAuthRoute            = (path: string) => AUTH_ROUTES.some((r)             => path.startsWith(r))
 const isAdminRoute           = (path: string) => ADMIN_ROUTES.some((r)            => path.startsWith(r))
 const isAdminOrEmployeeRoute = (path: string) => ADMIN_OR_EMPLOYEE_ROUTES.some((r) => path.startsWith(r))
-const isDriverForbidden      = (path: string) => DRIVER_FORBIDDEN.some((r)        => path.startsWith(r))
+const isRoomRoute            = (path: string) => ROOM_ROUTES.some((r)             => path.startsWith(r))
 
 // ─────────────────────────────────────────
 // MIDDLEWARE
@@ -72,8 +72,8 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/unauthorized', request.url))
   }
 
-  // 5. Role-based: driver tidak boleh akses ruangan
-  if (isLoggedIn && isDriverForbidden(pathname) && userRole === 'DRIVER') {
+  // 5. Role-based: ruangan hanya untuk admin & penjaga ruangan
+  if (isLoggedIn && isRoomRoute(pathname) && userRole !== 'ADMIN' && userRole !== 'ROOM_KEEPER') {
     return NextResponse.redirect(new URL('/unauthorized', request.url))
   }
 

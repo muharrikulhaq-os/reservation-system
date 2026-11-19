@@ -14,7 +14,8 @@ import type { Driver } from '@/types'
 // belum. Klik → DriverDetailModal (info + rating).
 // ─────────────────────────────────────────
 
-export const DriverListCard = () => {
+/** `showLinks`: tautan "Lihat semua" ke halaman Driver (khusus admin). */
+export const DriverListCard = ({ showLinks = true }: { showLinks?: boolean }) => {
   const { data: drivers, isLoading } = useDrivers()
   const [selected, setSelected] = useState<Driver | null>(null)
   const list = drivers ?? []
@@ -25,7 +26,7 @@ export const DriverListCard = () => {
         title="Supir"
         description="Kepemilikan kendaraan & status"
         action={
-          <Link
+          showLinks && <Link
             href="/drivers"
             className="inline-flex items-center gap-0.5 text-xs font-medium text-[var(--primary)] hover:underline"
           >

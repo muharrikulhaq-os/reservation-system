@@ -70,9 +70,9 @@ export const DashboardPage = () => {
         <AvailableBookings />
         {!isLimitedView && (
           <>
-            <AvailableVehicleTable />
-            <AvailableRoomTable />
-            <DriverListCard />
+            <AvailableVehicleTable showLinks={isAdmin} />
+            <AvailableRoomTable showLinks={isAdmin} />
+            <DriverListCard showLinks={isAdmin} />
           </>
         )}
       </div>

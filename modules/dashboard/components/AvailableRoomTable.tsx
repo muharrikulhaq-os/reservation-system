@@ -33,7 +33,8 @@ const availableRoomColumns: ColumnDef<Room, unknown>[] = [
   }),
 ] as ColumnDef<Room, unknown>[]
 
-export const AvailableRoomTable = () => {
+/** `showLinks`: tautan ke halaman Ruangan (khusus admin). */
+export const AvailableRoomTable = ({ showLinks = true }: { showLinks?: boolean }) => {
   const { data, isLoading } = useRoomsPaginated({ limit: 5, page: 1, status: 'AVAILABLE' })
 
   return (
@@ -42,13 +43,15 @@ export const AvailableRoomTable = () => {
         <h2 className="text-base font-bold text-[var(--text-primary)]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Ruangan Tersedia
         </h2>
-        <Link href="/rooms" className="text-sm font-semibold text-[var(--primary)] hover:underline">
-          Lihat Semua
-        </Link>
+        {showLinks && (
+          <Link href="/rooms" className="text-sm font-semibold text-[var(--primary)] hover:underline">
+            Lihat Semua
+          </Link>
+        )}
       </div>
       <DataTable
         data={data?.data ?? []}
-        columns={availableRoomColumns}
+        columns={showLinks ? availableRoomColumns : availableRoomColumns.filter((c) => c.id !== 'actions')}
         isLoading={isLoading}
         emptyMessage="Tidak ada ruangan tersedia"
       />

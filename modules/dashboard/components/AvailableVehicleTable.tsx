@@ -38,7 +38,8 @@ const availableVehicleColumns: ColumnDef<Vehicle, unknown>[] = [
   }),
 ] as ColumnDef<Vehicle, unknown>[]
 
-export const AvailableVehicleTable = () => {
+/** `showLinks`: tautan ke halaman Kendaraan (khusus admin). */
+export const AvailableVehicleTable = ({ showLinks = true }: { showLinks?: boolean }) => {
   const { data, isLoading } = useVehiclesPaginated({ limit: 5, page: 1, status: 'AVAILABLE' })
 
   return (
@@ -47,13 +48,15 @@ export const AvailableVehicleTable = () => {
         <h2 className="text-base font-bold text-[var(--text-primary)]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Kendaraan Tersedia
         </h2>
-        <Link href="/vehicles" className="text-sm font-semibold text-[var(--primary)] hover:underline">
-          Lihat Semua
-        </Link>
+        {showLinks && (
+          <Link href="/vehicles" className="text-sm font-semibold text-[var(--primary)] hover:underline">
+            Lihat Semua
+          </Link>
+        )}
       </div>
       <DataTable
         data={data?.data ?? []}
-        columns={availableVehicleColumns}
+        columns={showLinks ? availableVehicleColumns : availableVehicleColumns.filter((c) => c.id !== 'actions')}
         isLoading={isLoading}
         emptyMessage="Tidak ada kendaraan tersedia"
       />

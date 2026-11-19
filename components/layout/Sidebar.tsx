@@ -46,11 +46,12 @@ interface NavItem {
 const MENU_NAV: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard',      icon: LayoutDashboard },
   { label: 'Booking',   href: '/booking',    icon: CalendarCheck },
-  // Driver menjalankan booking (bukan mengelola kendaraan) & ROOM_KEEPER
-  // urusannya ruangan - keduanya tidak perlu menu Vehicles.
-  { label: 'Vehicles',  href: '/vehicles',   icon: Car, roles: [ROLE.ADMIN, ROLE.EMPLOYEE] },
+  // Karyawan cukup Dashboard + Booking (selaras mobile) - kendaraan & ruangan
+  // dipilih langsung di form booking. Driver & ROOM_KEEPER juga tidak perlu
+  // menu Vehicles.
+  { label: 'Vehicles',  href: '/vehicles',   icon: Car, roles: [ROLE.ADMIN] },
   // ROOM_KEEPER baca-saja (create/edit/delete tetap admin-only di backend).
-  { label: 'Meeting Rooms', href: '/rooms',  icon: Building2, roles: [ROLE.ADMIN, ROLE.EMPLOYEE, ROLE.ROOM_KEEPER] },
+  { label: 'Meeting Rooms', href: '/rooms',  icon: Building2, roles: [ROLE.ADMIN, ROLE.ROOM_KEEPER] },
   { label: 'Driver',    href: '/drivers',    icon: UserRound, roles: [ROLE.ADMIN] },
   { label: 'Bahan Bakar', href: '/fuel',     icon: Fuel, roles: [ROLE.ADMIN, ROLE.DRIVER] },
   // Pemeliharaan kendaraan - admin-only di backend (bahkan untuk lihat),
