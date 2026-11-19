@@ -1,16 +1,16 @@
 'use client'
 
-import { Mail, Phone, IdCard, Building2 } from 'lucide-react'
+import { Mail, IdCard, Building2 } from 'lucide-react'
 import { Card, CardHeader, CardSection } from '@/components/common'
 import { PageHeader } from '@/components/shared'
 import { useMe } from '@/hooks'
 import { ProfilePhotoUpload } from './components/ProfilePhotoUpload'
 import { ChangePasswordForm } from './components/ChangePasswordForm'
+import { PhoneNumberField } from './components/PhoneNumberField'
 
 // ─────────────────────────────────────────
-// PROFILE - foto & password bisa diubah sendiri, field lain (nama, email,
-// no. HP, no. SIM) read-only - hanya admin yang bisa mengubah lewat menu
-// Pengguna (belum ada endpoint self-service untuk itu di backend).
+// PROFILE - foto, nomor HP, dan password bisa diubah sendiri; field lain
+// (nama, email, departemen, no. SIM) read-only - diubah admin lewat menu Pengguna.
 // ─────────────────────────────────────────
 
 const InfoRow = ({
@@ -76,14 +76,12 @@ export const ProfilePage = () => {
           <Card>
             <CardHeader
               title="Informasi Akun"
-              description="Hubungi admin untuk mengubah data di bawah ini"
+              description="Nomor HP bisa Anda ubah sendiri; data lain diubah oleh admin"
             />
             <div className="divide-y divide-[var(--border-divider)]">
               <InfoRow icon={Mail} label="Email" value={user.email} />
               <InfoRow icon={Building2} label="Departemen" value={user.department.name} />
-              {user.phoneNumber && (
-                <InfoRow icon={Phone} label="No. HP" value={user.phoneNumber} />
-              )}
+              <PhoneNumberField phoneNumber={user.phoneNumber} />
               {user.licenseNumber && (
                 <InfoRow icon={IdCard} label="No. SIM" value={user.licenseNumber} />
               )}

@@ -38,6 +38,7 @@ export const API_ENDPOINTS = {
     TOGGLE_ACTIVE:   (id: number) => `${API_PREFIX}/users/${id}/toggle-active`,
     RESET_PASSWORD:  (id: number) => `${API_PREFIX}/users/${id}/reset-password`,
     ME_PHOTO:        `${API_PREFIX}/users/me/profile-photo`,
+    ME_PHONE:        `${API_PREFIX}/users/me/phone`,
     PHOTO_BY_ID:     (id: number) => `${API_PREFIX}/users/${id}/profile-photo`,
     BULK_TEMPLATE:   `${API_PREFIX}/users/bulk-template`,
     BULK_IMPORT:     `${API_PREFIX}/users/bulk-import`,

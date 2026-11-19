@@ -146,6 +146,14 @@ export const useUpdateProfilePhoto = () => {
   })
 }
 
+export const useUpdateMyPhone = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (phoneNumber: string) => authService.updateMyPhone(phoneNumber),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: QUERY_KEYS.AUTH_ME }),
+  })
+}
+
 export const useDeleteProfilePhoto = () => {
   const qc = useQueryClient()
   return useMutation({

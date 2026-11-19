@@ -77,4 +77,10 @@ export const authService = {
     apiClient
       .delete<ApiResponse<null>>(API_ENDPOINTS.USERS.ME_PHOTO)
       .then((r) => r.data),
+
+  /** Isi / ubah nomor HP sendiri (semua role). */
+  updateMyPhone: (phoneNumber: string) =>
+    apiClient
+      .put<ApiResponse<User>>(API_ENDPOINTS.USERS.ME_PHONE, { phoneNumber })
+      .then((r) => r.data),
 }
