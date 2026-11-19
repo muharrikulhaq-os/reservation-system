@@ -17,7 +17,8 @@ import { GuestPassengersInput } from './GuestPassengersInput'
 // PENUMPANG (detail booking kendaraan)
 // Karyawan yang ikut + nomor HP (telepon / WhatsApp). Booking digabung:
 // pemesan & penumpang booking pasangannya ikut tampil (satu perjalanan).
-// Ubah daftar: pemesan & admin, selama PENDING/APPROVED.
+// Ubah daftar: pemesan & admin, selama PENDING - setelah disetujui hanya bila
+// pengaturan "boleh ubah setelah disetujui" aktif (backend: passengersEditable).
 // ─────────────────────────────────────────
 
 interface Props {
@@ -38,7 +39,7 @@ export const BookingPassengersCard = ({ booking, currentUserId, isAdmin, capacit
   const others = list.filter((p) => p.bookingId !== booking.id || p.role === 'REQUESTER')
   const editable =
     (isAdmin || currentUserId === booking.user.id) &&
-    (booking.status === BOOKING_STATUS.PENDING || booking.status === BOOKING_STATUS.APPROVED)
+    (booking.passengersEditable ?? booking.status === BOOKING_STATUS.PENDING)
 
   const startEdit = () => {
     setDraft(mine.map((p) => ({ id: p.userId, name: p.name, employeeId: p.employeeId, department: p.department })))

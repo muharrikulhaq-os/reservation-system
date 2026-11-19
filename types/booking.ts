@@ -36,6 +36,9 @@ export interface Booking extends Timestamps {
   passengerCount?: number
   // Karyawan yang ikut (+ pemesan booking gabungan) - detail saja.
   passengers?: BookingPassenger[]
+  // Status ini masih boleh mengubah penumpang (PENDING, atau APPROVED bila
+  // pengaturan mengizinkan) - detail saja; cek pemesan/admin tetap di klien.
+  passengersEditable?: boolean
   // Penjaga ruangan (booking ruangan) - detail saja.
   roomKeepers?: RoomKeeperRef[]
   // Lokasi jemput & tujuan (VEHICLE; booking lama/ruangan = null)

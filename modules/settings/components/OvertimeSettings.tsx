@@ -44,7 +44,7 @@ const useNumberSetting = (key: string) => {
   return data?.value != null ? Number(data.value) : undefined
 }
 
-const ToggleRow = ({
+export const ToggleRow = ({
   title,
   description,
   checked,
