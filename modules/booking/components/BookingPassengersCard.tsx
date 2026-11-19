@@ -17,8 +17,8 @@ import { GuestPassengersInput } from './GuestPassengersInput'
 // PENUMPANG (detail booking kendaraan)
 // Karyawan yang ikut + nomor HP (telepon / WhatsApp). Booking digabung:
 // pemesan & penumpang booking pasangannya ikut tampil (satu perjalanan).
-// Ubah daftar: pemesan & admin, selama PENDING - setelah disetujui hanya bila
-// pengaturan "boleh ubah setelah disetujui" aktif (backend: passengersEditable).
+// Ubah daftar: pemesan & admin, hanya selama PENDING (setelah disetujui terkunci;
+// backend: passengersEditable).
 // ─────────────────────────────────────────
 
 interface Props {

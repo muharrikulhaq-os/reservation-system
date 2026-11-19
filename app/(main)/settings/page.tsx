@@ -1,12 +1,6 @@
 import type { Metadata } from 'next'
 import { AdminOnly } from '@/components/common'
-import {
-  BookingStartSettings,
-  FuelStationSettings,
-  FuelTypeSettings,
-  OvertimeSettings,
-  PassengerEditSettings,
-} from '@/modules/settings'
+import { BookingStartSettings, FuelStationSettings, FuelTypeSettings, OvertimeSettings } from '@/modules/settings'
 import { DocumentSettingsCard } from '@/modules/maintenance'
 
 export const metadata: Metadata = {
@@ -18,7 +12,6 @@ export default function Page() {
     <AdminOnly>
       <div className="flex flex-col gap-6">
         <BookingStartSettings />
-        <PassengerEditSettings />
         <OvertimeSettings />
         <FuelTypeSettings />
         <FuelStationSettings />
