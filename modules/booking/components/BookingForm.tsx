@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, Building2, Car, Clock, MapPin, Navigation, UserCheck } from 'lucide-react'
 import { Card, CardHeader, CardSection } from '@/components/common'
-import { AppButton, InputText, InputTextArea, InputNumber } from '@/components/ui-custom'
+import { AppButton, InputText, InputTextArea } from '@/components/ui-custom'
 import { DriverSelector } from './DriverSelector'
 import { PassengerPicker } from './PassengerPicker'
 import { GuestPassengersInput } from './GuestPassengersInput'
@@ -60,7 +60,6 @@ export const BookingForm = () => {
   const [conflictAcknowledged, setConflictAcknowledged] = useState(false)
   const [selectedDriverId, setSelectedDriverId] = useState<number | null>(null)
   const [suggestedDriverId, setSuggestedDriverId] = useState<number | null>(null)
-  const [passengerCount, setPassengerCount] = useState<number>(1)
   // Karyawan yang ikut (VEHICLE) - booking tetap atas nama pemesan.
   const [passengers, setPassengers] = useState<UserLookup[]>([])
   const [guests, setGuests] = useState<GuestPassenger[]>([])
@@ -103,7 +102,6 @@ export const BookingForm = () => {
     setConflictAcknowledged(false)
     setSelectedDriverId(null)
     setSuggestedDriverId(null)
-    setPassengerCount(1)
     setPassengers([])
     setGuests([])
     setBookingType(BOOKING_TYPE.NON_SPD)
@@ -120,7 +118,6 @@ export const BookingForm = () => {
     setConflictAcknowledged(false)
     setSelectedDriverId(null)
     setSuggestedDriverId(null)
-    setPassengerCount(1)
     setPassengers([])
     setGuests([])
     setBookingType(BOOKING_TYPE.NON_SPD)
@@ -174,27 +171,13 @@ export const BookingForm = () => {
     ? wibToISO(formatYMD(schedule.endDate), schedule.endTime)
     : null
 
-  const handlePassengerChange = (v: number | undefined) => {
-    const n = v ?? 1
-    setPassengerCount(n)
-    setValue('passengerCount', n, { shouldValidate: true })
-  }
-
-  // Minimal = pemesan + karyawan & tamu yang ikut; sisanya bisa ditambah manual.
-  const minPassengers = 1 + passengers.length + guests.length
+  // Jumlah penumpang SELALU dari daftar: Anda (pemesan) + karyawan yang ikut
+  // + tamu. Supir tidak dihitung - kapasitas kendaraan = kursi penumpang.
+  const passengerCount = 1 + passengers.length + guests.length
   const seatsLeft = capacity != null ? Math.max(0, capacity - 1 - passengers.length - guests.length) : undefined
-  const handlePassengersChange = (list: UserLookup[]) => {
-    setPassengers(list)
-    if (passengerCount < 1 + list.length + guests.length) handlePassengerChange(1 + list.length + guests.length)
-  }
-  const handleGuestsChange = (list: GuestPassenger[]) => {
-    setGuests(list)
-    if (passengerCount < 1 + passengers.length + list.length) handlePassengerChange(1 + passengers.length + list.length)
-  }
 
   // Validasi kapasitas (butuh data kendaraan)
-  const isPassengerValid =
-    !isVehicle || (passengerCount >= minPassengers && passengerCount <= (capacity ?? 0))
+  const isPassengerValid = !isVehicle || passengerCount <= (capacity ?? 0)
 
   // Jadwal siap dipakai lanjut: sudah dikonfirmasi, dan kalau bentrok, admin
   // sudah eksplisit pilih "Tetap Ajukan" di panel keputusan.
@@ -318,32 +301,27 @@ export const BookingForm = () => {
           <div className="mb-5">
             <PassengerPicker
               value={passengers}
-              onChange={handlePassengersChange}
+              onChange={setPassengers}
               max={capacity != null ? Math.max(0, capacity - 1 - guests.length) : undefined}
               excludeIds={currentUserId ? [currentUserId] : []}
             />
           </div>
           <div className="mb-5">
-            <GuestPassengersInput value={guests} onChange={handleGuestsChange} remaining={seatsLeft} />
+            <GuestPassengersInput value={guests} onChange={setGuests} remaining={seatsLeft} />
           </div>
-          <div className="max-w-[220px]">
-            <InputNumber
-              label="Jumlah Penumpang"
-              min={minPassengers}
-              max={capacity}
-              value={passengerCount}
-              onChange={handlePassengerChange}
-            />
+          <div className="rounded-lg bg-[var(--bg-subtle)] px-4 py-3">
+            <p className="text-sm font-semibold text-[var(--text-primary)]">
+              Total penumpang: {passengerCount} orang
+            </p>
+            <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
+              Anda + {passengers.length} karyawan + {guests.length} tamu · supir tidak dihitung ·
+              kapasitas {selected.name}: {capacity} orang
+            </p>
           </div>
-          <p className="mt-1 text-xs text-[var(--text-secondary)]">
-            Kapasitas {selected.name}: {capacity} orang
-          </p>
           {!isPassengerValid && (
             <p className="mt-1 flex items-center gap-1 text-xs text-[var(--danger)]">
               <AlertCircle className="h-3 w-3" />
-              {passengerCount < minPassengers
-                ? `Jumlah penumpang minimal ${minPassengers} (Anda + karyawan & tamu yang ikut)`
-                : `Jumlah penumpang melebihi kapasitas kendaraan (${capacity} orang)`}
+              {`Jumlah penumpang melebihi kapasitas kendaraan (${capacity} orang)`}
             </p>
           )}
         </Card>

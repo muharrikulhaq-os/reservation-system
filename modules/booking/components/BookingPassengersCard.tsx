@@ -61,7 +61,7 @@ export const BookingPassengersCard = ({ booking, currentUserId, isAdmin, capacit
     <Card>
       <CardHeader
         title="Penumpang"
-        description={`${booking.passengerCount ?? 1 + mine.length + guests.length} orang · ${mine.length} karyawan · ${guests.length} tamu`}
+        description={`${booking.passengerCount ?? 1 + mine.length + guests.length} orang (pemesan + ${mine.length} karyawan + ${guests.length} tamu, supir tidak dihitung)`}
         action={
           editable ? (
             <AppButton size="sm" variant="secondary" leftIcon={<Pencil className="h-3.5 w-3.5" />} onClick={startEdit}>
@@ -126,7 +126,7 @@ export const BookingPassengersCard = ({ booking, currentUserId, isAdmin, capacit
               remaining={capacity ? Math.max(0, capacity - 1 - draft.length - guestDraft.length) : undefined}
             />
             <p className="text-xs text-[var(--text-secondary)]">
-              Karyawan yang baru ditambahkan mendapat notifikasi. Jumlah penumpang otomatis disesuaikan bila kurang.
+              Karyawan yang baru ditambahkan mendapat notifikasi. Jumlah penumpang = pemesan + karyawan + tamu.
             </p>
             <div className="flex gap-3 pt-1">
               <AppButton variant="secondary" fullWidth onClick={() => setOpen(false)}>
