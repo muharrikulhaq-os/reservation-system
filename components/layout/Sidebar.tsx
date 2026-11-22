@@ -163,7 +163,7 @@ const BottomUser = () => {
         href="/profile"
         className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-[var(--bg-subtle)]"
       >
-        <UserAvatar name={user.name} size="md" />
+        <UserAvatar name={user.name} photo={user.profilePhoto} size="md" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
             {user.name}

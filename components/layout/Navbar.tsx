@@ -114,7 +114,7 @@ export const Navbar = () => {
             aria-label="Profil"
             onClick={() => router.push("/profile")}
           >
-            <UserAvatar name={user.name} size="sm" />
+            <UserAvatar name={user.name} photo={user.profilePhoto} size="sm" />
           </button>
         )}
       </div>

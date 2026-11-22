@@ -177,14 +177,19 @@ export const getInitials = (name: string): string =>
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("");
 
-/** URL foto profil dengan fallback ke API base */
+/** URL file upload (foto profil, kendaraan, ruangan, lampiran). Path mentah
+ *  tanpa awalan (mis. "profile/2026/11/x.jpg" - data foto profil lama)
+ *  dianggap berada di "/uploads/"; dulu jadi URL rusak "...comprofile/...". */
 export const resolveFileUrl = (
   path: string | null | undefined,
 ): string | null => {
   if (!path) return null;
   if (path.startsWith("http")) return path;
   const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
-  return `${base}${path}`;
+  const p = path.startsWith("/") ? path : `/${path}`;
+  const normalized =
+    p.startsWith("/uploads/") || p.startsWith("/files/") ? p : `/uploads${p}`;
+  return `${base}${normalized}`;
 };
 
 /** Ringkasan singkat dari User-Agent mentah, mis. "Chrome · Windows" - dipakai

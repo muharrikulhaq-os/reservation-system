@@ -59,6 +59,7 @@ export const useSyncAuthUser = () => {
       email: data.email ?? user.email,
       role,
       department: data.department?.name ?? user.department,
+      profilePhoto: data.profilePhoto ?? null,
     }
     const changed = (Object.keys(next) as (keyof AuthUser)[]).some(
       (k) => next[k] !== user[k],

@@ -51,6 +51,9 @@ export interface AuthUser {
   email: string
   role: string       // "EMPLOYEE" | "ADMIN" | "DRIVER" | "ROOM_KEEPER" - plain string di login response
   department: string // "Operations" - plain string
+  // Foto profil (path "/uploads/..."); diisi dari /auth/me lewat
+  // useSyncAuthUser supaya avatar header ikut berganti setelah upload.
+  profilePhoto?: string | null
 }
 
 // --- Auth Payloads & Responses ---
