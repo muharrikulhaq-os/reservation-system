@@ -10,10 +10,11 @@ import { useCorrectOdometer, useOdometerFloor } from '../hooks/useVehicles'
 
 // ─────────────────────────────────────────
 // KOREKSI ODOMETER (admin)
-// Boleh naik atau turun - tapi tidak di bawah bacaan sah yang sudah
-// tercatat (BBM, voucher, perjalanan, maintenance, buku saldo), karena
-// hak BBM berikutnya dihitung dari selisih odometer. Salah ketik pada
-// catatan BBM itu sendiri dikoreksi lewat "Batalkan" catatan BBM.
+// Boleh naik atau turun, termasuk di bawah bacaan sah terakhir (BBM,
+// voucher, perjalanan, maintenance). Bila di bawahnya, backend memindahkan
+// titik hitung saldo BBM ke angka baru (saldo tidak berubah) supaya hak BBM
+// berikutnya tidak dihitung dari jarak negatif. Salah ketik pada satu
+// catatan BBM tetap dikoreksi lewat "Batalkan" catatan BBM tersebut.
 // ─────────────────────────────────────────
 
 interface Props {
@@ -42,9 +43,12 @@ export const CorrectOdometerModal = ({ vehicle, open, onOpenChange }: Props) => 
 
   let odometerError: string | undefined
   if (odometer !== undefined) {
-    if (odometer < min) odometerError = `Tidak boleh kurang dari ${formatOdometer(min)}`
+    if (odometer < 0) odometerError = 'Tidak boleh negatif'
     else if (odometer === current) odometerError = 'Sama dengan odometer saat ini'
   }
+  // Di bawah bacaan sah terakhir: diizinkan, tapi titik hitung saldo BBM
+  // ikut dipindah - beri tahu admin sebelum menyimpan.
+  const belowReadings = odometer !== undefined && !odometerError && odometer < min
   const canSubmit =
     odometer !== undefined && !odometerError && reason.trim().length >= 3 && !correct.isPending
 
@@ -79,7 +83,7 @@ export const CorrectOdometerModal = ({ vehicle, open, onOpenChange }: Props) => 
             </div>
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">
-                Paling rendah
+                Bacaan terakhir
               </p>
               <p className="mt-0.5 font-semibold text-[var(--text-primary)]">
                 {floorLoading ? '…' : formatOdometer(min)}
@@ -87,9 +91,9 @@ export const CorrectOdometerModal = ({ vehicle, open, onOpenChange }: Props) => 
             </div>
           </div>
           <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
-            Batas terendah adalah bacaan sah terakhir yang tercatat (BBM, voucher, perjalanan,
-            atau maintenance). Salah ketik pada catatan BBM dikoreksi lewat <b>Batalkan</b> catatan
-            BBM tersebut.
+            Odometer boleh dinaikkan atau diturunkan. Bacaan terakhir adalah angka tertinggi yang
+            tercatat (BBM, voucher, perjalanan, atau maintenance). Salah ketik pada satu catatan
+            BBM dikoreksi lewat <b>Batalkan</b> catatan BBM tersebut.
           </p>
 
           {correct.error && (
@@ -102,8 +106,8 @@ export const CorrectOdometerModal = ({ vehicle, open, onOpenChange }: Props) => 
           <InputNumber
             label="Odometer Baru (km)"
             required
-            min={min}
-            placeholder={`min. ${min}`}
+            min={0}
+            placeholder={`saat ini ${current}`}
             value={odometer ?? ''}
             onChange={setOdometer}
             error={odometerError}
@@ -113,6 +117,16 @@ export const CorrectOdometerModal = ({ vehicle, open, onOpenChange }: Props) => 
                 : undefined
             }
           />
+          {belowReadings && (
+            <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>
+                Di bawah bacaan terakhir ({formatOdometer(min)}). Titik hitung saldo BBM ikut
+                dipindah ke angka baru - saldo BBM saat ini <b>tidak berubah</b>, pengisian
+                berikutnya dihitung dari odometer baru.
+              </span>
+            </div>
+          )}
           <InputTextArea
             label="Alasan Koreksi"
             required
