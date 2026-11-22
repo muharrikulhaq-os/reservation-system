@@ -5,7 +5,7 @@ import { AlertCircle, Ban, CheckCircle2, FileCheck2, ImageOff, Ticket } from 'lu
 import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { AppButton, InputFile, InputNumber, InputText, InputTextArea } from '@/components/ui-custom'
-import { SafeImage } from '@/components/shared/media/SafeImage'
+import { PreviewImage } from '@/components/shared/media/ImageViewer'
 import { formatDateTime, formatNumber, getErrorMessage, kmHint, resolveFileUrl } from '@/lib'
 import type { FuelVoucher } from '@/types'
 import { useCancelFuelVoucher, useFuelBalance, useReconcileFuelVouchers, useUseFuelVoucher } from '../hooks/useFuelVoucher'
@@ -318,15 +318,14 @@ export const VoucherDetailModal = ({ voucher: v, open, onOpenChange }: ModalProp
             <div className="mt-4">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">Struk</p>
               {receipt ? (
-                <a href={receipt} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-xl border border-[var(--border-card)]">
-                  <SafeImage
-                    src={receipt}
-                    alt="Struk pengisian"
-                    className="max-h-72 w-full bg-[var(--bg-subtle)] object-contain"
-                    fallbackClassName="gap-2 bg-[var(--bg-subtle)] px-4 py-6 text-sm text-[var(--text-disabled)]"
-                    fallback={<><ImageOff className="h-4 w-4" /> Foto tidak tersedia.</>}
-                  />
-                </a>
+                <PreviewImage
+                  src={receipt}
+                  alt="Struk pengisian"
+                  className="block w-full overflow-hidden rounded-xl border border-[var(--border-card)]"
+                  imgClassName="max-h-72 w-full bg-[var(--bg-subtle)] object-contain"
+                  fallbackClassName="gap-2 bg-[var(--bg-subtle)] px-4 py-6 text-sm text-[var(--text-disabled)]"
+                  fallback={<><ImageOff className="h-4 w-4" /> Foto tidak tersedia.</>}
+                />
               ) : (
                 <p className="text-sm text-[var(--text-disabled)]">Tidak ada foto struk.</p>
               )}

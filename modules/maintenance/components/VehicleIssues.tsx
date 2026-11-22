@@ -4,9 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { AlertOctagon, ArrowRight, Ban, ImageOff, MapPin, Wrench } from 'lucide-react'
 import { Card } from '@/components/common'
-import { PageHeader, Pagination, ReadableLocation } from '@/components/shared'
-import { SafeImage } from '@/components/shared/media/SafeImage'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { PageHeader, Pagination, PreviewImage, ReadableLocation } from '@/components/shared'
 import { AppButton, InputSelect, InputTextArea } from '@/components/ui-custom'
 import { formatDateTime, resolveFileUrl } from '@/lib'
 import { VEHICLE_ISSUE_STATUS_CONFIG } from '@/constants'
@@ -27,7 +25,6 @@ export const VehicleIssues = () => {
   const { data, isLoading } = useVehicleIssues({ status: status || undefined, page, limit: 20 })
   const convert = useConvertVehicleIssue()
   const [dismissing, setDismissing] = useState<VehicleIssue | null>(null)
-  const [preview, setPreview] = useState<string | null>(null)
   const items = data?.data ?? []
 
   return (
@@ -90,19 +87,17 @@ export const VehicleIssues = () => {
                   </p>
                   {it.photos.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {it.photos.map((p, i) => {
-                        const url = resolveFileUrl(p)
-                        return (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => url && setPreview(url)}
-                            className="h-16 w-16 overflow-hidden rounded-lg border border-[var(--border-card)]"
-                          >
-                            <SafeImage src={url} alt={`Foto ${i + 1}`} className="h-full w-full object-cover" fallback={<ImageOff className="h-4 w-4" />} />
-                          </button>
-                        )
-                      })}
+                      {it.photos.map((p, i) => (
+                        <PreviewImage
+                          key={i}
+                          src={resolveFileUrl(p)}
+                          alt={`Foto ${i + 1}`}
+                          gallery={it.photos.map((x, j) => ({ src: resolveFileUrl(x) ?? '', caption: `Foto kendala ${j + 1}` }))}
+                          index={i}
+                          className="h-16 w-16 overflow-hidden rounded-lg border border-[var(--border-card)]"
+                          fallback={<ImageOff className="h-4 w-4" />}
+                        />
+                      ))}
                     </div>
                   )}
                   {it.status !== 'OPEN' && (
@@ -149,11 +144,6 @@ export const VehicleIssues = () => {
 
       <DismissDialog issue={dismissing} onClose={() => setDismissing(null)} />
 
-      <Dialog open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>
-        <DialogContent className="max-w-2xl rounded-2xl p-2 shadow-[var(--shadow-modal)]">
-          {preview && <SafeImage src={preview} alt="Foto laporan" className="max-h-[80vh] w-full rounded-xl object-contain" fallback={<ImageOff className="h-10 w-10" />} />}
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

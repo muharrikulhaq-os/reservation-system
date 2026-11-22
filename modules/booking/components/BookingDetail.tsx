@@ -43,7 +43,8 @@ import {
   Badge,
   UserAvatar,
   StarRating,
-  SafeImage,
+  PreviewImage,
+  isImageFile,
   UserProfileButton,
   PhoneContact,
 } from "@/components/shared";
@@ -122,6 +123,13 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
   const { data: activity } = useBookingActivity(bookingId);
   const { data: mergeInfo } = useBookingMergeInfo(bookingId);
   const { data: attachments } = useBookingAttachments(bookingId);
+  const imageAttachments = (attachments ?? []).filter(
+    (a) => isImageFile(a.fileType) || isImageFile(a.fileName),
+  );
+  const attachmentGallery = imageAttachments.map((a) => ({
+    src: resolveFileUrl(a.filePath) ?? "",
+    caption: a.fileName,
+  }));
   const { data: returnReport } = useReturnReport(bookingId);
   // Odometer faktual kendaraan - dipakai buat prefill/floor "Mulai
   // Perjalanan" & "Laporan Pengembalian" (booking.assignedVehicle cuma
@@ -269,14 +277,12 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
 
             <InfoBlock label="Resource">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
-                  <SafeImage
-                    src={resolveFileUrl(booking.resource.photoUrl)}
-                    alt={booking.resource.name}
-                    className="h-full w-full object-cover"
-                    fallback={<ResourceIcon className="h-6 w-6" />}
-                  />
-                </span>
+                <PreviewImage
+                  src={resolveFileUrl(booking.resource.photoUrl)}
+                  alt={booking.resource.name}
+                  className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]"
+                  fallback={<ResourceIcon className="h-6 w-6" />}
+                />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
                     {booking.resource.name}
@@ -689,9 +695,23 @@ export const BookingDetail = ({ bookingId }: BookingDetailProps) => {
                   key={att.id}
                   className="flex items-center gap-3 py-2.5 first:pt-0"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
-                    <Paperclip className="h-4 w-4" />
-                  </span>
+                  {isImageFile(att.fileType) || isImageFile(att.fileName) ? (
+                    // Lampiran foto: klik → layar penuh, geser antar-foto.
+                    <PreviewImage
+                      src={resolveFileUrl(att.filePath)}
+                      alt={att.fileName}
+                      gallery={attachmentGallery}
+                      index={imageAttachments.indexOf(att)}
+                      className="h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-[var(--border-card)] bg-[var(--bg-subtle)]"
+                      fallbackClassName="text-[var(--text-secondary)]"
+                      fallback={<Paperclip className="h-4 w-4" />}
+                      showHint={false}
+                    />
+                  ) : (
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
+                      <Paperclip className="h-4 w-4" />
+                    </span>
+                  )}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-[var(--text-primary)]">
                       {att.fileName}

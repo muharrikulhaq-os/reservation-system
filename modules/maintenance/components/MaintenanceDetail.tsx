@@ -17,8 +17,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
-import { PageHeader, ReadableLocation } from '@/components/shared'
-import { SafeImage } from '@/components/shared/media/SafeImage'
+import { PageHeader, PreviewImage, ReadableLocation } from '@/components/shared'
 import { AppButton } from '@/components/ui-custom'
 import { cn } from '@/lib/utils'
 import { formatCurrency, formatDate, formatDateTime, formatNumber, getErrorMessage, resolveFileUrl } from '@/lib'
@@ -204,9 +203,12 @@ export const MaintenanceDetail = ({ id }: { id: number }) => {
           <Card>
             <CardHeader title="Kendaraan & Vendor" action={<MaintenanceStatusBadge status={m.status} />} />
             <div className="mb-3 flex items-center gap-3">
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
-                <SafeImage src={vehiclePhoto} alt={m.vehicle.name} className="h-full w-full object-cover" fallback={<Car className="h-5 w-5" />} />
-              </span>
+              <PreviewImage
+                src={vehiclePhoto}
+                alt={m.vehicle.name}
+                className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[var(--bg-subtle)] text-[var(--text-secondary)]"
+                fallback={<Car className="h-5 w-5" />}
+              />
               <div className="min-w-0">
                 <Link href={`/vehicles/${m.vehicle.id}`} className="font-semibold text-[var(--text-primary)] hover:underline">
                   {m.vehicle.plateNumber}

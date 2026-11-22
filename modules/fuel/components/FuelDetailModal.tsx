@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { SafeImage } from '@/components/shared/media/SafeImage'
+import { PreviewImage } from '@/components/shared/media/ImageViewer'
 import { formatDate, formatCurrency, formatNumber, resolveFileUrl } from '@/lib'
 import { ENERGY_TYPE, ENERGY_TYPE_CONFIG } from '@/constants'
 import { FUEL_REASON_LABEL, formatQty, formatRupiahExact } from '../utils/format'
@@ -172,16 +172,11 @@ export const FuelDetailModal = ({ fuel, open, onOpenChange }: Props) => {
               Bukti Transaksi
             </p>
             {proofUrl ? (
-              <a
-                href={proofUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block overflow-hidden rounded-xl border border-[var(--border-card)]"
-              >
-                <SafeImage
+              <PreviewImage
                   src={proofUrl}
                   alt="Bukti pengisian"
-                  className="max-h-72 w-full object-contain bg-[var(--bg-subtle)]"
+                  className="block w-full overflow-hidden rounded-xl border border-[var(--border-card)]"
+                  imgClassName="max-h-72 w-full object-contain bg-[var(--bg-subtle)]"
                   fallbackClassName="gap-2 bg-[var(--bg-subtle)] px-4 py-6 text-sm text-[var(--text-disabled)]"
                   fallback={
                     <>
@@ -190,7 +185,6 @@ export const FuelDetailModal = ({ fuel, open, onOpenChange }: Props) => {
                     </>
                   }
                 />
-              </a>
             ) : (
               <div className="flex items-center gap-2 rounded-xl border border-dashed border-[var(--border-card)] bg-[var(--bg-subtle)] px-4 py-6 text-sm text-[var(--text-disabled)]">
                 <ImageOff className="h-4 w-4" />

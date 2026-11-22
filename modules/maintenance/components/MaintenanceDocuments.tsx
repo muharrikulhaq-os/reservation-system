@@ -9,6 +9,7 @@ import { MAINTENANCE_DOC_KIND_OPTIONS, maintenanceDocKindLabel } from '@/constan
 import type { MaintenanceDocumentKind, MaintenanceRecord } from '@/types'
 import { useDeleteMaintenanceDocument, useUploadMaintenanceDocuments } from '../hooks/useMaintenance'
 import { ErrorAlert } from './shared'
+import { isImageFile, PreviewImage } from '@/components/shared'
 import { appConfirm } from '@/lib/dialog'
 
 // Dokumen pendukung: invoice vendor, scan surat/BA bertanda tangan, foto.
@@ -19,6 +20,8 @@ export const MaintenanceDocuments = ({ m }: { m: MaintenanceRecord }) => {
   const upload = useUploadMaintenanceDocuments(m.id)
   const del = useDeleteMaintenanceDocument(m.id)
   const docs = m.documents ?? []
+  const imageDocs = docs.filter((d) => isImageFile(d.fileName))
+  const gallery = imageDocs.map((d) => ({ src: resolveFileUrl(d.fileUrl) ?? '', caption: d.fileName }))
 
   const submit = () =>
     upload.mutate(
@@ -44,9 +47,22 @@ export const MaintenanceDocuments = ({ m }: { m: MaintenanceRecord }) => {
             const isPdf = d.fileName.toLowerCase().endsWith('.pdf')
             return (
               <li key={d.id} className="flex items-center gap-3 py-2.5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
-                  {isPdf ? <FileText className="h-4 w-4" /> : <Paperclip className="h-4 w-4" />}
-                </span>
+                {isImageFile(d.fileName) ? (
+                  <PreviewImage
+                    src={resolveFileUrl(d.fileUrl)}
+                    alt={d.fileName}
+                    gallery={gallery}
+                    index={imageDocs.indexOf(d)}
+                    className="h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-[var(--border-card)] bg-[var(--bg-subtle)]"
+                    fallbackClassName="text-[var(--text-secondary)]"
+                    fallback={<Paperclip className="h-4 w-4" />}
+                    showHint={false}
+                  />
+                ) : (
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
+                    {isPdf ? <FileText className="h-4 w-4" /> : <Paperclip className="h-4 w-4" />}
+                  </span>
+                )}
                 <div className="min-w-0 flex-1">
                   <a
                     href={resolveFileUrl(d.fileUrl) ?? '#'}

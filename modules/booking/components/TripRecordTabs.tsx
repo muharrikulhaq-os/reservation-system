@@ -4,8 +4,7 @@ import { useState } from 'react'
 import { Fuel, FileCheck, Play, ImageOff, MapPin, Gauge, Zap, Receipt } from 'lucide-react'
 import { Card, CardHeader, CardSection } from '@/components/common'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { ReadableLocation, SafeImage } from '@/components/shared'
+import { ImageViewer, PreviewImage, ReadableLocation } from '@/components/shared'
 import { cn, formatDateTime, formatDate, formatCurrency, formatNumber, resolveFileUrl } from '@/lib'
 import { BOOKING_STATUS, ENERGY_TYPE } from '@/constants'
 import type { Booking, FuelExpense } from '@/types'
@@ -133,19 +132,13 @@ export const TripRecordTabs = ({ booking, linkedBookingIds = [] }: TripRecordTab
                   <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-secondary)]">
                     Foto Odometer
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => setPreviewUrl(startPhotoUrl)}
+                  <PreviewImage
+                    src={startPhotoUrl}
+                    alt="Foto odometer awal"
                     className="aspect-video w-full max-w-xs overflow-hidden rounded-lg border border-[var(--border-card)]"
-                  >
-                    <SafeImage
-                      src={startPhotoUrl}
-                      alt="Foto odometer awal"
-                      className="h-full w-full object-cover"
-                      fallbackClassName="bg-[var(--bg-subtle)] text-[var(--text-disabled)]"
-                      fallback={<ImageOff className="h-5 w-5" />}
-                    />
-                  </button>
+                    fallbackClassName="bg-[var(--bg-subtle)] text-[var(--text-disabled)]"
+                    fallback={<ImageOff className="h-5 w-5" />}
+                  />
                 </div>
               )}
             </div>
@@ -258,21 +251,17 @@ export const TripRecordTabs = ({ booking, linkedBookingIds = [] }: TripRecordTab
                     Foto Kondisi
                   </p>
                   <div className="grid grid-cols-3 gap-2">
-                    {report.photos.map((photo) => (
-                      <button
+                    {report.photos.map((photo, i) => (
+                      <PreviewImage
                         key={photo.id}
-                        type="button"
-                        onClick={() => setPreviewUrl(resolveFileUrl(photo.filePath))}
+                        src={resolveFileUrl(photo.filePath)}
+                        alt={photo.fileName}
+                        gallery={report.photos.map((p) => ({ src: resolveFileUrl(p.filePath) ?? '', caption: p.fileName }))}
+                        index={i}
                         className="aspect-square overflow-hidden rounded-lg border border-[var(--border-card)]"
-                      >
-                        <SafeImage
-                          src={resolveFileUrl(photo.filePath)}
-                          alt={photo.fileName}
-                          className="h-full w-full object-cover"
-                          fallbackClassName="bg-[var(--bg-subtle)] text-[var(--text-disabled)]"
-                          fallback={<ImageOff className="h-5 w-5" />}
-                        />
-                      </button>
+                        fallbackClassName="bg-[var(--bg-subtle)] text-[var(--text-disabled)]"
+                        fallback={<ImageOff className="h-5 w-5" />}
+                      />
                     ))}
                   </div>
                   <p className="mt-1.5 text-xs text-[var(--text-disabled)]">Klik untuk perbesar</p>
@@ -285,20 +274,12 @@ export const TripRecordTabs = ({ booking, linkedBookingIds = [] }: TripRecordTab
         </TabsContent>
       </Tabs>
 
-      {/* Preview foto full size - dipakai bareng oleh tab keberangkatan & laporan */}
-      <Dialog open={!!previewUrl} onOpenChange={(open) => !open && setPreviewUrl(null)}>
-        <DialogContent className="max-w-2xl rounded-2xl p-2 shadow-[var(--shadow-modal)]">
-          {previewUrl && (
-            <SafeImage
-              src={previewUrl}
-              alt="Preview foto"
-              className="max-h-[80vh] w-full rounded-xl object-contain"
-              fallbackClassName="h-64 w-full rounded-xl bg-[var(--bg-subtle)] text-[var(--text-disabled)]"
-              fallback={<ImageOff className="h-10 w-10" />}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Foto struk dari tab Tol & Parkir -> layar penuh */}
+      <ImageViewer
+        images={previewUrl ? [{ src: previewUrl, caption: 'Foto struk' }] : []}
+        index={previewUrl ? 0 : null}
+        onIndexChange={(i) => i === null && setPreviewUrl(null)}
+      />
 
       {selectedFuel && (
         <FuelDetailModal

@@ -88,7 +88,9 @@ components/
 │                                     # daftar panjang / butuh konteks (contoh: DriverVehiclePicker)
 ├── shared/                           # Reusable lintas fitur (barrel: @/components/shared)
 │   ├── table/DataTable.tsx           # DataTable + createColumnHelper + ColumnDef
-│   ├── avatar/Avatar.tsx             # UserAvatar
+│   ├── avatar/Avatar.tsx             # UserAvatar (`previewable` = klik foto → layar penuh, untuk detail)
+│   ├── media/ImageViewer.tsx         # ImageViewer (foto layar penuh: zoom, geser, galeri) +
+│   │                                 # PreviewImage (thumbnail yg bisa diklik) + useImageViewer
 │   ├── badge/StatusBadge.tsx         # BookingStatusBadge, ResourceStatusBadge, Badge
 │   ├── page-header/PageHeader.tsx    # PageHeader
 │   ├── calendar/AvailabilityCalendar.tsx
@@ -236,6 +238,7 @@ const form = useForm<BookingFormData>({
 | `<input type="date|datetime-local|time">` | `InputDate` / `InputDateTime` / `TimePicker` |
 | `<input type="checkbox">` | `AppCheckbox` |
 | tooltip bawaan | tetap `title="…"` - digambar ulang oleh `TitleTooltipHost` |
+| `<a href={foto} target="_blank">` / `Dialog` buatan sendiri untuk pratinjau foto | `PreviewImage` (thumbnail; `gallery`+`index` untuk banyak foto) atau `ImageViewer` + `useImageViewer` - foto utuh layar penuh, sama dengan `AppImageViewer` di mobile. Jangan dipasang di kartu/baris daftar yang kliknya membuka detail |
 
 ### Error — jangan expose stack trace
 ```ts

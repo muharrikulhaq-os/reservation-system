@@ -71,7 +71,7 @@ export const UserProfileModal = ({ userId, open, onOpenChange }: UserProfileModa
         ) : (
           <div className="mt-2">
             <div className="mb-2 flex items-center gap-3">
-              <UserAvatar name={user.name} photo={resolveFileUrl(user.profilePhoto)} size="md" />
+              <UserAvatar name={user.name} photo={resolveFileUrl(user.profilePhoto)} size="md" previewable />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-base font-semibold text-[var(--text-primary)]">
                   {user.name}

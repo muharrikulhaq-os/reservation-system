@@ -5,6 +5,7 @@ import { IconButton, InputFile } from '@/components/ui-custom'
 import { formatFileSize, resolveFileUrl } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import type { Attachment, CreateAttachmentPayload } from '@/types'
+import { isImageFile, PreviewImage } from '@/components/shared/media/ImageViewer'
 
 // ─────────────────────────────────────────
 // ATTACHMENT LIST
@@ -33,6 +34,11 @@ export const AttachmentList = ({
     if (files[0]) onUpload({ file: files[0] })
   }
 
+  // Lampiran foto: thumbnail yang bisa diklik → layar penuh, geser antar-foto.
+  const isImage = (a: Attachment) => isImageFile(a.fileType) || isImageFile(a.fileName)
+  const images = attachments.filter(isImage)
+  const gallery = images.map((a) => ({ src: resolveFileUrl(a.filePath) ?? '', caption: a.fileName }))
+
   return (
     <div className={cn('space-y-3', className)}>
       {attachments.length === 0 ? (
@@ -46,7 +52,20 @@ export const AttachmentList = ({
                 key={att.id}
                 className="flex items-center gap-3 rounded-lg border border-[var(--border-card)] p-3"
               >
-                <FileText className="h-4 w-4 shrink-0 text-[var(--text-secondary)]" />
+                {isImage(att) ? (
+                  <PreviewImage
+                    src={url}
+                    alt={att.fileName}
+                    gallery={gallery}
+                    index={images.indexOf(att)}
+                    className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-[var(--border-card)] bg-[var(--bg-subtle)]"
+                    fallbackClassName="text-[var(--text-secondary)]"
+                    fallback={<FileText className="h-4 w-4" />}
+                    showHint={false}
+                  />
+                ) : (
+                  <FileText className="h-4 w-4 shrink-0 text-[var(--text-secondary)]" />
+                )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[13px] text-[var(--text-primary)]">
                     {att.fileName}

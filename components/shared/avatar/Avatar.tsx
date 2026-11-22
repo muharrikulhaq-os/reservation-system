@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils'
 import { resolveFileUrl, getInitials } from '@/lib/utils'
 import { SafeImage } from '@/components/shared/media/SafeImage'
+import { PreviewImage } from '@/components/shared/media/ImageViewer'
 
 // ─────────────────────────────────────────
 // USER AVATAR
@@ -36,9 +37,11 @@ interface UserAvatarProps {
   photo?:     string | null
   size?:      keyof typeof SIZE
   className?: string
+  /** Klik foto → layar penuh (dipakai di halaman/modal detail, bukan daftar). */
+  previewable?: boolean
 }
 
-export const UserAvatar = ({ name, photo, size = 'md', className }: UserAvatarProps) => {
+export const UserAvatar = ({ name, photo, size = 'md', className, previewable = false }: UserAvatarProps) => {
   const photoUrl = resolveFileUrl(photo)
   const color    = AVATAR_COLORS[hashName(name)]
   const initials = getInitials(name)
@@ -57,6 +60,20 @@ export const UserAvatar = ({ name, photo, size = 'md', className }: UserAvatarPr
   )
 
   if (!photoUrl) return initialsFallback
+
+  if (previewable) {
+    return (
+      <PreviewImage
+        src={photoUrl}
+        alt={name}
+        caption={name}
+        className={cn('shrink-0 rounded-full', SIZE[size])}
+        imgClassName={cn('rounded-full object-cover', SIZE[size], className)}
+        fallback={initialsFallback}
+        showHint={false}
+      />
+    )
+  }
 
   return (
     <SafeImage

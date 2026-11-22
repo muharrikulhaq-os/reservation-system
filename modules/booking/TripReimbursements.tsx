@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { AlertCircle, CheckCircle2, ImageOff, ParkingCircle, Wallet } from 'lucide-react'
 import { Card, CardHeader } from '@/components/common'
-import { Badge, PageHeader, SafeImage } from '@/components/shared'
+import { Badge, ImageViewer, PageHeader, SafeImage } from '@/components/shared'
 import { AppButton, AppCheckbox, InputDate, InputText } from '@/components/ui-custom'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { formatCurrency, formatDate, formatDateTime, getErrorMessage, resolveFileUrl, wibToISO, wibYMD } from '@/lib'
@@ -399,11 +399,11 @@ export const TripReimbursements = () => {
         )}
       </Card>
 
-      <Dialog open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>
-        <DialogContent className="max-w-2xl rounded-2xl p-2 shadow-[var(--shadow-modal)]">
-          {preview && <SafeImage src={preview} alt="Struk" className="max-h-[80vh] w-full rounded-xl object-contain" fallback={<ImageOff className="h-10 w-10" />} />}
-        </DialogContent>
-      </Dialog>
+      <ImageViewer
+        images={preview ? [{ src: preview, caption: 'Foto struk' }] : []}
+        index={preview ? 0 : null}
+        onIndexChange={(i) => i === null && setPreview(null)}
+      />
     </div>
   )
 }

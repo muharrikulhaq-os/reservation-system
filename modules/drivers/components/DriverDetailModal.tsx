@@ -100,7 +100,7 @@ export const DriverDetailModal = ({ driver, open, onOpenChange }: Props) => {
         <div className="mt-2">
           {/* Identitas */}
           <div className="mb-2 flex items-center gap-3">
-            <UserAvatar name={driver.name} photo={driver.profilePhoto} size="md" />
+            <UserAvatar name={driver.name} photo={driver.profilePhoto} size="md" previewable />
             <div className="min-w-0">
               <p className="truncate text-base font-semibold text-[var(--text-primary)]">
                 {driver.name}

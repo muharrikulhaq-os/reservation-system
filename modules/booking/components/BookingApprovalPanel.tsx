@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardSection } from '@/components/common'
-import { SafeImage, roomOption } from '@/components/shared'
+import { PreviewImage, roomOption } from '@/components/shared'
 import { AppButton, InputTextArea, SearchableSelect } from '@/components/ui-custom'
 import { getErrorMessage, resolveFileUrl } from '@/lib'
 import { BOOKING_STATUS, RESOURCE_TYPE } from '@/constants'
@@ -251,14 +251,12 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
                 Booking Saat Ini
               </p>
               <CardSection className="flex items-center gap-2.5">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
-                  <SafeImage
-                    src={resolveFileUrl(booking.resource.photoUrl)}
-                    alt={booking.resource.name}
-                    className="h-full w-full object-cover"
-                    fallback={<ResourceIcon className="h-5 w-5" />}
-                  />
-                </span>
+                <PreviewImage
+                  src={resolveFileUrl(booking.resource.photoUrl)}
+                  alt={booking.resource.name}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)]"
+                  fallback={<ResourceIcon className="h-5 w-5" />}
+                />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
                     {booking.resource.name}

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { Camera, Loader2, Trash2 } from 'lucide-react'
 import { cn, getErrorMessage, resolveFileUrl, getInitials } from '@/lib'
-import { SafeImage } from '@/components/shared'
+import { ImageViewer, SafeImage, useImageViewer } from '@/components/shared'
 import { useFileUpload, useUpdateProfilePhoto, useDeleteProfilePhoto } from '@/hooks'
 import type { User } from '@/types'
 
@@ -30,6 +30,7 @@ export const ProfilePhotoUpload = ({ user }: ProfilePhotoUploadProps) => {
 
   const isBusy = upload.isPending || remove.isPending
   const photoUrl = preview ?? resolveFileUrl(user.profilePhoto)
+  const viewer = useImageViewer(photoUrl ? [{ src: photoUrl, caption: user.name }] : [])
   const error =
     validationError ??
     (upload.error ? getErrorMessage(upload.error) : null) ??
@@ -78,6 +79,15 @@ export const ProfilePhotoUpload = ({ user }: ProfilePhotoUploadProps) => {
       </div>
 
       <div className="flex items-center gap-3">
+        {photoUrl && (
+          <button
+            type="button"
+            onClick={() => viewer.open(0)}
+            className="text-xs font-medium text-[var(--primary)] hover:underline"
+          >
+            Lihat Foto
+          </button>
+        )}
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
@@ -99,6 +109,7 @@ export const ProfilePhotoUpload = ({ user }: ProfilePhotoUploadProps) => {
       </div>
 
       {error && <p className="max-w-[200px] text-center text-xs text-[var(--danger)]">{error}</p>}
+      <ImageViewer {...viewer.props} />
     </div>
   )
 }

@@ -16,6 +16,8 @@ export type { ViewMode } from './view-toggle/ViewToggle'
 export { UserAvatar } from './avatar/Avatar'
 
 export { SafeImage } from './media/SafeImage'
+export { ImageViewer, PreviewImage, useImageViewer, isImageFile } from './media/ImageViewer'
+export type { ViewerImage } from './media/ImageViewer'
 
 export { BookingStatusBadge, ResourceStatusBadge, Badge, BookingTypeBadge, SpdActiveBadge } from './badge/StatusBadge'
 

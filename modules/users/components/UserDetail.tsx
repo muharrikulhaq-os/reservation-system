@@ -116,6 +116,7 @@ export const UserDetail = ({ userId }: UserDetailProps) => {
               name={user.name}
               photo={resolveFileUrl(user.profilePhoto)}
               size="lg"
+              previewable
             />
             <div className="min-w-0 flex-1">
               <h1
