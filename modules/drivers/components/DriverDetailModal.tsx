@@ -20,10 +20,13 @@ import { useDriverRatings } from '@/modules/booking/hooks/useBookings'
 import { useVehicles } from '@/modules/vehicles/hooks/useVehicles'
 import { useSetDriverFixedVehicle } from '../hooks/useDrivers'
 import type { Driver } from '@/types'
+import { useAuthStore } from '@/store/auth.store'
 
 // ─────────────────────────────────────────
 // DRIVER DETAIL MODAL
 // Info driver + daftar rating/ulasan dari penumpang.
+// Nilai rating hanya untuk ADMIN (dan pemberinya, lewat detail booking) -
+// karyawan/supir yang membuka modal ini tidak melihat bagian rating.
 // ─────────────────────────────────────────
 
 const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
@@ -42,7 +45,8 @@ interface Props {
 }
 
 export const DriverDetailModal = ({ driver, open, onOpenChange }: Props) => {
-  const { data, isLoading } = useDriverRatings(open ? driver.id : 0)
+  const isAdmin = useAuthStore((s) => s.isAdmin())
+  const { data, isLoading } = useDriverRatings(open && isAdmin ? driver.id : 0)
   const ratings = data?.ratings ?? []
   const avg = data?.averageRating ?? null
 
@@ -183,59 +187,63 @@ export const DriverDetailModal = ({ driver, open, onOpenChange }: Props) => {
             </Card>
           </AdminOnly>
 
-          {/* Ringkasan rating */}
-          <div className="mt-5 flex items-center gap-3 rounded-xl border border-[var(--border-card)] bg-[var(--bg-subtle)] px-4 py-3">
-            <Star className="h-5 w-5 fill-[#F59E0B] text-[#F59E0B]" />
-            <div>
-              <p className="text-lg font-bold leading-none text-[var(--text-primary)]">
-                {avg != null ? avg.toFixed(1) : '-'}
-              </p>
-              <p className="mt-1 text-xs text-[var(--text-secondary)]">
-                {data?.totalRatings ?? 0} ulasan
-              </p>
-            </div>
-          </div>
+          {/* Ringkasan rating - admin saja */}
+          {isAdmin && (
+            <>
+              <div className="mt-5 flex items-center gap-3 rounded-xl border border-[var(--border-card)] bg-[var(--bg-subtle)] px-4 py-3">
+                <Star className="h-5 w-5 fill-[#F59E0B] text-[#F59E0B]" />
+                <div>
+                  <p className="text-lg font-bold leading-none text-[var(--text-primary)]">
+                    {avg != null ? avg.toFixed(1) : '-'}
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                    {data?.totalRatings ?? 0} ulasan
+                  </p>
+                </div>
+              </div>
 
-          {/* Daftar ulasan */}
-          <div className="mt-4">
-            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">
-              <MessageSquare className="h-3.5 w-3.5" /> Ulasan
-            </p>
+              {/* Daftar ulasan */}
+              <div className="mt-4">
+                <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">
+                  <MessageSquare className="h-3.5 w-3.5" /> Ulasan
+                </p>
 
-            {isLoading ? (
-              <p className="py-4 text-center text-sm text-[var(--text-disabled)]">
-                Memuat…
-              </p>
-            ) : ratings.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-[var(--border-card)] bg-[var(--bg-subtle)] px-4 py-6 text-center text-sm text-[var(--text-disabled)]">
-                Belum ada ulasan untuk driver ini.
-              </p>
-            ) : (
-              <ul className="space-y-3">
-                {ratings.map((r) => (
-                  <li
-                    key={r.id}
-                    className="rounded-xl border border-[var(--border-card)] p-3"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <StarRating value={r.rating} />
-                      <span className="text-xs text-[var(--text-disabled)]">
-                        {formatDateTime(r.createdAt)}
-                      </span>
-                    </div>
-                    <p className="mt-1.5 text-xs font-medium text-[var(--text-secondary)]">
-                      {r.ratedBy?.name ?? 'Anonim'}
-                    </p>
-                    {r.review && (
-                      <p className="mt-1 text-sm text-[var(--text-primary)]">
-                        “{r.review}”
-                      </p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+                {isLoading ? (
+                  <p className="py-4 text-center text-sm text-[var(--text-disabled)]">
+                    Memuat…
+                  </p>
+                ) : ratings.length === 0 ? (
+                  <p className="rounded-xl border border-dashed border-[var(--border-card)] bg-[var(--bg-subtle)] px-4 py-6 text-center text-sm text-[var(--text-disabled)]">
+                    Belum ada ulasan untuk driver ini.
+                  </p>
+                ) : (
+                  <ul className="space-y-3">
+                    {ratings.map((r) => (
+                      <li
+                        key={r.id}
+                        className="rounded-xl border border-[var(--border-card)] p-3"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <StarRating value={r.rating} />
+                          <span className="text-xs text-[var(--text-disabled)]">
+                            {formatDateTime(r.createdAt)}
+                          </span>
+                        </div>
+                        <p className="mt-1.5 text-xs font-medium text-[var(--text-secondary)]">
+                          {r.ratedBy?.name ?? 'Anonim'}
+                        </p>
+                        {r.review && (
+                          <p className="mt-1 text-sm text-[var(--text-primary)]">
+                            “{r.review}”
+                          </p>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>

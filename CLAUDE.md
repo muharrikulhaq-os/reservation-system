@@ -145,7 +145,7 @@ proxy.ts     # ⚠️ Next.js 16 "middleware" — route protection + role redire
 | Fitur booking | ✅ Selesai | List, form, detail, approval/assign/merge, return-report, activity timeline |
 | Fitur vehicle | ✅ Selesai | Katalog, CRUD, status |
 | Fitur room | ✅ Selesai | Katalog, CRUD, status |
-| Fitur driver | ✅ Selesai | List, assignment, rating |
+| Fitur driver | ✅ Selesai | List, assignment, rating. **Nilai rating hanya terlihat admin & pemberinya (pemilik booking)** - supir, penjaga ruangan, dan karyawan lain tidak melihat bintang/ulasan (backend 403; `DriverDetailModal` menyembunyikan bagian rating untuk non-admin) |
 | Fitur reports | 🟡 Sebagian | 6 tab tampil; beberapa endpoint masih DUMMY (`TODO [BACKEND]`); belum ada link sidebar |
 | Fitur dashboard | ✅ Selesai | `modules/dashboard` |
 | Fitur fuel | 🔲 Belum | Modul `modules/fuel` masih kosong (service root sudah ada) |
