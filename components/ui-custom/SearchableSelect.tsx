@@ -148,7 +148,11 @@ export const SearchableSelect = ({
               open && 'border-[1.5px] border-[var(--primary)]',
             )}
           >
-            <span className="min-w-0 flex-1">
+            {/* contain:inline-size - lebar teks terpilih tidak ikut dihitung
+                sebagai lebar minimum. Tanpa ini label panjang (mis. nama
+                kendaraan + shift + supir) mendorong Dialog/grid induknya
+                melebar melewati batas, bukannya terpotong "…". */}
+            <span className="min-w-0 flex-1 [contain:inline-size]">
               {selected ? (
                 <>
                   <span className="block truncate text-[var(--text-primary)]">{selected.label}</span>
