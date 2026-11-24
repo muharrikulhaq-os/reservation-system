@@ -313,6 +313,13 @@ export interface StartBookingPayload {
 
 export interface ApproveBookingPayload {
   note?: string
+  /**
+   * Alihkan & Setujui (kendaraan): supir + kendaraan pengganti, dikirim
+   * berdua. Backend memeriksa pasangan BARU ini (bukan kendaraan lama yang
+   * mungkin bentrok), lalu menugaskan + menyetujui dalam satu transaksi.
+   */
+  driverId?: number
+  vehicleId?: number
 }
 
 export interface RejectBookingPayload {

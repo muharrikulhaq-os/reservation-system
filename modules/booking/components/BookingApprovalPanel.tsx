@@ -21,14 +21,13 @@ import {
   useApproveBooking,
   useRejectBooking,
   useSubstituteResource,
-  useAssignVehicle,
 } from '../hooks/useBookings'
 import { DriverVehiclePicker } from './DriverVehiclePicker'
 
 // ─────────────────────────────────────────
 // BOOKING APPROVAL PANEL (admin, status PENDING)
 // Aksi: Setujui · Alihkan & Setujui · Tolak
-// - VEHICLE: Alihkan = ganti Driver + Kendaraan (approve lalu assign-vehicle)
+// - VEHICLE: Alihkan = ganti Driver + Kendaraan (satu panggilan approve + driverId/vehicleId)
 // - ROOM:    Alihkan = ganti resource (substitute lalu approve)
 // ─────────────────────────────────────────
 
@@ -55,7 +54,6 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
   const approve = useApproveBooking()
   const reject = useRejectBooking()
   const substitute = useSubstituteResource()
-  const assign = useAssignVehicle()
 
   // Semua ruangan tampil (yang tidak tersedia abu-abu + statusnya) supaya
   // admin tahu kenapa ruangan tertentu tidak bisa dipilih.
@@ -66,9 +64,9 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
     .filter((r) => r.resourceId !== booking.resource.id)
     .map((r) => roomOption(r))
 
-  const error = approve.error || reject.error || substitute.error || assign.error
+  const error = approve.error || reject.error || substitute.error
   const isBusy =
-    approve.isPending || reject.isPending || substitute.isPending || assign.isPending
+    approve.isPending || reject.isPending || substitute.isPending
 
   if (booking.status !== BOOKING_STATUS.PENDING) return null
 
@@ -115,11 +113,14 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
     try {
       const note = reason.trim() || undefined
       if (isVehicle) {
-        // approve dulu (assign-vehicle butuh status APPROVED), lalu ganti driver+kendaraan
-        await approve.mutateAsync({ id: booking.id, payload: note ? { note } : undefined })
-        await assign.mutateAsync({
+        // Satu permintaan: backend memeriksa supir + kendaraan PENGGANTI lalu
+        // menugaskan & menyetujui sekaligus. Dulu approve dulu baru assign -
+        // approve memeriksa kendaraan lama, jadi booking yang bentrok (alasan
+        // dialihkan) selalu ditolak sebelum sempat dialihkan.
+        await approve.mutateAsync({
           id: booking.id,
           payload: {
+            note,
             driverId: Number(alihkanDriverId),
             vehicleId: Number(alihkanVehicleId),
           },
@@ -177,7 +178,7 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
         />
         <AppButton
           fullWidth
-          loading={approve.isPending && !substitute.isPending && !assign.isPending}
+          loading={approve.isPending && !substitute.isPending && !substituteOpen}
           disabled={isBusy}
           leftIcon={<Check className="h-4 w-4" />}
           className="bg-[#16A34A] text-white hover:bg-green-700"
