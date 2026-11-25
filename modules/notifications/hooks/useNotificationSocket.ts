@@ -14,7 +14,7 @@
 import { useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEYS, API_ENDPOINTS, DATA_CHANGED_EVENT } from '@/constants'
-import { buildWsUrl, dataSync } from '@/lib'
+import { buildWsUrl, dataSync, notificationSound } from '@/lib'
 import { useAuthStore } from '@/store/auth.store'
 import type { DataChangedSocketMessage, NotificationSocketMessage } from '@/types'
 
@@ -42,6 +42,8 @@ export const useNotificationSocket = (options?: UseNotificationSocketOptions) =>
   useEffect(() => {
     if (!isAuthenticated || !accessToken) return
     if (typeof WebSocket === 'undefined') return
+    // Browser baru mengizinkan audio setelah interaksi pertama pengguna.
+    notificationSound.prime()
 
     let socket: WebSocket | null = null
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null
@@ -78,6 +80,8 @@ export const useNotificationSocket = (options?: UseNotificationSocketOptions) =>
             const msg = parsed as NotificationSocketMessage
             qc.invalidateQueries({ queryKey: QUERY_KEYS.NOTIFICATIONS })
             qc.invalidateQueries({ queryKey: QUERY_KEYS.NOTIFICATIONS_UNREAD_COUNT })
+            // Bunyi sekali per notifikasi walau banyak tab terbuka.
+            notificationSound.play(msg.data?.notificationId ?? `${msg.type}:${msg.data?.createdAt}`)
             onMessageRef.current?.(msg)
           } catch {
             // abaikan baris yang bukan JSON valid

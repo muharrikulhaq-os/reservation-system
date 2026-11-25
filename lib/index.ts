@@ -24,3 +24,6 @@ export * from "./odometer";
 
 // popup bertema pengganti window.alert / confirm / prompt
 export * from "./dialog";
+
+// bunyi notifikasi masuk (web) - aktif/nonaktif per browser
+export { notificationSound } from "./notificationSound";

@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bell, CheckCheck, Loader2 } from 'lucide-react'
+import { Bell, CheckCheck, Loader2, Volume2, VolumeX } from 'lucide-react'
 import Link from 'next/link'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { cn } from '@/lib'
+import { cn, notificationSound } from '@/lib'
 import {
   useNotifications,
   useUnreadCount,
@@ -32,6 +32,13 @@ export const NotificationBell = () => {
   const { mutate: markAllAsRead, isPending: isMarkingAll } = useMarkAllNotificationsAsRead()
 
   const notifications = data?.data ?? []
+
+  // Bunyi notifikasi - per browser; server render selalu "aktif".
+  const soundOn = useSyncExternalStore(
+    notificationSound.subscribe,
+    notificationSound.isEnabled,
+    () => true,
+  )
 
   const handleItemClick = (n: AppNotification) => {
     if (!n.isRead) markAsRead(n.id)
@@ -65,7 +72,18 @@ export const NotificationBell = () => {
 
       <PopoverContent align="end" className="w-[360px] p-0">
         <div className="flex items-center justify-between border-b border-[var(--border-divider)] px-3 py-2.5">
-          <p className="text-sm font-semibold text-[var(--text-primary)]">Notifikasi</p>
+          <div className="flex items-center gap-1">
+            <p className="text-sm font-semibold text-[var(--text-primary)]">Notifikasi</p>
+            <button
+              type="button"
+              onClick={() => notificationSound.setEnabled(!soundOn)}
+              aria-label={soundOn ? 'Matikan suara notifikasi' : 'Nyalakan suara notifikasi'}
+              title={soundOn ? 'Suara notifikasi aktif - klik untuk mematikan' : 'Suara notifikasi mati - klik untuk menyalakan'}
+              className="flex h-6 w-6 items-center justify-center rounded-md text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]"
+            >
+              {soundOn ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+            </button>
+          </div>
           {unreadCount > 0 && (
             <button
               type="button"
