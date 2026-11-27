@@ -59,7 +59,7 @@ const columns = [
   ch.accessor('id', {
     header: 'No.',
     cell: (i) => (
-      <Link href={`/booking/${i.getValue()}`} className="font-semibold text-[var(--primary)] hover:underline">
+      <Link href={`/booking/${i.getValue()}`} data-row-open className="font-semibold text-[var(--primary)] hover:underline">
         #{i.getValue()}
       </Link>
     ),
@@ -77,36 +77,65 @@ const columns = [
     header: 'Resource',
     cell: (i) => {
       const r = i.row.original
-      const Icon = r.resourceType === RESOURCE_TYPE.VEHICLE ? Car : Building2
+      const isVehicle = r.resourceType === RESOURCE_TYPE.VEHICLE
+      const Icon = isVehicle ? Car : Building2
       return (
         <div className="flex min-w-[160px] items-start gap-2">
           <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[var(--text-disabled)]" />
           <div className="min-w-0">
             <p className="truncate text-sm font-medium text-[var(--text-primary)]">{r.resourceName}</p>
             {r.plateNumber && <p className="text-xs text-[var(--text-secondary)]">{r.plateNumber}</p>}
+            {/* SPD/Non-SPD (kendaraan) - dulu kolom "Tipe" tersendiri. */}
+            {isVehicle && (
+              <div className="mt-1">
+                <BookingTypeBadge bookingType={r.bookingType} status={r.status} />
+              </div>
+            )}
           </div>
         </div>
       )
     },
   }),
-  ch.accessor('bookingType', {
-    header: 'Tipe',
-    cell: (i) =>
-      i.row.original.resourceType === RESOURCE_TYPE.VEHICLE ? (
-        <BookingTypeBadge bookingType={i.getValue()} status={i.row.original.status} />
-      ) : (
-        <span className="text-xs text-[var(--text-disabled)]">-</span>
-      ),
-  }),
   ch.accessor((r) => r.requester.name, {
     id: 'requester',
-    header: 'Pemohon',
-    cell: (i) => (
-      <div className="min-w-[140px]">
-        <p className="truncate text-sm text-[var(--text-primary)]">{i.getValue()}</p>
-        <p className="truncate text-xs text-[var(--text-secondary)]">{i.row.original.requester.department}</p>
-      </div>
-    ),
+    header: 'Pemohon & Penumpang',
+    cell: (i) => {
+      const r = i.row.original
+      return (
+        <div className="min-w-[160px] max-w-[220px]">
+          <p className="truncate text-sm text-[var(--text-primary)]">{i.getValue()}</p>
+          <p className="truncate text-xs text-[var(--text-secondary)]">{r.requester.department}</p>
+          {r.passengers.length > 0 && (
+            <p
+              className="mt-1 line-clamp-2 text-xs text-[var(--text-secondary)]"
+              title={r.passengers.map((p) => p.name).join(', ')}
+            >
+              <span className="font-medium">+{r.passengers.length} penumpang:</span>{' '}
+              {r.passengers.map((p) => (p.isGuest ? `${p.name} (tamu)` : p.name)).join(', ')}
+            </p>
+          )}
+        </div>
+      )
+    },
+  }),
+  ch.accessor('purpose', {
+    header: 'Tujuan',
+    cell: (i) => {
+      const r = i.row.original
+      const route = [r.pickupLocation, r.destination].filter(Boolean).join(' → ')
+      return (
+        <div className="min-w-[160px] max-w-[260px]">
+          <p className="line-clamp-2 text-sm text-[var(--text-primary)]" title={r.purpose}>
+            {r.purpose || '-'}
+          </p>
+          {route && (
+            <p className="mt-0.5 line-clamp-2 text-xs text-[var(--text-secondary)]" title={route}>
+              {route}
+            </p>
+          )}
+        </div>
+      )
+    },
   }),
   ch.accessor((r) => (r.resourceType === RESOURCE_TYPE.VEHICLE ? r.driverName : r.roomKeepers), {
     id: 'handler',

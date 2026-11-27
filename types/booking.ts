@@ -422,6 +422,12 @@ export interface BookingHistoryItem {
   resourceName: string
   plateNumber: string
   requester: { name: string; department: string }
+  // Keperluan + lokasi jemput/tujuan (kendaraan; ruangan = '').
+  purpose: string
+  pickupLocation: string
+  destination: string
+  // Penumpang ikut (karyawan & tamu) - selalu array.
+  passengers: { name: string; isGuest: boolean }[]
   startDate: string
   endDate: string
   createdAt: string
