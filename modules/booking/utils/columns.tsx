@@ -1,7 +1,7 @@
 'use client'
 
 import Link from "next/link";
-import { ArrowRightLeft, Ban, Building2, Car, Eye, GitMerge, X, Zap } from "lucide-react";
+import { ArrowRightLeft, Ban, Building2, Car, Eye, GitMerge, UserRound, X, Zap } from "lucide-react";
 import { UserAvatar } from "@/components/shared/avatar/Avatar";
 import { BookingStatusBadge, BookingTypeBadge } from "@/components/shared/badge/StatusBadge";
 import { SafeImage } from "@/components/shared/media/SafeImage";
@@ -181,9 +181,23 @@ export const bookingColumns: ColumnDef<Booking, unknown>[] = [
                 </span>
               )}
             </div>
-            <span className="text-xs text-[var(--text-secondary)]">
-              {isVehicle ? "Kendaraan" : "Ruangan"}
-            </span>
+            {/* Seperti menu Kendaraan: plat nomor di bawah nama, lalu supir
+                bila sudah ditugaskan. Ruangan tetap label tipenya. */}
+            {isVehicle ? (
+              <>
+                <p className="text-[11px] text-[var(--text-secondary)]">
+                  {booking.assignedVehicle?.plateNumber || "Kendaraan"}
+                </p>
+                {booking.assignedDriver && (
+                  <p className="flex items-center gap-1 text-[11px] text-[var(--text-secondary)]">
+                    <UserRound className="h-3 w-3 text-[var(--text-disabled)]" />
+                    {booking.assignedDriver.name}
+                  </p>
+                )}
+              </>
+            ) : (
+              <span className="text-xs text-[var(--text-secondary)]">Ruangan</span>
+            )}
           </div>
         </div>
       );
