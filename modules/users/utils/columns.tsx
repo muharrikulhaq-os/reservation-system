@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ExternalLink, Power } from 'lucide-react'
+import { Power } from 'lucide-react'
 import { UserAvatar } from '@/components/shared/avatar/Avatar'
 import { Badge } from '@/components/shared/badge/StatusBadge'
 import { createColumnHelper, type ColumnDef } from '@/components/shared/table/DataTable'
@@ -134,11 +134,10 @@ export const userColumns = ({
       enableSorting: false,
       cell: ({ row }) => (
         <div className="flex items-center justify-end gap-1">
-          <AppButton variant="link" size="sm" asChild>
-            <Link href={`/users/${row.original.id}`}>
-              <ExternalLink className="h-3.5 w-3.5" /> Detail
-            </Link>
-          </AppButton>
+          {/* Tak terlihat: klik baris yang membuka detail (openRowDetail). */}
+          <Link href={`/users/${row.original.id}`} data-row-open className="sr-only">
+            Lihat detail pengguna
+          </Link>
           <AdminOnly>
             <AppButton variant="link" size="sm" asChild>
               <Link href={`/users/${row.original.id}/edit`}>Edit</Link>

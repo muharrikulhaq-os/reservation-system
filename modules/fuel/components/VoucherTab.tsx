@@ -1,11 +1,11 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Ban, CheckCircle2, Download, Eye, FileCheck2, Printer, Search } from 'lucide-react'
+import { Ban, CheckCircle2, Download, FileCheck2, Printer, Search } from 'lucide-react'
 import { toast } from 'sonner'
 import { AppButton, InputDate, InputSelect, InputText, SearchableSelect } from '@/components/ui-custom'
 import { stationOption } from '@/components/shared'
-import { formatDateTime, getErrorMessage } from '@/lib'
+import { formatDateTime, getErrorMessage, openRowDetail, ROW_OPEN_CLASS } from '@/lib'
 import { useDebounce } from '@/hooks'
 import { useAuthStore } from '@/store/auth.store'
 import type { FuelVoucher, FuelVoucherParams, FuelVoucherStatus, SelectOption } from '@/types'
@@ -260,7 +260,7 @@ export const VoucherTab = () => {
             </thead>
             <tbody className="divide-y divide-[var(--border-divider)]">
               {items.map((v) => (
-                <tr key={v.id} className="align-top">
+                <tr key={v.id} onClick={openRowDetail} className={`align-top hover:bg-[var(--bg-subtle)] ${ROW_OPEN_CLASS}`}>
                   {isAdmin && (
                     <td className="px-3 py-3">
                       <AppCheckbox
@@ -290,9 +290,10 @@ export const VoucherTab = () => {
                   </td>
                   <td className="px-3 py-3">
                     <div className="flex justify-end gap-1">
-                      <AppButton size="icon-sm" variant="ghost" title="Detail" aria-label="Detail" onClick={() => setActive({ kind: 'detail', v })}>
-                        <Eye className="h-4 w-4" />
-                      </AppButton>
+                      {/* Tak terlihat: klik baris yang membuka detail (openRowDetail). */}
+                      <button type="button" data-row-open className="sr-only" onClick={() => setActive({ kind: 'detail', v })}>
+                        Detail voucher {v.code}
+                      </button>
                       <AppButton size="icon-sm" variant="ghost" title="Cetak" aria-label="Cetak" onClick={() => openVoucherPrint(v.id)}>
                         <Printer className="h-4 w-4" />
                       </AppButton>

@@ -1,10 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Eye } from 'lucide-react'
 import { UserAvatar } from '@/components/shared/avatar/Avatar'
 import { Badge } from '@/components/shared/badge/StatusBadge'
-import { AppButton } from '@/components/ui-custom'
 import { createColumnHelper, type ColumnDef } from '@/components/shared/table/DataTable'
 import type { Driver } from '@/types'
 import { DriverDetailModal } from '../components/DriverDetailModal'
@@ -20,14 +18,10 @@ const DriverRowActions = ({ driver }: { driver: Driver }) => {
   const [open, setOpen] = useState(false)
   return (
     <div className="flex items-center justify-end">
-      <AppButton
-        variant="ghost"
-        size="icon-sm"
-        onClick={() => setOpen(true)}
-        aria-label="Lihat detail"
-      >
-        <Eye className="h-4 w-4" />
-      </AppButton>
+      {/* Tak terlihat: klik baris yang membuka detail (openRowDetail). */}
+      <button type="button" data-row-open className="sr-only" onClick={() => setOpen(true)}>
+        Lihat detail driver
+      </button>
       <DriverDetailModal driver={driver} open={open} onOpenChange={setOpen} />
     </div>
   )

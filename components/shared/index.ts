@@ -23,6 +23,8 @@ export { BookingStatusBadge, ResourceStatusBadge, Badge, BookingTypeBadge, SpdAc
 
 export { PageHeader } from './page-header/PageHeader'
 
+export { DateTimeCell } from './date/DateTimeCell'
+
 export { StatCard } from './stat-card/StatCard'
 
 export { StarRating } from './rating/StarRating'

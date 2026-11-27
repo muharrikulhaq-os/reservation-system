@@ -15,7 +15,7 @@ import { Separator } from '@/components/ui/separator'
 import { Card, CardHeader, AdminOnly } from '@/components/common'
 import { UserAvatar, Badge, BookingStatusBadge, BookingTypeBadge, StarRating } from '@/components/shared'
 import { AppButton, InputText } from '@/components/ui-custom'
-import { formatDate, formatDateTime, getErrorMessage, resolveFileUrl } from '@/lib'
+import { formatDate, formatDateTime, formatSchedule, getErrorMessage, resolveFileUrl } from '@/lib'
 import { ROLE, RESOURCE_TYPE } from '@/constants'
 import type { RoleName } from '@/types'
 import { useBookings, useRoomRatings } from '@/modules/booking'
@@ -182,7 +182,7 @@ export const UserDetail = ({ userId }: UserDetailProps) => {
                       {b.resource.name}
                     </p>
                     <p className="text-xs text-[var(--text-secondary)]">
-                      {formatDate(b.startDate)}
+                      {formatSchedule(b.startDate, b.endDate)}
                     </p>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">

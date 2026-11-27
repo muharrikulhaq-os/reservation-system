@@ -88,11 +88,9 @@ export const vehicleColumns: ColumnDef<Vehicle, unknown>[] = [
     enableSorting: false,
     cell: ({ row }) => (
       <div className="flex items-center justify-end gap-3">
-        <Link
-          href={`/vehicles/${row.original.id}`}
-          className="text-xs font-medium text-[var(--primary)] hover:underline"
-        >
-          Detail
+        {/* Tak terlihat: klik baris yang membuka detail (openRowDetail). */}
+        <Link href={`/vehicles/${row.original.id}`} data-row-open className="sr-only">
+          Lihat detail kendaraan
         </Link>
         <AdminOnly>
           <Link

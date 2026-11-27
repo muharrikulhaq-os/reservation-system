@@ -70,11 +70,9 @@ export const roomColumns: ColumnDef<Room, unknown>[] = [
     enableSorting: false,
     cell: ({ row }) => (
       <div className="flex items-center justify-end gap-3">
-        <Link
-          href={`/rooms/${row.original.id}`}
-          className="text-xs font-medium text-[var(--primary)] hover:underline"
-        >
-          Detail
+        {/* Tak terlihat: klik baris yang membuka detail (openRowDetail). */}
+        <Link href={`/rooms/${row.original.id}`} data-row-open className="sr-only">
+          Lihat detail ruangan
         </Link>
         <AdminOnly>
           <Link

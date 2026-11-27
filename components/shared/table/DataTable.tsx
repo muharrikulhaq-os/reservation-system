@@ -24,6 +24,7 @@ import {
 import { Skeleton }   from '@/components/ui/skeleton'
 import { Pagination } from '../pagination/Pagination'
 import { cn }         from '@/lib/utils'
+import { openRowDetail, ROW_OPEN_CLASS } from '@/lib/rowOpen'
 import type { PaginationMeta } from '@/types'
 
 // ─────────────────────────────────────────
@@ -190,9 +191,15 @@ export const DataTable = <TData,>({
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
+                // Klik bagian kosong baris = tombol detail (data-row-open) di
+                // baris itu; tombol aksi lain tetap jalan sendiri.
                 <TableRow
                   key={row.id}
-                  className="border-b border-[var(--border-divider)] bg-[var(--bg-card)] last:border-0 transition-colors hover:bg-[var(--bg-subtle)]"
+                  onClick={openRowDetail}
+                  className={cn(
+                    'border-b border-[var(--border-divider)] bg-[var(--bg-card)] last:border-0 transition-colors hover:bg-[var(--bg-subtle)]',
+                    ROW_OPEN_CLASS,
+                  )}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="px-4 py-3.5">

@@ -27,3 +27,6 @@ export * from "./dialog";
 
 // bunyi notifikasi masuk (web) - aktif/nonaktif per browser
 export { notificationSound } from "./notificationSound";
+
+// klik baris/kartu → buka detail (tombol bertanda data-row-open)
+export { openRowDetail, ROW_OPEN_CLASS } from "./rowOpen";

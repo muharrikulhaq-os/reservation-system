@@ -5,7 +5,7 @@ import { AlertTriangle, Building2, MapPin, UserRound, Users } from 'lucide-react
 import { AdminOnly } from '@/components/common'
 import { ResourceStatusBadge } from '@/components/shared'
 import { AppButton } from '@/components/ui-custom'
-import { resolveFileUrl } from '@/lib'
+import { resolveFileUrl , openRowDetail, ROW_OPEN_CLASS } from '@/lib'
 import type { Room } from '@/types'
 
 // ─────────────────────────────────────────
@@ -19,7 +19,11 @@ export const RoomCard = ({ room }: { room: Room }) => {
   const photo = resolveFileUrl(room.photoUrl)
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--border-card)] bg-[var(--bg-card)] p-3 shadow-[0_1px_4px_rgba(0,0,0,0.06)] transition-all duration-150 hover:shadow-[0_4px_16px_rgba(0,0,0,0.10)]">
+    // Klik di mana saja pada kartu = tombol Detail; Edit tetap jalan sendiri.
+    <div
+      onClick={openRowDetail}
+      className={`flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--border-card)] bg-[var(--bg-card)] p-3 shadow-[0_1px_4px_rgba(0,0,0,0.06)] transition-all duration-150 hover:shadow-[0_4px_16px_rgba(0,0,0,0.10)] ${ROW_OPEN_CLASS}`}
+    >
 
       {/* Foto */}
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-[var(--bg-subtle)]">
@@ -79,7 +83,7 @@ export const RoomCard = ({ room }: { room: Room }) => {
 
         {/* Aksi */}
         <div className="mt-auto flex items-center gap-2 border-t border-[var(--border-divider)] pt-3 [&>*]:flex-1">
-          <Link href={`/rooms/${room.id}`}>
+          <Link href={`/rooms/${room.id}`} data-row-open>
             <AppButton variant="secondary" size="sm" fullWidth>
               Detail
             </AppButton>

@@ -1,9 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { Car, Eye } from 'lucide-react'
+import { Car } from 'lucide-react'
 import { createColumnHelper, type ColumnDef } from '@/components/shared/table/DataTable'
-import { AppButton } from '@/components/ui-custom'
 import { SafeImage } from '@/components/shared/media/SafeImage'
 import { formatDate, formatCurrency, resolveFileUrl } from '@/lib'
 import type { MaintenanceRecord } from '@/types'
@@ -107,10 +106,9 @@ export const maintenanceColumns: ColumnDef<MaintenanceRecord, unknown>[] = [
     header: '',
     cell: ({ row }) => (
       <div className="flex justify-end">
-        <Link href={`/maintenance/${row.original.id}`} aria-label="Lihat detail">
-          <AppButton variant="ghost" size="icon-sm">
-            <Eye className="h-4 w-4" />
-          </AppButton>
+        {/* Tak terlihat: klik baris yang membuka detail (openRowDetail). */}
+        <Link href={`/maintenance/${row.original.id}`} data-row-open className="sr-only">
+          Lihat detail maintenance
         </Link>
       </div>
     ),

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Ban, Eye, Fuel, Ticket, Zap } from 'lucide-react'
+import { Ban, Fuel, Ticket, Zap } from 'lucide-react'
 import {
   createColumnHelper,
   type ColumnDef,
@@ -63,14 +63,10 @@ const RowActions = ({ row }: { row: FuelExpense }) => {
   const canVoid = row.status !== 'VOID' && row.source !== 'VOUCHER'
   return (
     <div className="flex items-center justify-end">
-      <AppButton
-        variant="ghost"
-        size="icon-sm"
-        onClick={() => setDetailOpen(true)}
-        aria-label="Lihat detail"
-      >
-        <Eye className="h-4 w-4" />
-      </AppButton>
+      {/* Tak terlihat: klik baris yang membuka detail (openRowDetail). */}
+      <button type="button" data-row-open className="sr-only" onClick={() => setDetailOpen(true)}>
+        Lihat detail pengisian
+      </button>
       {canVoid && (
         <AdminOnly>
           <AppButton

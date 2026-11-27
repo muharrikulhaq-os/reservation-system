@@ -240,6 +240,13 @@ const form = useForm<BookingFormData>({
 | tooltip bawaan | tetap `title="…"` - digambar ulang oleh `TitleTooltipHost` |
 | `<a href={foto} target="_blank">` / `Dialog` buatan sendiri untuk pratinjau foto | `PreviewImage` (thumbnail; `gallery`+`index` untuk banyak foto) atau `ImageViewer` + `useImageViewer` - foto utuh layar penuh, sama dengan `AppImageViewer` di mobile. Jangan dipasang di kartu/baris daftar yang kliknya membuka detail |
 
+### Baris tabel / kartu → buka detail dengan klik di mana saja
+Tidak ada ikon mata / tombol "Detail" yang harus dikejar ke ujung kanan. Elemen pembuka detail (Link ke
+halaman detail atau tombol `setOpen` modal) diberi atribut `data-row-open` — di tabel cukup `className="sr-only"`
+(tetap bisa dipakai keyboard). `DataTable` sudah memasang `openRowDetail` di setiap baris; untuk kartu /
+`<li>` / `<tr>` buatan sendiri pasang `onClick={openRowDetail}` + `ROW_OPEN_CLASS` dari `@/lib`. Tombol lain di
+baris (Batal, Edit, checkbox, nama pemohon) tetap jalan sendiri; klik dari dalam modal diabaikan.
+
 ### Error — jangan expose stack trace
 ```ts
 // ✓ HARUS — pakai helper dari @/lib

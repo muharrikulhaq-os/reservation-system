@@ -1,17 +1,18 @@
 'use client'
 
 import Link from "next/link";
-import { ArrowRightLeft, Ban, Building2, Car, Eye, GitMerge, X, Zap } from "lucide-react";
+import { ArrowRightLeft, Ban, Building2, Car, GitMerge, X, Zap } from "lucide-react";
 import { UserAvatar } from "@/components/shared/avatar/Avatar";
 import { BookingStatusBadge, BookingTypeBadge } from "@/components/shared/badge/StatusBadge";
 import { SafeImage } from "@/components/shared/media/SafeImage";
+import { DateTimeCell } from "@/components/shared/date/DateTimeCell";
 import { UserProfileButton } from "@/components/shared/user-profile/UserProfileButton";
 import {
   createColumnHelper,
   type ColumnDef,
 } from "@/components/shared/table/DataTable";
 import { AppButton } from "@/components/ui-custom/Appbutton";
-import { formatDate, resolveFileUrl } from "@/lib";
+import { resolveFileUrl } from "@/lib";
 import { BOOKING_STATUS, RESOURCE_TYPE } from "@/constants";
 import { useCancelBooking } from "../hooks/useBookings";
 import { useAuthStore } from "@/store/auth.store";
@@ -52,13 +53,9 @@ const RowActions = ({ booking }: { booking: Booking }) => {
 
   return (
     <div className="flex items-center justify-end gap-1">
-      <Link
-        href={`/booking/${booking.id}`}
-        aria-label="Lihat detail"
-      >
-        <AppButton variant="ghost" size="icon-sm">
-          <Eye className="h-4 w-4" />
-        </AppButton>
+      {/* Tak terlihat: klik baris yang membuka detail (openRowDetail). */}
+      <Link href={`/booking/${booking.id}`} data-row-open className="sr-only">
+        Lihat detail booking #{booking.id}
       </Link>
 
       {canCancel && (
@@ -190,21 +187,13 @@ export const bookingColumns: ColumnDef<Booking, unknown>[] = [
   ch.accessor("startDate", {
     header: "Mulai",
     size: 120,
-    cell: ({ getValue }) => (
-      <span className="text-sm text-[var(--text-secondary)]">
-        {formatDate(getValue())}
-      </span>
-    ),
+    cell: ({ getValue }) => <DateTimeCell value={getValue()} />,
   }),
 
   ch.accessor("endDate", {
     header: "Selesai",
     size: 120,
-    cell: ({ getValue }) => (
-      <span className="text-sm text-[var(--text-secondary)]">
-        {formatDate(getValue())}
-      </span>
-    ),
+    cell: ({ getValue }) => <DateTimeCell value={getValue()} />,
   }),
 
   ch.accessor("status", {

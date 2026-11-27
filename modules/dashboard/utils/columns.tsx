@@ -5,7 +5,7 @@ import { UserAvatar } from '@/components/shared/avatar/Avatar'
 import { UserProfileButton } from '@/components/shared/user-profile/UserProfileButton'
 import { BookingStatusBadge, BookingTypeBadge } from '@/components/shared/badge/StatusBadge'
 import { createColumnHelper, type ColumnDef } from '@/components/shared/table/DataTable'
-import { formatDate } from '@/lib'
+import { formatDate, formatTimeRange } from '@/lib'
 import { RESOURCE_TYPE } from '@/constants'
 import type { Booking } from '@/types'
 
@@ -43,10 +43,14 @@ export const recentBookingColumns: ColumnDef<Booking, unknown>[] = [
   ch.accessor('startDate', {
     header: 'Tanggal',
     size: 130,
-    cell: ({ getValue }) => (
-      <span className="text-sm text-[var(--text-secondary)]">
-        {formatDate(getValue())}
-      </span>
+    // Tanggal mulai + jam mulai–selesai di bawahnya.
+    cell: ({ getValue, row }) => (
+      <div className="whitespace-nowrap">
+        <p className="text-sm text-[var(--text-primary)]">{formatDate(getValue())}</p>
+        <p className="text-xs text-[var(--text-secondary)]">
+          {formatTimeRange(getValue(), row.original.endDate)}
+        </p>
+      </div>
     ),
   }),
 
@@ -71,11 +75,9 @@ export const recentBookingColumns: ColumnDef<Booking, unknown>[] = [
     size: 60,
     header: '',
     cell: ({ row }) => (
-      <Link
-        href={`/booking/${row.original.id}`}
-        className="text-xs font-medium text-[var(--primary)] hover:underline"
-      >
-        Detail
+      // Tak terlihat: klik baris yang membuka detail (openRowDetail).
+      <Link href={`/booking/${row.original.id}`} data-row-open className="sr-only">
+        Lihat detail booking #{row.original.id}
       </Link>
     ),
   }),

@@ -16,7 +16,7 @@ import { UserAvatar, SafeImage, UserProfileButton } from '@/components/shared'
 import { AppButton } from '@/components/ui-custom'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { StatCard } from '@/modules/dashboard/components/StatCard'
-import { formatDate, isSameWibDay, resolveFileUrl, wibMonthBounds } from '@/lib'
+import { formatDate, formatSchedule, isSameWibDay, openRowDetail, resolveFileUrl, ROW_OPEN_CLASS, wibMonthBounds } from '@/lib'
 import { BOOKING_STATUS, RESOURCE_TYPE } from '@/constants'
 import type { Booking } from '@/types'
 import { useAuthStore } from '@/store/auth.store'
@@ -257,7 +257,11 @@ const QueueRow = ({
   const showActions = !!onApprove || !!onReject
 
   return (
-    <li className="flex flex-wrap items-center gap-4 py-3 first:pt-0">
+    // Klik bagian kosong baris = tautan Detail; Setujui/Tolak tetap jalan sendiri.
+    <li
+      onClick={openRowDetail}
+      className={`flex flex-wrap items-center gap-4 py-3 first:pt-0 ${ROW_OPEN_CLASS}`}
+    >
       {/* Kiri: peminjam */}
       <UserProfileButton
         userId={booking.user.id}
@@ -299,7 +303,7 @@ const QueueRow = ({
             )}
           </div>
           <p className="truncate text-xs text-[var(--text-secondary)]">
-            {formatDate(booking.startDate)} – {formatDate(booking.endDate)}
+            {formatSchedule(booking.startDate, booking.endDate)}
           </p>
         </div>
       </div>
@@ -337,6 +341,7 @@ const QueueRow = ({
         )}
         <Link
           href={`/booking/${booking.id}`}
+          data-row-open
           className="text-xs font-semibold text-[var(--primary)] hover:underline"
         >
           Detail

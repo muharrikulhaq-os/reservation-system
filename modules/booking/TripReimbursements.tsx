@@ -207,7 +207,7 @@ const ParkingDriverGroup = ({ group }: { group: PendingParkingGroup }) => {
                 <Link href={`/booking/${i.bookingId}`} className="text-[var(--primary)] hover:underline">
                   Booking #{i.bookingId}
                 </Link>{' '}
-                · {formatDate(i.startDate)}
+                · {formatDateTime(i.startDate)}
                 {i.plateNumber ? ` · ${i.plateNumber}` : ''}
               </p>
               <p className="truncate text-xs text-[var(--text-secondary)]">

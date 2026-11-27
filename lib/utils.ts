@@ -84,6 +84,40 @@ export const formatDateTime = (iso: DateInput, fallback = "-"): string => {
   return d ? dateTimeFormatter.format(d) : fallback;
 };
 
+const timeFormatter = new Intl.DateTimeFormat("id-ID", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: WIB_TIME_ZONE,
+});
+
+/** "09.00 WIB" - jam saja (WIB), fallback "-" */
+export const formatTime = (iso: DateInput, fallback = "-"): string => {
+  const d = parseDate(iso);
+  return d ? `${timeFormatter.format(d)} WIB` : fallback;
+};
+
+/**
+ * Jam mulai–selesai: hari sama → "09.00 – 12.30 WIB",
+ * beda hari → "09.00 – 28 November 2026, 12.30 WIB".
+ */
+export const formatTimeRange = (start: DateInput, end: DateInput, fallback = "-"): string => {
+  const s = parseDate(start);
+  const e = parseDate(end);
+  if (!s) return fallback;
+  if (!e) return formatTime(s);
+  const endPart =
+    dateFormatter.format(s) === dateFormatter.format(e)
+      ? timeFormatter.format(e)
+      : dateTimeFormatter.format(e);
+  return `${timeFormatter.format(s)} – ${endPart} WIB`;
+};
+
+/** Jadwal satu baris: "27 November 2026, 09.00 – 12.30 WIB". */
+export const formatSchedule = (start: DateInput, end: DateInput, fallback = "-"): string => {
+  const s = parseDate(start);
+  return s ? `${dateFormatter.format(s)}, ${formatTimeRange(start, end)}` : fallback;
+};
+
 /** "26 Mei 2025" singkat → "26 Mei '25" */
 export const formatShortDate = (iso: DateInput, fallback = "-"): string => {
   const d = parseDate(iso);
