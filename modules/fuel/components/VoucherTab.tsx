@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Ban, CheckCircle2, Download, FileCheck2, Printer, Search } from 'lucide-react'
+import { Ban, CheckCircle2, Download, Eye, FileCheck2, Printer, Search } from 'lucide-react'
 import { toast } from 'sonner'
 import { AppButton, InputDate, InputSelect, InputText, SearchableSelect } from '@/components/ui-custom'
 import { stationOption } from '@/components/shared'
@@ -290,10 +290,10 @@ export const VoucherTab = () => {
                   </td>
                   <td className="px-3 py-3">
                     <div className="flex justify-end gap-1">
-                      {/* Tak terlihat: klik baris yang membuka detail (openRowDetail). */}
-                      <button type="button" data-row-open className="sr-only" onClick={() => setActive({ kind: 'detail', v })}>
-                        Detail voucher {v.code}
-                      </button>
+                      {/* Tombol detail juga sasaran klik baris (openRowDetail). */}
+                      <AppButton size="icon-sm" variant="ghost" title="Detail" aria-label="Detail" data-row-open onClick={() => setActive({ kind: 'detail', v })}>
+                        <Eye className="h-4 w-4" />
+                      </AppButton>
                       <AppButton size="icon-sm" variant="ghost" title="Cetak" aria-label="Cetak" onClick={() => openVoucherPrint(v.id)}>
                         <Printer className="h-4 w-4" />
                       </AppButton>

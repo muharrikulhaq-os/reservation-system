@@ -75,9 +75,13 @@ export const recentBookingColumns: ColumnDef<Booking, unknown>[] = [
     size: 60,
     header: '',
     cell: ({ row }) => (
-      // Tak terlihat: klik baris yang membuka detail (openRowDetail).
-      <Link href={`/booking/${row.original.id}`} data-row-open className="sr-only">
-        Lihat detail booking #{row.original.id}
+      // Tombol detail juga sasaran klik baris (openRowDetail).
+      <Link
+        href={`/booking/${row.original.id}`}
+        data-row-open
+        className="text-xs font-medium text-[var(--primary)] hover:underline"
+      >
+        Detail
       </Link>
     ),
   }),

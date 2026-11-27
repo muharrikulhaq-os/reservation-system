@@ -2,7 +2,7 @@ import type { MouseEvent as ReactMouseEvent } from 'react'
 
 // ─────────────────────────────────────────
 // KLIK BARIS / KARTU = BUKA DETAIL
-// Tombol "lihat detail" (ikon mata, "Detail") ditandai atribut
+// Tombol "lihat detail" (ikon mata, "Detail" - tetap tampil) ditandai atribut
 // `data-row-open`. Klik di bagian KOSONG baris/kartu meneruskan klik ke
 // elemen itu - jadi cara membukanya tetap milik elemen tsb (Link ke
 // halaman detail, atau setOpen modal) tanpa diangkat ke tabel.

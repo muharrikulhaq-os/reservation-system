@@ -1,7 +1,7 @@
 'use client'
 
 import Link from "next/link";
-import { ArrowRightLeft, Ban, Building2, Car, GitMerge, X, Zap } from "lucide-react";
+import { ArrowRightLeft, Ban, Building2, Car, Eye, GitMerge, X, Zap } from "lucide-react";
 import { UserAvatar } from "@/components/shared/avatar/Avatar";
 import { BookingStatusBadge, BookingTypeBadge } from "@/components/shared/badge/StatusBadge";
 import { SafeImage } from "@/components/shared/media/SafeImage";
@@ -53,9 +53,15 @@ const RowActions = ({ booking }: { booking: Booking }) => {
 
   return (
     <div className="flex items-center justify-end gap-1">
-      {/* Tak terlihat: klik baris yang membuka detail (openRowDetail). */}
-      <Link href={`/booking/${booking.id}`} data-row-open className="sr-only">
-        Lihat detail booking #{booking.id}
+      {/* Tombol detail juga sasaran klik baris (openRowDetail). */}
+      <Link
+        href={`/booking/${booking.id}`}
+        aria-label="Lihat detail"
+        data-row-open
+      >
+        <AppButton variant="ghost" size="icon-sm">
+          <Eye className="h-4 w-4" />
+        </AppButton>
       </Link>
 
       {canCancel && (
