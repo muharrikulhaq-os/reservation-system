@@ -235,7 +235,17 @@ export const BookingApprovalPanel = ({ booking, onActionComplete }: Props) => {
 
       {/* ── Dialog: Alihkan & Setujui ── */}
       <Dialog open={substituteOpen} onOpenChange={setSubstituteOpen}>
-        <DialogContent className={`rounded-2xl p-6 shadow-[var(--shadow-modal)] ${isVehicle ? 'sm:max-w-lg' : 'sm:max-w-md'}`}>
+        {/* Kendaraan: lebar mengikuti isi (nama kendaraan + shift + supir bisa
+            panjang) - minimal 32rem, maksimal 48rem / lebar layar. [&>*]:min-w-0:
+            tanpa ini teks satu baris (truncate) memaksa kolom grid Dialog lebih
+            lebar dari modalnya sehingga kartu & tombol keluar dari modal. */}
+        <DialogContent
+          className={`rounded-2xl p-6 shadow-[var(--shadow-modal)] [&>*]:min-w-0 ${
+            isVehicle
+              ? 'sm:w-max sm:min-w-[32rem] sm:max-w-[min(48rem,calc(100vw-2rem))]'
+              : 'sm:max-w-md'
+          }`}
+        >
           <DialogHeader>
             <DialogTitle
               className="text-lg font-bold text-[var(--text-primary)]"
